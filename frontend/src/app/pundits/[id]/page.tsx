@@ -76,7 +76,7 @@ export default async function PunditPage({ params }: { params: { id: string } })
             </p>
 
             <div className="flex flex-wrap gap-2">
-              {pundit.domains.map(domain => (
+              {pundit.domains.map((domain: string) => (
                 <span key={domain} className="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
                   {domain}
                 </span>
