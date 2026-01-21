@@ -36,13 +36,13 @@ export function PnLChart({ data }: PnLChartProps) {
             axisLine={false} 
             tickLine={false} 
             tick={{ fontSize: 10, fill: '#94a3b8' }}
-            tickFormatter={(str) => formatDate(str)}
+            tickFormatter={(str: string) => formatDate(str)}
           />
           <YAxis 
             axisLine={false} 
             tickLine={false} 
             tick={{ fontSize: 10, fill: '#94a3b8' }}
-            tickFormatter={(val) => `$${val}`}
+            tickFormatter={(val: number) => `$${val}`}
           />
           <Tooltip 
             contentStyle={{ 
@@ -50,7 +50,7 @@ export function PnLChart({ data }: PnLChartProps) {
               border: '1px solid #e2e8f0',
               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
             }}
-            labelFormatter={(label) => formatDate(label)}
+            labelFormatter={(label: string) => formatDate(label)}
             formatter={(value: number) => [formatCurrency(value), 'P&L']}
           />
           <Area 
