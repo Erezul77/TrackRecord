@@ -51,7 +51,7 @@ export function PnLChart({ data }: PnLChartProps) {
               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
             }}
             labelFormatter={(label: string) => formatDate(label)}
-            formatter={(value: number) => [formatCurrency(value), 'P&L']}
+            formatter={(value: number | undefined) => [formatCurrency(value ?? 0), 'P&L']}
           />
           <Area 
             type="monotone" 
