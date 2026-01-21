@@ -5,6 +5,7 @@ import { PredictionCard } from "@/components/predictions/PredictionCard"
 import { PnLChart } from "@/components/charts/PnLChart"
 import { formatDate, formatCurrency, formatPercent, cn } from "@/lib/utils"
 import Image from "next/image"
+import Link from "next/link"
 import { Shield, CheckCircle, Info, ExternalLink, BarChart3, Target, TrendingUp } from "lucide-react"
 
 async function getPunditData(id: string) {
@@ -136,7 +137,7 @@ export default async function PunditPage({ params }: { params: { id: string } })
                 { label: 'Market Matches', value: pundit.metrics.matched_predictions, icon: BarChart3 },
                 { label: 'Average ROI', value: formatPercent(pundit.metrics.paper_roi), icon: TrendingUp },
                 { label: 'Last 30 Days P&L', value: formatCurrency(pundit.metrics.pnl_30d), icon: BarChart3, color: pundit.metrics.pnl_30d >= 0 ? 'text-emerald-600' : 'text-rose-600' },
-              ].map((m, i) => (
+              ].map((m: any, i: number) => (
                 <div key={i} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
                   <div className="flex items-center gap-3">
                     <m.icon className="h-4 w-4 text-slate-400" />

@@ -2,6 +2,7 @@
 import { api, Pundit } from "@/lib/api"
 import { PunditCard } from "@/components/leaderboard/PunditCard"
 import { TrendingUp, Users, Target, BarChart3 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 async function getPundits() {
   try {
@@ -36,7 +37,7 @@ export default async function Home() {
           { label: 'Predictions Captured', value: '12.4k', icon: Target },
           { label: 'Avg Win Rate', value: '42.1%', icon: BarChart3 },
           { label: 'Market Matches', value: '8.2k', icon: TrendingUp },
-        ].map((stat, i) => (
+        ].map((stat: any, i: number) => (
           <div key={i} className="bg-white p-6 rounded-2xl border flex flex-col items-center text-center">
             <stat.icon className="h-6 w-6 text-blue-600 mb-2" />
             <div className="text-3xl font-black text-slate-900 tracking-tight">{stat.value}</div>
@@ -54,7 +55,7 @@ export default async function Home() {
           </div>
           <div className="flex gap-2">
             {/* Simple Category Filter Mockup */}
-            {['All', 'Politics', 'Economy', 'Crypto'].map((cat) => (
+            {['All', 'Politics', 'Economy', 'Crypto'].map((cat: string) => (
               <button key={cat} className={cn(
                 "text-sm font-bold px-4 py-2 rounded-lg transition-colors",
                 cat === 'All' ? "bg-blue-600 text-white shadow-sm" : "bg-white text-slate-600 border hover:bg-slate-50"
@@ -67,7 +68,7 @@ export default async function Home() {
 
         <div className="space-y-4">
           {pundits.length > 0 ? (
-            pundits.map((pundit, index) => (
+            pundits.map((pundit: Pundit, index: number) => (
               <PunditCard key={pundit.id} pundit={pundit} rank={index + 1} />
             ))
           ) : (
@@ -79,8 +80,4 @@ export default async function Home() {
       </section>
     </div>
   )
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ')
 }
