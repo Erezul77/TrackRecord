@@ -46,30 +46,26 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
-# Minimum predictions required for ranking
+# Minimum resolved predictions for official ranking (frontend handles display)
 MIN_PREDICTIONS_FOR_RANKING = 3
 
 @app.get("/api/leaderboard", response_model=List[PunditResponse])
 async def get_leaderboard(
     category: Optional[str] = None,
-    limit: int = Query(20, ge=1, le=100),
-    include_unranked: bool = Query(False, description="Include pundits with < 3 predictions"),
+    limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Get leaderboard of pundits ranked by win_rate.
-    Only pundits with 3+ resolved predictions are ranked (statistically meaningful).
+    Get all pundits. Frontend handles showing 'needs more data' for < 3 resolved.
+    Ranked by win rate (accuracy).
     """
     query = select(Pundit).join(PunditMetrics).options(selectinload(Pundit.metrics))
     
     if category:
         query = query.where(Pundit.domains.any(category))
     
-    # Only include pundits with enough predictions for meaningful stats
-    if not include_unranked:
-        query = query.where(PunditMetrics.resolved_predictions >= MIN_PREDICTIONS_FOR_RANKING)
-    
-    # Rank by win rate (accuracy), not P&L
+    # Show everyone, ranked by win rate
+    # Those with < 3 resolved will show "needs more data" in frontend
     query = query.order_by(desc(PunditMetrics.paper_win_rate)).limit(limit)
     
     result = await db.execute(query)

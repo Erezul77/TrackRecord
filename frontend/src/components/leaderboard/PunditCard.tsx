@@ -115,13 +115,12 @@ export function PunditCard({ pundit, rank }: PunditCardProps) {
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-end">
-              <AlertCircle className="h-5 w-5 text-slate-300 mb-1" />
-              <div className="text-xs font-bold text-slate-400">
-                {pundit.metrics.resolved_predictions}/{MIN_PREDICTIONS}
+            <div className="flex flex-col items-end bg-slate-100 px-3 py-2 rounded-lg">
+              <div className="text-xs font-bold text-slate-500 mb-0.5">
+                Awaiting Results
               </div>
               <div className="text-[10px] text-slate-400">
-                predictions
+                {pundit.metrics.resolved_predictions} of {MIN_PREDICTIONS} min
               </div>
             </div>
           )}
