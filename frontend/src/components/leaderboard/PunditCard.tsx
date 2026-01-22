@@ -73,18 +73,12 @@ export function PunditCard({ pundit, rank }: PunditCardProps) {
           {/* Stats - Hidden on mobile, shown on desktop */}
           <div className="hidden sm:flex flex-wrap gap-4 text-xs font-medium text-slate-600">
             <div className="flex flex-col">
-              <span className="text-slate-400 font-normal uppercase tracking-wider">Predictions</span>
-              <span>{pundit.metrics.total_predictions}</span>
+              <span className="text-slate-400 font-normal uppercase tracking-wider">Total</span>
+              <span>{pundit.metrics.total_predictions} predictions</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-slate-400 font-normal uppercase tracking-wider">Win Rate</span>
-              <span>{formatPercent(pundit.metrics.paper_win_rate)}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-slate-400 font-normal uppercase tracking-wider">Accuracy</span>
-              <span>{pundit.metrics.resolved_predictions > 0 
-                ? `${pundit.metrics.resolved_predictions} resolved`
-                : 'No resolved yet'}</span>
+              <span className="text-slate-400 font-normal uppercase tracking-wider">Resolved</span>
+              <span>{pundit.metrics.resolved_predictions} closed</span>
             </div>
           </div>
         </div>
