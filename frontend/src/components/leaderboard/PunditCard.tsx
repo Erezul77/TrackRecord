@@ -3,13 +3,16 @@
 import Link from 'next/link'
 import { Pundit } from '@/lib/api'
 import { formatPercent, cn } from '@/lib/utils'
-import { CheckCircle, User, Star } from 'lucide-react'
+import { CheckCircle, User, Star, AlertCircle } from 'lucide-react'
 import { useState } from 'react'
 
 interface PunditCardProps {
   pundit: Pundit
   rank: number
 }
+
+// Minimum predictions for meaningful ranking
+const MIN_PREDICTIONS = 3
 
 // Calculate star rating (1-5) based on win rate
 function getStarRating(winRate: number): number {
@@ -29,8 +32,9 @@ function getRatingColor(winRate: number): string {
 
 export function PunditCard({ pundit, rank }: PunditCardProps) {
   const [imgError, setImgError] = useState(false)
+  const hasEnoughData = pundit.metrics.resolved_predictions >= MIN_PREDICTIONS
   const stars = getStarRating(pundit.metrics.paper_win_rate)
-  const ratingColor = getRatingColor(pundit.metrics.paper_win_rate)
+  const ratingColor = hasEnoughData ? getRatingColor(pundit.metrics.paper_win_rate) : 'text-slate-400'
   
   return (
     <Link href={`/pundits/${pundit.id}`} className="block">
@@ -87,26 +91,40 @@ export function PunditCard({ pundit, rank }: PunditCardProps) {
         
         {/* Rating */}
         <div className="text-right flex-shrink-0">
-          {/* Star Rating */}
-          <div className="flex items-center justify-end gap-0.5 mb-1">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <Star 
-                key={s} 
-                className={cn(
-                  "h-4 w-4 sm:h-5 sm:w-5",
-                  s <= stars ? `${ratingColor} fill-current` : "text-slate-200"
-                )} 
-              />
-            ))}
-          </div>
-          
-          {/* Win Rate */}
-          <div className={cn("text-lg sm:text-2xl font-black", ratingColor)}>
-            {formatPercent(pundit.metrics.paper_win_rate)}
-          </div>
-          <div className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-widest">
-            Win Rate
-          </div>
+          {hasEnoughData ? (
+            <>
+              {/* Star Rating */}
+              <div className="flex items-center justify-end gap-0.5 mb-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star 
+                    key={s} 
+                    className={cn(
+                      "h-4 w-4 sm:h-5 sm:w-5",
+                      s <= stars ? `${ratingColor} fill-current` : "text-slate-200"
+                    )} 
+                  />
+                ))}
+              </div>
+              
+              {/* Win Rate */}
+              <div className={cn("text-lg sm:text-2xl font-black", ratingColor)}>
+                {formatPercent(pundit.metrics.paper_win_rate)}
+              </div>
+              <div className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                {pundit.metrics.resolved_predictions} resolved
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-end">
+              <AlertCircle className="h-5 w-5 text-slate-300 mb-1" />
+              <div className="text-xs font-bold text-slate-400">
+                {pundit.metrics.resolved_predictions}/{MIN_PREDICTIONS}
+              </div>
+              <div className="text-[10px] text-slate-400">
+                predictions
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Link>
