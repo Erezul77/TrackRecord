@@ -13,7 +13,12 @@ engine = create_async_engine(DATABASE_URL, echo=True)
 async_session = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 # Sync engine for background jobs (auto-agent)
-SYNC_DATABASE_URL = DATABASE_URL.replace("+asyncpg", "").replace("postgresql://", "postgresql+psycopg2://")
+# Convert asyncpg URL to psycopg2 format and fix SSL parameter
+SYNC_DATABASE_URL = DATABASE_URL.replace("+asyncpg", "")
+SYNC_DATABASE_URL = SYNC_DATABASE_URL.replace("ssl=require", "sslmode=require")
+if not SYNC_DATABASE_URL.startswith("postgresql+psycopg2://"):
+    SYNC_DATABASE_URL = SYNC_DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://")
+
 sync_engine = create_engine(SYNC_DATABASE_URL, echo=False)
 SessionLocal = sessionmaker(bind=sync_engine, autocommit=False, autoflush=False)
 
