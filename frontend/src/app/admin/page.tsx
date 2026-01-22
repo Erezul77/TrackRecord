@@ -1,7 +1,8 @@
 // src/app/admin/page.tsx
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle, UserPlus, Search } from 'lucide-react'
+import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle, UserPlus, Search, Sparkles } from 'lucide-react'
+import { KNOWN_PUNDITS, searchKnownPundits, KnownPundit } from '@/data/knownPundits'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -56,6 +57,17 @@ export default function AdminPage() {
     affiliation: '',
     domains: 'markets'
   })
+  
+  // Known pundit suggestions
+  const [punditNameSearch, setPunditNameSearch] = useState('')
+  const [showKnownPundits, setShowKnownPundits] = useState(false)
+  const knownPunditRef = useRef<HTMLDivElement>(null)
+  
+  // Get suggestions from known pundits (exclude already tracked ones)
+  const trackedUsernames = pundits.map(p => p.username.toLowerCase())
+  const knownPunditSuggestions = searchKnownPundits(punditNameSearch)
+    .filter(kp => !trackedUsernames.includes(kp.username.toLowerCase()))
+    .slice(0, 8)
   
   // RSS data
   const [rssArticles, setRssArticles] = useState<RSSArticle[]>([])
@@ -340,6 +352,7 @@ export default function AdminPage() {
             if (res.ok) {
               setMessage({ type: 'success', text: `Pundit added: ${data.name} (@${data.username})` })
               setNewPundit({ name: '', username: '', bio: '', affiliation: '', domains: 'markets' })
+              setPunditNameSearch('')
               loadPundits() // Refresh the list
             } else {
               setMessage({ type: 'error', text: data.detail || 'Failed to add pundit' })
@@ -350,29 +363,84 @@ export default function AdminPage() {
           
           setLoading(false)
         }} className="bg-white border rounded-xl p-6 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Full Name *</label>
+          
+          {/* Known pundits database hint */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-blue-600 flex-shrink-0" />
+            <p className="text-sm text-blue-700">
+              <strong>{KNOWN_PUNDITS.length} known pundits</strong> in database. Start typing to auto-fill details!
+            </p>
+          </div>
+          
+          <div className="relative" ref={knownPunditRef}>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Full Name *</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <input
                 type="text"
-                value={newPundit.name}
-                onChange={(e) => setNewPundit({...newPundit, name: e.target.value})}
-                placeholder="e.g., Warren Buffett"
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                value={newPundit.name || punditNameSearch}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setPunditNameSearch(val)
+                  setNewPundit({...newPundit, name: val})
+                  setShowKnownPundits(true)
+                }}
+                onFocus={() => setShowKnownPundits(true)}
+                placeholder="Start typing... e.g., Elon, Cathie, Saylor"
+                className="w-full border rounded-lg pl-10 pr-4 py-2 text-slate-900"
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Twitter/X Username *</label>
-              <input
-                type="text"
-                value={newPundit.username}
-                onChange={(e) => setNewPundit({...newPundit, username: e.target.value})}
-                placeholder="e.g., WarrenBuffett (without @)"
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
-                required
-              />
-            </div>
+            
+            {/* Known pundit suggestions dropdown */}
+            {showKnownPundits && punditNameSearch.length >= 2 && knownPunditSuggestions.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                <div className="px-3 py-2 bg-slate-50 border-b">
+                  <p className="text-xs text-slate-500 font-medium">Click to auto-fill all fields</p>
+                </div>
+                {knownPunditSuggestions.map(kp => (
+                  <button
+                    key={kp.username}
+                    type="button"
+                    onClick={() => {
+                      setNewPundit({
+                        name: kp.name,
+                        username: kp.username,
+                        bio: kp.bio,
+                        affiliation: kp.affiliation,
+                        domains: kp.domains.join(', ')
+                      })
+                      setPunditNameSearch('')
+                      setShowKnownPundits(false)
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-blue-50 border-b last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-slate-900">{kp.name}</span>
+                        <span className="text-slate-500 text-sm ml-2">@{kp.username}</span>
+                      </div>
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                        {kp.domains[0]}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">{kp.affiliation}</p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Twitter/X Username *</label>
+            <input
+              type="text"
+              value={newPundit.username}
+              onChange={(e) => setNewPundit({...newPundit, username: e.target.value})}
+              placeholder="e.g., elonmusk (without @)"
+              className="w-full border rounded-lg px-4 py-2 text-slate-900"
+              required
+            />
           </div>
 
           <div>
@@ -418,13 +486,47 @@ export default function AdminPage() {
           
           {/* Current pundits list */}
           <div className="pt-4 border-t">
-            <p className="text-sm font-bold text-slate-700 mb-2">Current Pundits ({pundits.length})</p>
+            <p className="text-sm font-bold text-slate-700 mb-2">Currently Tracked ({pundits.length})</p>
             <div className="flex flex-wrap gap-2">
               {pundits.map(p => (
-                <span key={p.id} className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
+                <span key={p.id} className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium">
                   {p.name}
                 </span>
               ))}
+            </div>
+          </div>
+          
+          {/* Not yet tracked pundits */}
+          <div className="pt-4 border-t">
+            <p className="text-sm font-bold text-slate-700 mb-2">Suggested Pundits to Track ({KNOWN_PUNDITS.length - pundits.length} available)</p>
+            <p className="text-xs text-slate-500 mb-3">Click any name to auto-fill the form:</p>
+            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+              {KNOWN_PUNDITS
+                .filter(kp => !trackedUsernames.includes(kp.username.toLowerCase()))
+                .slice(0, 30)
+                .map(kp => (
+                  <button
+                    key={kp.username}
+                    type="button"
+                    onClick={() => {
+                      setNewPundit({
+                        name: kp.name,
+                        username: kp.username,
+                        bio: kp.bio,
+                        affiliation: kp.affiliation,
+                        domains: kp.domains.join(', ')
+                      })
+                    }}
+                    className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full hover:bg-blue-100 hover:text-blue-700 transition-colors"
+                  >
+                    {kp.name}
+                  </button>
+                ))}
+              {KNOWN_PUNDITS.filter(kp => !trackedUsernames.includes(kp.username.toLowerCase())).length > 30 && (
+                <span className="text-xs text-slate-400 px-2 py-1">
+                  +{KNOWN_PUNDITS.filter(kp => !trackedUsernames.includes(kp.username.toLowerCase())).length - 30} more...
+                </span>
+              )}
             </div>
           </div>
         </form>
