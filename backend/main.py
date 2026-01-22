@@ -96,8 +96,13 @@ async def get_recent_predictions(
     category: Optional[str] = None,
     db: AsyncSession = Depends(get_db)
 ):
-    """Get recent predictions from all pundits with pundit info"""
-    query = select(Prediction).join(Pundit).options(selectinload(Prediction.pundit))
+    """Get recent predictions from all pundits with pundit info and outcome"""
+    from database.models import Position
+    
+    query = select(Prediction).join(Pundit).options(
+        selectinload(Prediction.pundit),
+        selectinload(Prediction.positions)
+    )
     
     if category:
         query = query.where(Prediction.category == category)
@@ -119,6 +124,7 @@ async def get_recent_predictions(
             "source_type": p.source_type,
             "timeframe": p.timeframe.isoformat() if p.timeframe else None,
             "captured_at": p.captured_at.isoformat() if p.captured_at else None,
+            "outcome": p.positions[0].outcome if p.positions and p.positions[0].outcome else None,
             "pundit": {
                 "id": str(p.pundit.id),
                 "name": p.pundit.name,

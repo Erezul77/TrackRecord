@@ -32,6 +32,7 @@ export interface PredictionWithPundit {
   confidence: number
   category: string
   status: string
+  outcome?: string | null  // YES = correct, NO = wrong, null = open
   source_url: string
   source_type: string
   timeframe: string

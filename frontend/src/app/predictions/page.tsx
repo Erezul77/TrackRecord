@@ -13,19 +13,18 @@ async function getRecentPredictions() {
   }
 }
 
-// Get status display based on outcome - GREEN for right, RED for wrong
-function getStatusDisplay(status: string, outcome?: string) {
-  if (status === 'resolved') {
+// Get status display based on outcome - GREEN for right, RED for wrong, BLUE for open
+function getStatusDisplay(status: string, outcome?: string | null) {
+  // If resolved with outcome
+  if (status === 'resolved' && outcome) {
     if (outcome === 'YES') {
       return { color: 'bg-emerald-500 text-white', label: 'CORRECT', icon: CheckCircle }
     } else {
       return { color: 'bg-rose-500 text-white', label: 'WRONG', icon: XCircle }
     }
   }
-  if (status === 'matched') {
-    return { color: 'bg-blue-600 text-white', label: 'OPEN', icon: Clock }
-  }
-  return { color: 'bg-amber-500 text-white', label: 'PENDING', icon: Clock }
+  // Open position (matched to market, waiting for result)
+  return { color: 'bg-blue-600 text-white', label: 'OPEN', icon: Clock }
 }
 
 export default async function PredictionsPage() {
@@ -41,10 +40,10 @@ export default async function PredictionsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {predictions.length > 0 ? (
           predictions.map((pred) => {
-            const statusDisplay = getStatusDisplay(pred.status, (pred as any).outcome)
+            const statusDisplay = getStatusDisplay(pred.status, pred.outcome)
             const StatusIcon = statusDisplay.icon
-            const isResolved = pred.status === 'resolved'
-            const isCorrect = (pred as any).outcome === 'YES'
+            const isResolved = pred.status === 'resolved' && pred.outcome
+            const isCorrect = pred.outcome === 'YES'
             
             return (
               <div key={pred.id} className={cn(
