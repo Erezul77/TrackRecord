@@ -1,0 +1,305 @@
+// src/app/admin/page.tsx
+'use client'
+import { useState, useEffect } from 'react'
+import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+interface Pundit {
+  id: string
+  name: string
+  username: string
+}
+
+interface RSSArticle {
+  title: string
+  url: string
+  summary: string
+  source: string
+  published: string
+  pundits_mentioned: string[]
+}
+
+export default function AdminPage() {
+  const [activeTab, setActiveTab] = useState<'manual' | 'rss'>('manual')
+  const [pundits, setPundits] = useState<Pundit[]>([])
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  
+  // Manual entry form
+  const [formData, setFormData] = useState({
+    pundit_username: '',
+    claim: '',
+    quote: '',
+    source_url: '',
+    confidence: 0.6,
+    category: 'general',
+    timeframe_days: 90
+  })
+  
+  // RSS data
+  const [rssArticles, setRssArticles] = useState<RSSArticle[]>([])
+  const [rssLoading, setRssLoading] = useState(false)
+
+  useEffect(() => {
+    // Fetch pundits for dropdown
+    fetch(`${API_URL}/api/admin/pundits/list`)
+      .then(res => res.json())
+      .then(data => setPundits(data.pundits || []))
+      .catch(err => console.error('Failed to load pundits:', err))
+  }, [])
+
+  const handleManualSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setMessage(null)
+    
+    try {
+      const res = await fetch(`${API_URL}/api/admin/predictions/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      
+      const data = await res.json()
+      
+      if (res.ok) {
+        setMessage({ type: 'success', text: `Prediction added for ${data.pundit}: "${data.claim}"` })
+        setFormData({
+          pundit_username: '',
+          claim: '',
+          quote: '',
+          source_url: '',
+          confidence: 0.6,
+          category: 'general',
+          timeframe_days: 90
+        })
+      } else {
+        setMessage({ type: 'error', text: data.detail || 'Failed to add prediction' })
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Network error - check API connection' })
+    }
+    
+    setLoading(false)
+  }
+
+  const fetchRSSArticles = async () => {
+    setRssLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/rss/fetch`, { method: 'POST' })
+      const data = await res.json()
+      setRssArticles(data.articles || [])
+    } catch (err) {
+      console.error('Failed to fetch RSS:', err)
+    }
+    setRssLoading(false)
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-12 max-w-4xl">
+      <h1 className="text-3xl font-black text-slate-900 mb-2">Admin Panel</h1>
+      <p className="text-slate-500 mb-8">Add predictions and manage data sources</p>
+      
+      {/* Tabs */}
+      <div className="flex gap-2 mb-8">
+        <button
+          onClick={() => setActiveTab('manual')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+            activeTab === 'manual' 
+              ? 'bg-blue-600 text-white' 
+              : 'bg-white border text-slate-600 hover:bg-slate-50'
+          }`}
+        >
+          <Plus className="h-4 w-4" />
+          Manual Entry
+        </button>
+        <button
+          onClick={() => setActiveTab('rss')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+            activeTab === 'rss' 
+              ? 'bg-blue-600 text-white' 
+              : 'bg-white border text-slate-600 hover:bg-slate-50'
+          }`}
+        >
+          <Rss className="h-4 w-4" />
+          RSS Feeds
+        </button>
+      </div>
+
+      {/* Message */}
+      {message && (
+        <div className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
+          message.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+        }`}>
+          {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
+          {message.text}
+        </div>
+      )}
+
+      {/* Manual Entry Tab */}
+      {activeTab === 'manual' && (
+        <form onSubmit={handleManualSubmit} className="bg-white border rounded-xl p-6 space-y-6">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Pundit</label>
+            <select
+              value={formData.pundit_username}
+              onChange={(e) => setFormData({...formData, pundit_username: e.target.value})}
+              className="w-full border rounded-lg px-4 py-2 text-slate-900"
+              required
+            >
+              <option value="">Select a pundit...</option>
+              {pundits.map(p => (
+                <option key={p.id} value={p.username}>{p.name} (@{p.username})</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Claim (extracted prediction)</label>
+            <input
+              type="text"
+              value={formData.claim}
+              onChange={(e) => setFormData({...formData, claim: e.target.value})}
+              placeholder="e.g., Bitcoin will reach $150,000 by end of 2026"
+              className="w-full border rounded-lg px-4 py-2 text-slate-900"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Original Quote</label>
+            <textarea
+              value={formData.quote}
+              onChange={(e) => setFormData({...formData, quote: e.target.value})}
+              placeholder="Paste the exact quote from the source..."
+              className="w-full border rounded-lg px-4 py-2 text-slate-900 h-24"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Source URL</label>
+            <input
+              type="url"
+              value={formData.source_url}
+              onChange={(e) => setFormData({...formData, source_url: e.target.value})}
+              placeholder="https://..."
+              className="w-full border rounded-lg px-4 py-2 text-slate-900"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Confidence</label>
+              <select
+                value={formData.confidence}
+                onChange={(e) => setFormData({...formData, confidence: parseFloat(e.target.value)})}
+                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+              >
+                <option value={0.95}>Very High (95%)</option>
+                <option value={0.8}>High (80%)</option>
+                <option value={0.6}>Medium (60%)</option>
+                <option value={0.4}>Low (40%)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Category</label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+              >
+                <option value="crypto">Crypto</option>
+                <option value="markets">Markets</option>
+                <option value="economy">Economy</option>
+                <option value="politics">Politics</option>
+                <option value="tech">Tech</option>
+                <option value="macro">Macro</option>
+                <option value="general">General</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Timeframe (days)</label>
+              <input
+                type="number"
+                value={formData.timeframe_days}
+                onChange={(e) => setFormData({...formData, timeframe_days: parseInt(e.target.value)})}
+                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                min={1}
+                max={3650}
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Adding...' : 'Add Prediction'}
+          </button>
+        </form>
+      )}
+
+      {/* RSS Feeds Tab */}
+      {activeTab === 'rss' && (
+        <div className="space-y-6">
+          <button
+            onClick={fetchRSSArticles}
+            disabled={rssLoading}
+            className="flex items-center gap-2 bg-blue-600 text-white font-bold px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`h-4 w-4 ${rssLoading ? 'animate-spin' : ''}`} />
+            {rssLoading ? 'Fetching...' : 'Fetch Latest Articles'}
+          </button>
+
+          {rssArticles.length > 0 && (
+            <div className="space-y-4">
+              <p className="text-sm text-slate-500">{rssArticles.length} articles with prediction keywords</p>
+              
+              {rssArticles.map((article, i) => (
+                <div key={i} className="bg-white border rounded-xl p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">{article.source}</p>
+                      <h3 className="font-bold text-slate-900 mb-2">{article.title}</h3>
+                      <p className="text-sm text-slate-500 line-clamp-2">{article.summary}</p>
+                      {article.pundits_mentioned.length > 0 && (
+                        <div className="mt-2 flex gap-1">
+                          {article.pundits_mentioned.map(p => (
+                            <span key={p} className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-bold">
+                              @{p}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <a
+                      href={article.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-bold text-blue-600 hover:underline whitespace-nowrap"
+                    >
+                      View →
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {rssArticles.length === 0 && !rssLoading && (
+            <div className="bg-white border rounded-xl p-12 text-center">
+              <Rss className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-500">Click "Fetch Latest Articles" to pull from news feeds</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

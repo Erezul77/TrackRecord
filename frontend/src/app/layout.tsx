@@ -33,7 +33,7 @@ export default function RootLayout({
             <nav className="hidden md:flex items-center gap-8">
               <Link href="/" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Leaderboard</Link>
               <Link href="/predictions" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Recent Predictions</Link>
-              <Link href="/about" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">How it Works</Link>
+              <Link href="/admin" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Admin</Link>
             </nav>
 
             <div className="flex items-center gap-4">
