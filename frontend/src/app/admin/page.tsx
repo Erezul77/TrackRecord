@@ -1,7 +1,7 @@
 // src/app/admin/page.tsx
 'use client'
 import { useState, useEffect } from 'react'
-import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
+import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle, UserPlus } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -21,7 +21,7 @@ interface RSSArticle {
 }
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'manual' | 'rss'>('manual')
+  const [activeTab, setActiveTab] = useState<'manual' | 'rss' | 'pundit'>('manual')
   const [pundits, setPundits] = useState<Pundit[]>([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
@@ -37,16 +37,28 @@ export default function AdminPage() {
     timeframe_days: 90
   })
   
+  // New pundit form
+  const [newPundit, setNewPundit] = useState({
+    name: '',
+    username: '',
+    bio: '',
+    affiliation: '',
+    domains: 'markets'
+  })
+  
   // RSS data
   const [rssArticles, setRssArticles] = useState<RSSArticle[]>([])
   const [rssLoading, setRssLoading] = useState(false)
 
-  useEffect(() => {
-    // Fetch pundits for dropdown
+  const loadPundits = () => {
     fetch(`${API_URL}/api/admin/pundits/list`)
       .then(res => res.json())
       .then(data => setPundits(data.pundits || []))
       .catch(err => console.error('Failed to load pundits:', err))
+  }
+
+  useEffect(() => {
+    loadPundits()
   }, [])
 
   const handleManualSubmit = async (e: React.FormEvent) => {
@@ -102,7 +114,7 @@ export default function AdminPage() {
       <p className="text-slate-500 mb-8">Add predictions and manage data sources</p>
       
       {/* Tabs */}
-      <div className="flex gap-2 mb-8">
+      <div className="flex flex-wrap gap-2 mb-8">
         <button
           onClick={() => setActiveTab('manual')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
@@ -112,7 +124,18 @@ export default function AdminPage() {
           }`}
         >
           <Plus className="h-4 w-4" />
-          Manual Entry
+          Add Prediction
+        </button>
+        <button
+          onClick={() => setActiveTab('pundit')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+            activeTab === 'pundit' 
+              ? 'bg-blue-600 text-white' 
+              : 'bg-white border text-slate-600 hover:bg-slate-50'
+          }`}
+        >
+          <UserPlus className="h-4 w-4" />
+          Add Pundit
         </button>
         <button
           onClick={() => setActiveTab('rss')}
@@ -242,6 +265,118 @@ export default function AdminPage() {
           >
             {loading ? 'Adding...' : 'Add Prediction'}
           </button>
+        </form>
+      )}
+
+      {/* Add Pundit Tab */}
+      {activeTab === 'pundit' && (
+        <form onSubmit={async (e) => {
+          e.preventDefault()
+          setLoading(true)
+          setMessage(null)
+          
+          try {
+            const res = await fetch(`${API_URL}/api/admin/pundits/add`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ...newPundit,
+                domains: newPundit.domains.split(',').map(d => d.trim())
+              })
+            })
+            
+            const data = await res.json()
+            
+            if (res.ok) {
+              setMessage({ type: 'success', text: `Pundit added: ${data.name} (@${data.username})` })
+              setNewPundit({ name: '', username: '', bio: '', affiliation: '', domains: 'markets' })
+              loadPundits() // Refresh the list
+            } else {
+              setMessage({ type: 'error', text: data.detail || 'Failed to add pundit' })
+            }
+          } catch (err) {
+            setMessage({ type: 'error', text: 'Network error - check API connection' })
+          }
+          
+          setLoading(false)
+        }} className="bg-white border rounded-xl p-6 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Full Name *</label>
+              <input
+                type="text"
+                value={newPundit.name}
+                onChange={(e) => setNewPundit({...newPundit, name: e.target.value})}
+                placeholder="e.g., Warren Buffett"
+                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Twitter/X Username *</label>
+              <input
+                type="text"
+                value={newPundit.username}
+                onChange={(e) => setNewPundit({...newPundit, username: e.target.value})}
+                placeholder="e.g., WarrenBuffett (without @)"
+                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Affiliation</label>
+            <input
+              type="text"
+              value={newPundit.affiliation}
+              onChange={(e) => setNewPundit({...newPundit, affiliation: e.target.value})}
+              placeholder="e.g., Berkshire Hathaway CEO"
+              className="w-full border rounded-lg px-4 py-2 text-slate-900"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Bio</label>
+            <textarea
+              value={newPundit.bio}
+              onChange={(e) => setNewPundit({...newPundit, bio: e.target.value})}
+              placeholder="Brief description of who they are and what they're known for..."
+              className="w-full border rounded-lg px-4 py-2 text-slate-900 h-20"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Domains (comma-separated)</label>
+            <input
+              type="text"
+              value={newPundit.domains}
+              onChange={(e) => setNewPundit({...newPundit, domains: e.target.value})}
+              placeholder="e.g., markets, economy, crypto"
+              className="w-full border rounded-lg px-4 py-2 text-slate-900"
+            />
+            <p className="text-xs text-slate-400 mt-1">Options: markets, economy, crypto, politics, tech, macro</p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Adding...' : 'Add Pundit'}
+          </button>
+          
+          {/* Current pundits list */}
+          <div className="pt-4 border-t">
+            <p className="text-sm font-bold text-slate-700 mb-2">Current Pundits ({pundits.length})</p>
+            <div className="flex flex-wrap gap-2">
+              {pundits.map(p => (
+                <span key={p.id} className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
+                  {p.name}
+                </span>
+              ))}
+            </div>
+          </div>
         </form>
       )}
 

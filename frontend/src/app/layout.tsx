@@ -5,6 +5,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Shield } from "lucide-react";
+import { MobileNav } from "@/components/MobileNav";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,19 +26,22 @@ export default function RootLayout({
           <div className="container mx-auto px-4 h-16 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
               <div className="bg-blue-600 p-1.5 rounded-lg">
-                <Shield className="h-6 w-6 text-white" />
+                <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <span className="text-xl font-black tracking-tighter text-slate-900">TRACKRECORD</span>
+              <span className="text-lg sm:text-xl font-black tracking-tighter text-slate-900">TRACKRECORD</span>
             </Link>
             
+            {/* Desktop Nav */}
             <nav className="hidden md:flex items-center gap-8">
               <Link href="/" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Leaderboard</Link>
-              <Link href="/predictions" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Recent Predictions</Link>
+              <Link href="/predictions" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Predictions</Link>
               <Link href="/admin" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Admin</Link>
             </nav>
 
             <div className="flex items-center gap-4">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Beta</span>
+              <span className="hidden sm:block text-xs font-bold text-slate-400 uppercase tracking-wider">Beta</span>
+              {/* Mobile Nav */}
+              <MobileNav />
             </div>
           </div>
         </header>
