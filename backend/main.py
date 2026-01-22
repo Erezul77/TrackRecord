@@ -5,6 +5,7 @@ from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
+from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from dotenv import load_dotenv
 
@@ -51,7 +52,7 @@ async def get_leaderboard(
     """
     Get leaderboard of pundits ranked by paper_total_pnl
     """
-    query = select(Pundit).join(PunditMetrics)
+    query = select(Pundit).join(PunditMetrics).options(selectinload(Pundit.metrics))
     
     if category:
         query = query.where(Pundit.domains.any(category))
@@ -64,7 +65,9 @@ async def get_leaderboard(
 
 @app.get("/api/pundits/{pundit_id}", response_model=PunditResponse)
 async def get_pundit(pundit_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Pundit).where(Pundit.id == pundit_id))
+    result = await db.execute(
+        select(Pundit).where(Pundit.id == pundit_id).options(selectinload(Pundit.metrics))
+    )
     pundit = result.scalar_one_or_none()
     if not pundit:
         raise HTTPException(status_code=404, detail="Pundit not found")
