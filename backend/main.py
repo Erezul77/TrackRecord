@@ -292,6 +292,67 @@ async def list_pundits_simple(db: AsyncSession = Depends(get_db)):
         ]
     }
 
+class NewPunditInput(BaseModel):
+    name: str
+    username: str
+    bio: str = ""
+    affiliation: str = ""
+    domains: List[str] = ["general"]
+    avatar_url: str = ""
+
+@app.post("/api/admin/pundits/add")
+async def add_pundit(
+    pundit_input: NewPunditInput,
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Add a new pundit to track"""
+    # Check if username already exists
+    result = await db.execute(
+        select(Pundit).where(Pundit.username == pundit_input.username)
+    )
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail=f"Pundit @{pundit_input.username} already exists")
+    
+    # Create pundit
+    pundit = Pundit(
+        id=uuid.uuid4(),
+        name=pundit_input.name,
+        username=pundit_input.username,
+        bio=pundit_input.bio,
+        affiliation=pundit_input.affiliation,
+        domains=pundit_input.domains,
+        avatar_url=pundit_input.avatar_url or None,
+        verified=True,
+        verified_at=datetime.utcnow(),
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    db.add(pundit)
+    
+    # Create initial metrics
+    metrics = PunditMetrics(
+        pundit_id=pundit.id,
+        total_predictions=0,
+        matched_predictions=0,
+        resolved_predictions=0,
+        paper_total_pnl=0,
+        paper_win_rate=0,
+        paper_roi=0,
+        last_calculated=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    db.add(metrics)
+    
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "pundit_id": str(pundit.id),
+        "name": pundit.name,
+        "username": pundit.username
+    }
+
 
 # ============================================
 # Auto-Agent Pipeline Endpoints
