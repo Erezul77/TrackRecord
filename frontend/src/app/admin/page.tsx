@@ -26,13 +26,12 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
   
-  // Manual entry form
+  // Manual entry form - NO confidence field, predictions are 100% owned
   const [formData, setFormData] = useState({
     pundit_username: '',
     claim: '',
     quote: '',
     source_url: '',
-    confidence: 0.6,
     category: 'general',
     timeframe_days: 90
   })
@@ -82,7 +81,6 @@ export default function AdminPage() {
           claim: '',
           quote: '',
           source_url: '',
-          confidence: 0.6,
           category: 'general',
           timeframe_days: 90
         })
@@ -213,21 +211,7 @@ export default function AdminPage() {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Confidence</label>
-              <select
-                value={formData.confidence}
-                onChange={(e) => setFormData({...formData, confidence: parseFloat(e.target.value)})}
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
-              >
-                <option value={0.95}>Very High (95%)</option>
-                <option value={0.8}>High (80%)</option>
-                <option value={0.6}>Medium (60%)</option>
-                <option value={0.4}>Low (40%)</option>
-              </select>
-            </div>
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Category</label>
               <select
@@ -246,7 +230,7 @@ export default function AdminPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Timeframe (days)</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Timeframe (days until resolution)</label>
               <input
                 type="number"
                 value={formData.timeframe_days}
@@ -257,6 +241,10 @@ export default function AdminPage() {
               />
             </div>
           </div>
+          
+          <p className="text-xs text-slate-400 italic">
+            Note: All predictions are tracked at 100% accountability. If they said it, they own it.
+          </p>
 
           <button
             type="submit"
