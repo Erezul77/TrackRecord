@@ -1,5 +1,6 @@
 # populate_historical_data.py
-# Seeds the database with historical pundit data using simulator standards
+# Seeds the database with historical pundit data
+# ALL PREDICTIONS ARE 100% ACCOUNTABILITY - No confidence escape hatch
 
 import asyncio
 import json
@@ -11,38 +12,23 @@ from pathlib import Path
 from database.session import async_session
 from database.models import Pundit, PunditMetrics, Prediction, Match, Position
 
-# Simulator confidence to position size mapping (from architecture)
-CONFIDENCE_TO_SIZE = {
-    0.95: 1000.0,  # Certain
-    0.80: 500.0,   # High
-    0.60: 300.0,   # Medium
-    0.40: 100.0,   # Low
-    0.25: 50.0     # Speculative
-}
-
-CONFIDENCE_MAP = {
-    "certain": 0.95,
-    "high": 0.80,
-    "medium": 0.60,
-    "low": 0.40,
-    "speculative": 0.25
-}
-
-def get_position_size(confidence: float) -> float:
-    """Map confidence to position size per simulator standards"""
-    closest = min(CONFIDENCE_TO_SIZE.keys(), key=lambda x: abs(x - confidence))
-    return CONFIDENCE_TO_SIZE[closest]
+# FLAT BET SIZE - Every prediction is treated equally
+# No confidence levels - if you said it, you own it
+STANDARD_BET_SIZE = 100.0
 
 def calculate_pnl(position_size: float, entry_price: float, resolution_price: float) -> float:
-    """Calculate P&L using simulator logic"""
+    """
+    Calculate P&L using simple betting logic:
+    - Entry price = market probability at time of prediction
+    - Resolution price = 1.0 if right, 0.0 if wrong
+    """
     if entry_price <= 0:
-        entry_price = 0.01
+        entry_price = 0.50  # Default to 50/50 if unknown
     
     shares = position_size / entry_price
     
     if resolution_price is None:
-        # Pending - estimate current price as 0.5 (unknown)
-        return 0.0
+        return 0.0  # Pending
     
     final_value = shares * resolution_price
     return final_value - position_size
@@ -92,12 +78,12 @@ async def populate():
             total_pnl = 0.0
             total_invested = 0.0
             
-            # Process predictions
+            # Process predictions - ALL predictions weighted equally (100% accountability)
             for pred_data in pundit_data["predictions"]:
                 total_predictions += 1
                 
-                confidence = CONFIDENCE_MAP.get(pred_data["confidence"], 0.60)
-                position_size = get_position_size(confidence)
+                # Flat bet size - no confidence escape hatch
+                position_size = STANDARD_BET_SIZE
                 entry_price = pred_data.get("entry_price_estimate", 0.50)
                 resolution_price = pred_data.get("resolution_price")
                 
@@ -113,13 +99,13 @@ async def populate():
                     elif pred_data["outcome"] == "partially":
                         wins += 0.5
                 
-                # Create Prediction
+                # Create Prediction - No confidence field, 100% accountability
                 pred_id = uuid.uuid4()
                 prediction = Prediction(
                     id=pred_id,
                     pundit_id=pundit_id,
                     claim=pred_data["claim"],
-                    confidence=confidence,
+                    confidence=1.0,  # Always 100% - you said it, you own it
                     timeframe=datetime.fromisoformat(pred_data["timeframe"]),
                     quote=pred_data["quote"],
                     category=pred_data["category"],
