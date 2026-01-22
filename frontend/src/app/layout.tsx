@@ -37,12 +37,7 @@ export default function RootLayout({
             </nav>
 
             <div className="flex items-center gap-4">
-              <button className="text-sm font-bold text-slate-900 px-4 py-2 border rounded-lg hover:bg-slate-50 transition-colors">
-                Log In
-              </button>
-              <button className="text-sm font-bold text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200">
-                Get Started
-              </button>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Beta</span>
             </div>
           </div>
         </header>

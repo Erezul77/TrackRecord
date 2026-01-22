@@ -1,9 +1,10 @@
 // src/components/leaderboard/PunditCard.tsx
+'use client'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Pundit } from '@/lib/api'
 import { formatCurrency, formatPercent, cn } from '@/lib/utils'
-import { TrendingUp, TrendingDown, CheckCircle } from 'lucide-react'
+import { TrendingUp, TrendingDown, CheckCircle, User } from 'lucide-react'
+import { useState } from 'react'
 
 interface PunditCardProps {
   pundit: Pundit
@@ -12,6 +13,7 @@ interface PunditCardProps {
 
 export function PunditCard({ pundit, rank }: PunditCardProps) {
   const isProfit = pundit.metrics.paper_total_pnl >= 0
+  const [imgError, setImgError] = useState(false)
   
   return (
     <Link href={`/pundits/${pundit.id}`} className="block">
@@ -22,13 +24,17 @@ export function PunditCard({ pundit, rank }: PunditCardProps) {
         </div>
         
         {/* Avatar */}
-        <div className="relative h-16 w-16 flex-shrink-0">
-          <Image
-            src={pundit.avatar_url || '/default-avatar.png'}
-            alt={pundit.name}
-            fill
-            className="rounded-full object-cover border-2 border-slate-100"
-          />
+        <div className="relative h-16 w-16 flex-shrink-0 rounded-full border-2 border-slate-100 overflow-hidden bg-slate-100 flex items-center justify-center">
+          {!imgError && pundit.avatar_url ? (
+            <img
+              src={pundit.avatar_url}
+              alt={pundit.name}
+              className="h-full w-full object-cover"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <User className="h-8 w-8 text-slate-400" />
+          )}
         </div>
         
         {/* Info */}

@@ -1,8 +1,7 @@
 // src/app/page.tsx
 import { api, Pundit } from "@/lib/api"
-import { PunditCard } from "@/components/leaderboard/PunditCard"
+import { LeaderboardFilter } from "@/components/leaderboard/LeaderboardFilter"
 import { TrendingUp, Users, Target, BarChart3 } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 async function getPundits() {
   try {
@@ -53,30 +52,15 @@ export default async function Home() {
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Pundit Leaderboard</h2>
             <p className="text-slate-500 font-medium">Ranked by All-Time Paper Trading P&L</p>
           </div>
-          <div className="flex gap-2">
-            {/* Simple Category Filter Mockup */}
-            {['All', 'Politics', 'Economy', 'Crypto'].map((cat: string) => (
-              <button key={cat} className={cn(
-                "text-sm font-bold px-4 py-2 rounded-lg transition-colors",
-                cat === 'All' ? "bg-blue-600 text-white shadow-sm" : "bg-white text-slate-600 border hover:bg-slate-50"
-              )}>
-                {cat}
-              </button>
-            ))}
-          </div>
         </div>
 
-        <div className="space-y-4">
-          {pundits.length > 0 ? (
-            pundits.map((pundit: Pundit, index: number) => (
-              <PunditCard key={pundit.id} pundit={pundit} rank={index + 1} />
-            ))
-          ) : (
-            <div className="bg-white border rounded-xl p-12 text-center">
-              <p className="text-slate-500 font-medium">No pundit data found. Start by populating the database!</p>
-            </div>
-          )}
-        </div>
+        {pundits.length > 0 ? (
+          <LeaderboardFilter pundits={pundits} />
+        ) : (
+          <div className="bg-white border rounded-xl p-12 text-center">
+            <p className="text-slate-500 font-medium">No pundit data found. Start by populating the database!</p>
+          </div>
+        )}
       </section>
     </div>
   )
