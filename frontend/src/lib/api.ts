@@ -25,6 +25,25 @@ export interface PunditMetrics {
   global_rank: number
 }
 
+export interface PredictionWithPundit {
+  id: string
+  claim: string
+  quote: string
+  confidence: number
+  category: string
+  status: string
+  source_url: string
+  source_type: string
+  timeframe: string
+  captured_at: string
+  pundit: {
+    id: string
+    name: string
+    username: string
+    avatar_url?: string
+  }
+}
+
 export const api = {
   async getLeaderboard(filters?: {
     category?: string | null
@@ -52,6 +71,16 @@ export const api = {
   async getPunditPredictions(id: string) {
     const res = await fetch(`${API_BASE_URL}/api/pundits/${id}/predictions`)
     if (!res.ok) throw new Error('Failed to fetch predictions')
+    return res.json()
+  },
+
+  async getRecentPredictions(limit: number = 50, category?: string) {
+    const params = new URLSearchParams()
+    params.append('limit', String(limit))
+    if (category) params.append('category', category)
+    
+    const res = await fetch(`${API_BASE_URL}/api/predictions/recent?${params}`)
+    if (!res.ok) throw new Error('Failed to fetch recent predictions')
     return res.json()
   }
 }

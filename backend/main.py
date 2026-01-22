@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
+import logging
 from dotenv import load_dotenv
 
 from database.session import get_db
@@ -82,6 +83,45 @@ async def get_pundit_predictions(pundit_id: uuid.UUID, db: AsyncSession = Depend
     )
     predictions = result.scalars().all()
     return predictions
+
+@app.get("/api/predictions/recent")
+async def get_recent_predictions(
+    limit: int = Query(50, ge=1, le=100),
+    category: Optional[str] = None,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get recent predictions from all pundits with pundit info"""
+    query = select(Prediction).join(Pundit).options(selectinload(Prediction.pundit))
+    
+    if category:
+        query = query.where(Prediction.category == category)
+    
+    query = query.order_by(desc(Prediction.captured_at)).limit(limit)
+    
+    result = await db.execute(query)
+    predictions = result.scalars().all()
+    
+    return [
+        {
+            "id": str(p.id),
+            "claim": p.claim,
+            "quote": p.quote,
+            "confidence": p.confidence,
+            "category": p.category,
+            "status": p.status,
+            "source_url": p.source_url,
+            "source_type": p.source_type,
+            "timeframe": p.timeframe.isoformat() if p.timeframe else None,
+            "captured_at": p.captured_at.isoformat() if p.captured_at else None,
+            "pundit": {
+                "id": str(p.pundit.id),
+                "name": p.pundit.name,
+                "username": p.pundit.username,
+                "avatar_url": p.pundit.avatar_url
+            }
+        }
+        for p in predictions
+    ]
 
 # Admin Endpoints
 @app.get("/api/admin/review-queue", response_model=List[MatchReviewResponse])
@@ -250,6 +290,172 @@ async def list_pundits_simple(db: AsyncSession = Depends(get_db)):
             {"id": str(p.id), "name": p.name, "username": p.username}
             for p in pundits
         ]
+    }
+
+
+# ============================================
+# Auto-Agent Pipeline Endpoints
+# ============================================
+
+@app.post("/api/admin/auto-agent/run")
+async def run_auto_agent(
+    feed_keys: Optional[List[str]] = None,
+    admin = Depends(require_admin)
+):
+    """
+    Trigger the auto-agent pipeline to:
+    1. Fetch RSS articles
+    2. Extract predictions using AI
+    3. Match to Polymarket
+    4. Store in database
+    """
+    import asyncio
+    from database.session import SessionLocal
+    from services.auto_agent import AutoAgentPipeline
+    
+    db = SessionLocal()
+    
+    try:
+        pipeline = AutoAgentPipeline(db)
+        await pipeline.initialize()
+        
+        stats = await pipeline.run_pipeline(feed_keys)
+        
+        await pipeline.close()
+        
+        return {
+            "status": "success",
+            "stats": stats
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e)
+        }
+    finally:
+        db.close()
+
+@app.post("/api/admin/polymarket/search")
+async def search_polymarket_markets(
+    query: str,
+    limit: int = Query(10, ge=1, le=50),
+    admin = Depends(require_admin)
+):
+    """Search Polymarket for markets matching a query"""
+    from services.polymarket import PolymarketService
+    
+    service = PolymarketService()
+    
+    try:
+        markets = await service.search_markets(query, limit)
+        await service.close()
+        
+        return {
+            "query": query,
+            "count": len(markets),
+            "markets": [
+                {
+                    "id": m.id,
+                    "question": m.question,
+                    "slug": m.slug,
+                    "yes_price": m.outcome_prices.get("Yes", 0),
+                    "no_price": m.outcome_prices.get("No", 0),
+                    "volume": m.volume,
+                    "end_date": m.end_date.isoformat() if m.end_date else None
+                }
+                for m in markets
+            ]
+        }
+        
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/api/admin/predictions/{prediction_id}/match")
+async def match_prediction_to_market(
+    prediction_id: uuid.UUID,
+    market_id: str,
+    entry_price: float,
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Manually match a prediction to a Polymarket market"""
+    from services.polymarket import PolymarketService
+    
+    # Get prediction
+    result = await db.execute(
+        select(Prediction).where(Prediction.id == prediction_id)
+    )
+    prediction = result.scalar_one_or_none()
+    
+    if not prediction:
+        raise HTTPException(status_code=404, detail="Prediction not found")
+    
+    # Get market info from Polymarket
+    service = PolymarketService()
+    market = await service.get_market_by_id(market_id)
+    await service.close()
+    
+    market_question = market.question if market else f"Market {market_id}"
+    market_end_date = market.end_date if market else None
+    
+    # Create match
+    from database.models import Match, Position
+    
+    match = Match(
+        id=uuid.uuid4(),
+        prediction_id=prediction_id,
+        market_id=market_id,
+        market_slug=market.slug if market else None,
+        market_question=market_question,
+        market_end_date=market_end_date,
+        similarity_score=1.0,  # Manual match
+        match_type="manual",
+        entry_price=entry_price,
+        entry_timestamp=datetime.utcnow(),
+        reviewed_by=admin['id'],
+        reviewed_at=datetime.utcnow(),
+        matched_at=datetime.utcnow()
+    )
+    
+    db.add(match)
+    
+    # Create position
+    confidence_sizes = {0.95: 1000, 0.80: 500, 0.60: 300, 0.40: 100, 0.25: 50}
+    position_size = confidence_sizes.get(prediction.confidence, 300)
+    shares = position_size / entry_price if entry_price > 0 else 0
+    
+    position = Position(
+        id=uuid.uuid4(),
+        prediction_id=prediction_id,
+        match_id=match.id,
+        pundit_id=prediction.pundit_id,
+        market_id=market_id,
+        market_question=market_question,
+        entry_price=entry_price,
+        entry_timestamp=datetime.utcnow(),
+        position_size=position_size,
+        shares=shares,
+        status="open",
+        last_updated=datetime.utcnow(),
+        created_at=datetime.utcnow()
+    )
+    
+    db.add(position)
+    
+    # Update prediction status
+    prediction.status = "matched"
+    prediction.matched_at = datetime.utcnow()
+    
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "match_id": str(match.id),
+        "position_id": str(position.id),
+        "market_question": market_question,
+        "entry_price": entry_price,
+        "position_size": position_size
     }
 
 

@@ -1,12 +1,10 @@
 // src/app/pundits/[id]/page.tsx
 import { api } from "@/lib/api"
-import { PunditCard } from "@/components/leaderboard/PunditCard"
 import { PredictionCard } from "@/components/predictions/PredictionCard"
 import { PnLChart } from "@/components/charts/PnLChart"
-import { formatDate, formatCurrency, formatPercent, cn } from "@/lib/utils"
-import Image from "next/image"
+import { formatCurrency, formatPercent, cn } from "@/lib/utils"
 import Link from "next/link"
-import { Shield, CheckCircle, Info, ExternalLink, BarChart3, Target, TrendingUp } from "lucide-react"
+import { CheckCircle, Info, ExternalLink, BarChart3, Target, TrendingUp, User } from "lucide-react"
 
 async function getPunditData(id: string) {
   try {
@@ -21,8 +19,9 @@ async function getPunditData(id: string) {
   }
 }
 
-export default async function PunditPage({ params }: { params: { id: string } }) {
-  const data = await getPunditData(params.id)
+export default async function PunditPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const data = await getPunditData(id)
   
   if (!data) {
     return (
@@ -49,13 +48,16 @@ export default async function PunditPage({ params }: { params: { id: string } })
       {/* Pundit Header Card */}
       <div className="bg-white border rounded-3xl p-8 mb-8 shadow-sm">
         <div className="flex flex-col md:flex-row gap-8 items-start">
-          <div className="relative h-32 w-32 flex-shrink-0">
-            <Image
-              src={pundit.avatar_url || '/default-avatar.png'}
-              alt={pundit.name}
-              fill
-              className="rounded-3xl object-cover border-4 border-slate-50 shadow-inner"
-            />
+          <div className="relative h-32 w-32 flex-shrink-0 rounded-3xl border-4 border-slate-50 shadow-inner overflow-hidden bg-slate-100 flex items-center justify-center">
+            {pundit.avatar_url ? (
+              <img
+                src={pundit.avatar_url}
+                alt={pundit.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <User className="h-16 w-16 text-slate-400" />
+            )}
           </div>
           
           <div className="flex-1">
