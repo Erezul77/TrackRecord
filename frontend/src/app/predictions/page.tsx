@@ -13,13 +13,19 @@ async function getRecentPredictions() {
   }
 }
 
-// Get status display - all predictions are 100% accountability
-function getStatusDisplay(status: string) {
-  switch (status) {
-    case 'resolved': return { color: 'bg-emerald-500 text-white', label: 'RESOLVED' }
-    case 'matched': return { color: 'bg-blue-600 text-white', label: 'OPEN' }
-    default: return { color: 'bg-amber-500 text-white', label: 'PENDING' }
+// Get status display based on outcome - GREEN for right, RED for wrong
+function getStatusDisplay(status: string, outcome?: string) {
+  if (status === 'resolved') {
+    if (outcome === 'YES') {
+      return { color: 'bg-emerald-500 text-white', label: 'CORRECT', icon: CheckCircle }
+    } else {
+      return { color: 'bg-rose-500 text-white', label: 'WRONG', icon: XCircle }
+    }
   }
+  if (status === 'matched') {
+    return { color: 'bg-blue-600 text-white', label: 'OPEN', icon: Clock }
+  }
+  return { color: 'bg-amber-500 text-white', label: 'PENDING', icon: Clock }
 }
 
 export default async function PredictionsPage() {
@@ -35,12 +41,23 @@ export default async function PredictionsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {predictions.length > 0 ? (
           predictions.map((pred) => {
-            const statusDisplay = getStatusDisplay(pred.status)
+            const statusDisplay = getStatusDisplay(pred.status, (pred as any).outcome)
+            const StatusIcon = statusDisplay.icon
+            const isResolved = pred.status === 'resolved'
+            const isCorrect = (pred as any).outcome === 'YES'
+            
             return (
-              <div key={pred.id} className="bg-white border rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+              <div key={pred.id} className={cn(
+                "bg-white border rounded-xl overflow-hidden hover:shadow-md transition-shadow",
+                isResolved && isCorrect && "ring-2 ring-emerald-200",
+                isResolved && !isCorrect && "ring-2 ring-rose-200"
+              )}>
                 {/* Status Banner */}
                 <div className={cn("px-4 py-2 flex items-center justify-between", statusDisplay.color)}>
-                  <span className="text-xs font-black uppercase tracking-wider">{statusDisplay.label}</span>
+                  <div className="flex items-center gap-2">
+                    <StatusIcon className="h-4 w-4" />
+                    <span className="text-xs font-black uppercase tracking-wider">{statusDisplay.label}</span>
+                  </div>
                   <span className="text-xs font-semibold uppercase tracking-wider opacity-80">{pred.category}</span>
                 </div>
                 

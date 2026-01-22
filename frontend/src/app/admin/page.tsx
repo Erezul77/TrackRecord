@@ -1,7 +1,7 @@
 // src/app/admin/page.tsx
 'use client'
-import { useState, useEffect } from 'react'
-import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle, UserPlus } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle, UserPlus, Search } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -25,6 +25,18 @@ export default function AdminPage() {
   const [pundits, setPundits] = useState<Pundit[]>([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  
+  // Pundit search state
+  const [punditSearch, setPunditSearch] = useState('')
+  const [showPunditDropdown, setShowPunditDropdown] = useState(false)
+  const [selectedPundit, setSelectedPundit] = useState<Pundit | null>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  
+  // Filter pundits based on search
+  const filteredPundits = pundits.filter(p => 
+    p.name.toLowerCase().includes(punditSearch.toLowerCase()) ||
+    p.username.toLowerCase().includes(punditSearch.toLowerCase())
+  )
   
   // Manual entry form - NO confidence field, predictions are 100% owned
   const [formData, setFormData] = useState({
@@ -84,6 +96,8 @@ export default function AdminPage() {
           category: 'general',
           timeframe_days: 90
         })
+        setSelectedPundit(null)
+        setPunditSearch('')
       } else {
         setMessage({ type: 'error', text: data.detail || 'Failed to add prediction' })
       }
@@ -161,19 +175,67 @@ export default function AdminPage() {
       {/* Manual Entry Tab */}
       {activeTab === 'manual' && (
         <form onSubmit={handleManualSubmit} className="bg-white border rounded-xl p-6 space-y-6">
-          <div>
+          <div className="relative" ref={dropdownRef}>
             <label className="block text-sm font-bold text-slate-700 mb-2">Pundit</label>
-            <select
-              value={formData.pundit_username}
-              onChange={(e) => setFormData({...formData, pundit_username: e.target.value})}
-              className="w-full border rounded-lg px-4 py-2 text-slate-900"
-              required
-            >
-              <option value="">Select a pundit...</option>
-              {pundits.map(p => (
-                <option key={p.id} value={p.username}>{p.name} (@{p.username})</option>
-              ))}
-            </select>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                value={selectedPundit ? `${selectedPundit.name} (@${selectedPundit.username})` : punditSearch}
+                onChange={(e) => {
+                  setPunditSearch(e.target.value)
+                  setSelectedPundit(null)
+                  setFormData({...formData, pundit_username: ''})
+                  setShowPunditDropdown(true)
+                }}
+                onFocus={() => setShowPunditDropdown(true)}
+                placeholder="Search pundit by name..."
+                className="w-full border rounded-lg pl-10 pr-4 py-2 text-slate-900"
+                required={!selectedPundit}
+              />
+            </div>
+            
+            {/* Dropdown */}
+            {showPunditDropdown && punditSearch && !selectedPundit && (
+              <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                {filteredPundits.length > 0 ? (
+                  filteredPundits.map(p => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedPundit(p)
+                        setFormData({...formData, pundit_username: p.username})
+                        setPunditSearch('')
+                        setShowPunditDropdown(false)
+                      }}
+                      className="w-full px-4 py-2 text-left hover:bg-blue-50 flex items-center gap-2"
+                    >
+                      <span className="font-bold text-slate-900">{p.name}</span>
+                      <span className="text-slate-500 text-sm">@{p.username}</span>
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-slate-500 text-sm">
+                    No pundits found. Add one in the "Add Pundit" tab.
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {selectedPundit && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedPundit(null)
+                  setPunditSearch('')
+                  setFormData({...formData, pundit_username: ''})
+                }}
+                className="absolute right-3 top-9 text-xs text-slate-400 hover:text-rose-500"
+              >
+                Clear
+              </button>
+            )}
           </div>
 
           <div>
