@@ -101,7 +101,7 @@ async def get_recent_predictions(
     
     query = select(Prediction).join(Pundit).options(
         selectinload(Prediction.pundit),
-        selectinload(Prediction.positions)
+        selectinload(Prediction.position)
     )
     
     if category:
@@ -124,7 +124,7 @@ async def get_recent_predictions(
             "source_type": p.source_type,
             "timeframe": p.timeframe.isoformat() if p.timeframe else None,
             "captured_at": p.captured_at.isoformat() if p.captured_at else None,
-            "outcome": p.positions[0].outcome if p.positions and p.positions[0].outcome else None,
+            "outcome": p.position.outcome if p.position and p.position.outcome else None,
             "pundit": {
                 "id": str(p.pundit.id),
                 "name": p.pundit.name,
