@@ -34,6 +34,13 @@ export function MobileNav() {
               Predictions
             </Link>
             <Link 
+              href="/compete" 
+              onClick={() => setIsOpen(false)}
+              className="text-sm font-bold text-yellow-600 hover:text-yellow-700 py-2"
+            >
+              🏆 Compete
+            </Link>
+            <Link 
               href="/submit" 
               onClick={() => setIsOpen(false)}
               className="text-sm font-bold text-emerald-600 hover:text-emerald-700 py-2"

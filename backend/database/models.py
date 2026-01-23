@@ -181,3 +181,53 @@ class MatchReviewQueue(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     prediction = relationship("Prediction")
+
+
+# ============================================
+# Community Competition - User Predictions
+# ============================================
+
+class CommunityUser(Base):
+    """Users who participate in the prediction competition"""
+    __tablename__ = "community_users"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    display_name: Mapped[Optional[str]] = mapped_column(String(100))
+    avatar_url: Mapped[Optional[str]] = mapped_column(String(500))
+    bio: Mapped[Optional[str]] = mapped_column(Text)
+    
+    # Stats (denormalized for performance)
+    total_predictions: Mapped[int] = mapped_column(Integer, default=0)
+    correct_predictions: Mapped[int] = mapped_column(Integer, default=0)
+    wrong_predictions: Mapped[int] = mapped_column(Integer, default=0)
+    win_rate: Mapped[float] = mapped_column(Float, default=0.0)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    last_login: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    
+    predictions = relationship("CommunityPrediction", back_populates="user")
+
+
+class CommunityPrediction(Base):
+    """Predictions made by community users"""
+    __tablename__ = "community_predictions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("community_users.id"), nullable=False)
+    
+    claim: Mapped[str] = mapped_column(Text, nullable=False)
+    category: Mapped[str] = mapped_column(String(50), default='general')
+    timeframe: Mapped[datetime] = mapped_column(DateTime, nullable=False)  # When it should resolve
+    
+    # Outcome
+    status: Mapped[str] = mapped_column(String(20), default='open')  # open, resolved
+    outcome: Mapped[Optional[str]] = mapped_column(String(10))  # YES (correct), NO (wrong)
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    resolution_notes: Mapped[Optional[str]] = mapped_column(Text)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("CommunityUser", back_populates="predictions")

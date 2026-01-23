@@ -635,6 +635,311 @@ async def get_pending_submissions(
     return {"submissions": pending, "total": len(pending)}
 
 
+# ============================================
+# Community Competition - User Predictions
+# ============================================
+
+from database.models import CommunityUser, CommunityPrediction
+
+class UserRegister(BaseModel):
+    username: str
+    email: str
+    password: str
+    display_name: Optional[str] = None
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class UserPredictionCreate(BaseModel):
+    claim: str
+    category: str = "general"
+    timeframe_days: int = 30  # Days from now
+
+def hash_password(password: str) -> str:
+    """Simple password hashing"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def verify_password(password: str, hashed: str) -> bool:
+    return hash_password(password) == hashed
+
+@app.post("/api/community/register")
+async def register_user(
+    user_data: UserRegister,
+    db: AsyncSession = Depends(get_db)
+):
+    """Register a new community user"""
+    # Check if username exists
+    result = await db.execute(
+        select(CommunityUser).where(CommunityUser.username == user_data.username)
+    )
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Username already taken")
+    
+    # Check if email exists
+    result = await db.execute(
+        select(CommunityUser).where(CommunityUser.email == user_data.email)
+    )
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create user
+    user = CommunityUser(
+        id=uuid.uuid4(),
+        username=user_data.username,
+        email=user_data.email,
+        password_hash=hash_password(user_data.password),
+        display_name=user_data.display_name or user_data.username,
+        created_at=datetime.utcnow()
+    )
+    
+    db.add(user)
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "user_id": str(user.id),
+        "username": user.username,
+        "message": "Registration successful! You can now log in."
+    }
+
+@app.post("/api/community/login")
+async def login_user(
+    login_data: UserLogin,
+    db: AsyncSession = Depends(get_db)
+):
+    """Login and get user session"""
+    result = await db.execute(
+        select(CommunityUser).where(CommunityUser.email == login_data.email)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user or not verify_password(login_data.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Update last login
+    user.last_login = datetime.utcnow()
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "user_id": str(user.id),
+        "username": user.username,
+        "display_name": user.display_name,
+        "stats": {
+            "total_predictions": user.total_predictions,
+            "correct": user.correct_predictions,
+            "wrong": user.wrong_predictions,
+            "win_rate": user.win_rate
+        }
+    }
+
+@app.get("/api/community/user/{user_id}")
+async def get_community_user(
+    user_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get user profile and stats"""
+    result = await db.execute(
+        select(CommunityUser).where(CommunityUser.id == user_id)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {
+        "id": str(user.id),
+        "username": user.username,
+        "display_name": user.display_name,
+        "bio": user.bio,
+        "avatar_url": user.avatar_url,
+        "stats": {
+            "total_predictions": user.total_predictions,
+            "correct": user.correct_predictions,
+            "wrong": user.wrong_predictions,
+            "open": user.total_predictions - user.correct_predictions - user.wrong_predictions,
+            "win_rate": user.win_rate
+        },
+        "member_since": user.created_at.isoformat()
+    }
+
+@app.get("/api/community/user/{user_id}/predictions")
+async def get_user_predictions(
+    user_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all predictions for a user"""
+    result = await db.execute(
+        select(CommunityPrediction)
+        .where(CommunityPrediction.user_id == user_id)
+        .order_by(desc(CommunityPrediction.created_at))
+    )
+    predictions = result.scalars().all()
+    
+    return [
+        {
+            "id": str(p.id),
+            "claim": p.claim,
+            "category": p.category,
+            "timeframe": p.timeframe.isoformat(),
+            "status": p.status,
+            "outcome": p.outcome,
+            "created_at": p.created_at.isoformat(),
+            "resolved_at": p.resolved_at.isoformat() if p.resolved_at else None
+        }
+        for p in predictions
+    ]
+
+@app.post("/api/community/user/{user_id}/predictions")
+async def create_user_prediction(
+    user_id: uuid.UUID,
+    prediction_data: UserPredictionCreate,
+    db: AsyncSession = Depends(get_db)
+):
+    """Create a new prediction for a user"""
+    from datetime import timedelta
+    
+    # Verify user exists
+    result = await db.execute(
+        select(CommunityUser).where(CommunityUser.id == user_id)
+    )
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Create prediction
+    prediction = CommunityPrediction(
+        id=uuid.uuid4(),
+        user_id=user_id,
+        claim=prediction_data.claim,
+        category=prediction_data.category,
+        timeframe=datetime.utcnow() + timedelta(days=prediction_data.timeframe_days),
+        status="open",
+        created_at=datetime.utcnow()
+    )
+    
+    db.add(prediction)
+    
+    # Update user stats
+    user.total_predictions += 1
+    
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "prediction_id": str(prediction.id),
+        "claim": prediction.claim,
+        "resolves_at": prediction.timeframe.isoformat()
+    }
+
+@app.post("/api/community/predictions/{prediction_id}/resolve")
+async def resolve_user_prediction(
+    prediction_id: uuid.UUID,
+    outcome: str,  # 'correct' or 'wrong'
+    db: AsyncSession = Depends(get_db)
+):
+    """Resolve a user's prediction (admin or self-report)"""
+    result = await db.execute(
+        select(CommunityPrediction)
+        .where(CommunityPrediction.id == prediction_id)
+        .options(selectinload(CommunityPrediction.user))
+    )
+    prediction = result.scalar_one_or_none()
+    
+    if not prediction:
+        raise HTTPException(status_code=404, detail="Prediction not found")
+    
+    if prediction.status == "resolved":
+        raise HTTPException(status_code=400, detail="Prediction already resolved")
+    
+    # Update prediction
+    prediction.status = "resolved"
+    prediction.outcome = "YES" if outcome == "correct" else "NO"
+    prediction.resolved_at = datetime.utcnow()
+    
+    # Update user stats
+    user = prediction.user
+    if outcome == "correct":
+        user.correct_predictions += 1
+    else:
+        user.wrong_predictions += 1
+    
+    # Recalculate win rate
+    resolved = user.correct_predictions + user.wrong_predictions
+    user.win_rate = user.correct_predictions / resolved if resolved > 0 else 0.0
+    
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "prediction_id": str(prediction.id),
+        "outcome": prediction.outcome,
+        "user_win_rate": user.win_rate
+    }
+
+@app.get("/api/community/leaderboard")
+async def get_community_leaderboard(
+    limit: int = Query(50, ge=1, le=100),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get community leaderboard ranked by win rate (min 3 resolved predictions)"""
+    result = await db.execute(
+        select(CommunityUser)
+        .where(CommunityUser.correct_predictions + CommunityUser.wrong_predictions >= 3)
+        .order_by(desc(CommunityUser.win_rate))
+        .limit(limit)
+    )
+    users = result.scalars().all()
+    
+    return [
+        {
+            "rank": i + 1,
+            "id": str(u.id),
+            "username": u.username,
+            "display_name": u.display_name,
+            "avatar_url": u.avatar_url,
+            "total_predictions": u.total_predictions,
+            "correct": u.correct_predictions,
+            "wrong": u.wrong_predictions,
+            "win_rate": u.win_rate
+        }
+        for i, u in enumerate(users)
+    ]
+
+@app.get("/api/community/recent-predictions")
+async def get_community_recent_predictions(
+    limit: int = Query(20, ge=1, le=50),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get recent community predictions"""
+    result = await db.execute(
+        select(CommunityPrediction)
+        .options(selectinload(CommunityPrediction.user))
+        .order_by(desc(CommunityPrediction.created_at))
+        .limit(limit)
+    )
+    predictions = result.scalars().all()
+    
+    return [
+        {
+            "id": str(p.id),
+            "claim": p.claim,
+            "category": p.category,
+            "status": p.status,
+            "outcome": p.outcome,
+            "timeframe": p.timeframe.isoformat(),
+            "created_at": p.created_at.isoformat(),
+            "user": {
+                "id": str(p.user.id),
+                "username": p.user.username,
+                "display_name": p.user.display_name
+            }
+        }
+        for p in predictions
+    ]
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
