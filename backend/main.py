@@ -82,13 +82,33 @@ async def get_pundit(pundit_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Pundit not found")
     return pundit
 
-@app.get("/api/pundits/{pundit_id}/predictions", response_model=List[PredictionResponse])
+@app.get("/api/pundits/{pundit_id}/predictions")
 async def get_pundit_predictions(pundit_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    """Get all predictions for a pundit with outcome status"""
     result = await db.execute(
-        select(Prediction).where(Prediction.pundit_id == pundit_id).order_by(desc(Prediction.captured_at))
+        select(Prediction)
+        .where(Prediction.pundit_id == pundit_id)
+        .options(selectinload(Prediction.position))
+        .order_by(desc(Prediction.captured_at))
     )
     predictions = result.scalars().all()
-    return predictions
+    
+    return [
+        {
+            "id": str(p.id),
+            "claim": p.claim,
+            "quote": p.quote,
+            "confidence": p.confidence,
+            "category": p.category,
+            "status": p.status,
+            "source_url": p.source_url,
+            "source_type": p.source_type,
+            "timeframe": p.timeframe.isoformat() if p.timeframe else None,
+            "captured_at": p.captured_at.isoformat() if p.captured_at else None,
+            "outcome": p.position.outcome if p.position and p.position.outcome else None
+        }
+        for p in predictions
+    ]
 
 @app.get("/api/predictions/recent")
 async def get_recent_predictions(
