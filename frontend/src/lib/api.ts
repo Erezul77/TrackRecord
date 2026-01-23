@@ -69,19 +69,25 @@ export const api = {
     if (filters?.limit) params.append('limit', String(filters.limit))
     if (filters?.offset) params.append('offset', String(filters.offset))
     
-    const res = await fetch(`${API_BASE_URL}/api/leaderboard?${params}`)
+    const res = await fetch(`${API_BASE_URL}/api/leaderboard?${params}`, {
+      cache: 'no-store'
+    })
     if (!res.ok) throw new Error('Failed to fetch leaderboard')
     return res.json()
   },
   
   async getPundit(id: string) {
-    const res = await fetch(`${API_BASE_URL}/api/pundits/${id}`)
+    const res = await fetch(`${API_BASE_URL}/api/pundits/${id}`, {
+      cache: 'no-store'
+    })
     if (!res.ok) throw new Error('Failed to fetch pundit')
     return res.json()
   },
   
   async getPunditPredictions(id: string) {
-    const res = await fetch(`${API_BASE_URL}/api/pundits/${id}/predictions`)
+    const res = await fetch(`${API_BASE_URL}/api/pundits/${id}/predictions`, {
+      cache: 'no-store'
+    })
     if (!res.ok) throw new Error('Failed to fetch predictions')
     return res.json()
   },
@@ -91,7 +97,9 @@ export const api = {
     params.append('limit', String(limit))
     if (category) params.append('category', category)
     
-    const res = await fetch(`${API_BASE_URL}/api/predictions/recent?${params}`)
+    const res = await fetch(`${API_BASE_URL}/api/predictions/recent?${params}`, {
+      cache: 'no-store'  // Always fetch fresh data
+    })
     if (!res.ok) throw new Error('Failed to fetch recent predictions')
     return res.json()
   }
