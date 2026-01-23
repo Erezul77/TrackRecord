@@ -1,10 +1,9 @@
 // src/app/pundits/[id]/page.tsx
 import { api } from "@/lib/api"
 import { PredictionCard } from "@/components/predictions/PredictionCard"
-import { PnLChart } from "@/components/charts/PnLChart"
-import { formatCurrency, formatPercent, cn } from "@/lib/utils"
+import { formatPercent, cn } from "@/lib/utils"
 import Link from "next/link"
-import { CheckCircle, Info, ExternalLink, BarChart3, Target, TrendingUp, User } from "lucide-react"
+import { CheckCircle, Info, ExternalLink, Target, TrendingUp, User, Star } from "lucide-react"
 
 async function getPunditData(id: string) {
   try {
@@ -33,15 +32,21 @@ export default async function PunditPage({ params }: { params: Promise<{ id: str
   }
 
   const { pundit, predictions } = data
-
-  // Mock chart data
-  const chartData = [
-    { date: '2025-12-01', pnl: 0 },
-    { date: '2025-12-15', pnl: 1200 },
-    { date: '2026-01-01', pnl: 800 },
-    { date: '2026-01-15', pnl: 3400 },
-    { date: '2026-01-21', pnl: pundit.metrics.paper_total_pnl },
-  ]
+  
+  // Calculate stats
+  const correctCount = predictions.filter((p: any) => p.outcome === 'YES').length
+  const wrongCount = predictions.filter((p: any) => p.outcome === 'NO').length
+  const openCount = predictions.filter((p: any) => !p.outcome).length
+  
+  // Star rating based on win rate
+  const getStars = (rate: number) => {
+    if (rate >= 0.8) return 5
+    if (rate >= 0.6) return 4
+    if (rate >= 0.4) return 3
+    if (rate >= 0.2) return 2
+    return 1
+  }
+  const stars = getStars(pundit.metrics.paper_win_rate)
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -89,22 +94,34 @@ export default async function PunditPage({ params }: { params: Promise<{ id: str
 
           <div className="w-full md:w-auto grid grid-cols-2 gap-3">
             <div className="bg-slate-900 text-white p-6 rounded-2xl flex flex-col justify-between h-32 w-full md:w-48">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Global Rank</span>
-              <span className="text-4xl font-black tracking-tighter">#{pundit.metrics.global_rank || 'N/A'}</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Accuracy</span>
+              <div>
+                <span className="text-4xl font-black tracking-tighter">{formatPercent(pundit.metrics.paper_win_rate)}</span>
+                <div className="flex gap-0.5 mt-1">
+                  {[1,2,3,4,5].map(s => (
+                    <Star key={s} className={cn("h-4 w-4", s <= stars ? "text-yellow-400 fill-yellow-400" : "text-slate-600")} />
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="bg-blue-600 text-white p-6 rounded-2xl flex flex-col justify-between h-32 w-full md:w-48">
-              <span className="text-[10px] font-black text-blue-200 uppercase tracking-widest">Win Rate</span>
-              <span className="text-4xl font-black tracking-tighter">{formatPercent(pundit.metrics.paper_win_rate)}</span>
+              <span className="text-[10px] font-black text-blue-200 uppercase tracking-widest">Record</span>
+              <div>
+                <span className="text-2xl font-black tracking-tighter text-emerald-300">{correctCount}W</span>
+                <span className="text-xl font-bold mx-1">-</span>
+                <span className="text-2xl font-black tracking-tighter text-rose-300">{wrongCount}L</span>
+                {openCount > 0 && (
+                  <span className="text-lg font-bold text-blue-200 ml-2">({openCount} open)</span>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Performance */}
+        {/* Left Column - Predictions */}
         <div className="lg:col-span-2 space-y-8">
-          <PnLChart data={chartData} />
-          
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-black text-slate-900 tracking-tight">Predictions History</h2>
@@ -132,13 +149,14 @@ export default async function PunditPage({ params }: { params: Promise<{ id: str
         {/* Right Column - Metrics & Details */}
         <div className="space-y-8">
           <div className="bg-white border rounded-2xl p-6">
-            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Performance Score</h3>
+            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Stats</h3>
             <div className="space-y-4">
               {[
                 { label: 'Total Predictions', value: pundit.metrics.total_predictions, icon: Target },
-                { label: 'Market Matches', value: pundit.metrics.matched_predictions, icon: BarChart3 },
-                { label: 'Average ROI', value: formatPercent(pundit.metrics.paper_roi), icon: TrendingUp },
-                { label: 'Last 30 Days P&L', value: formatCurrency(pundit.metrics.pnl_30d), icon: BarChart3, color: pundit.metrics.pnl_30d >= 0 ? 'text-emerald-600' : 'text-rose-600' },
+                { label: 'Resolved', value: pundit.metrics.resolved_predictions, icon: CheckCircle },
+                { label: 'Correct', value: correctCount, icon: TrendingUp, color: 'text-emerald-600' },
+                { label: 'Wrong', value: wrongCount, icon: Target, color: 'text-rose-600' },
+                { label: 'Open', value: openCount, icon: Target, color: 'text-blue-600' },
               ].map((m: any, i: number) => (
                 <div key={i} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
                   <div className="flex items-center gap-3">
