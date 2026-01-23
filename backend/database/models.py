@@ -221,6 +221,20 @@ class CommunityUser(Base):
     predictions = relationship("CommunityPrediction", back_populates="user")
 
 
+class PredictionVote(Base):
+    """Votes on pundit predictions by community users"""
+    __tablename__ = "prediction_votes"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    prediction_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("predictions.id"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("community_users.id"), nullable=False)
+    vote_type: Mapped[str] = mapped_column(String(10), nullable=False)  # 'up' or 'down'
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    
+    # Unique constraint: one vote per user per prediction
+    __table_args__ = (UniqueConstraint('prediction_id', 'user_id', name='unique_user_prediction_vote'),)
+
+
 class CommunityPrediction(Base):
     """Predictions made by community users"""
     __tablename__ = "community_predictions"

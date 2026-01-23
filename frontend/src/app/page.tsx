@@ -1,6 +1,6 @@
 // src/app/page.tsx
 import { api, Pundit } from "@/lib/api"
-import { LeaderboardFilter } from "@/components/leaderboard/LeaderboardFilter"
+import { LeaderboardTabs } from "@/components/leaderboard/LeaderboardTabs"
 import { TrendingUp, Users, Target, BarChart3 } from "lucide-react"
 
 async function getPundits() {
@@ -47,23 +47,12 @@ export default async function Home() {
 
       {/* Leaderboard Section */}
       <section>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Pundit Leaderboard</h2>
-            <p className="text-slate-500 font-medium">Ranked by Accuracy (Win Rate)</p>
-          </div>
-          <div className="text-xs text-slate-400 bg-slate-100 px-3 py-2 rounded-lg">
-            Min. 3 resolved predictions required for ranking
-          </div>
+        <div className="mb-8">
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-2">Leaderboard</h2>
+          <p className="text-slate-500 font-medium">Track the best predictors - professionals and amateurs alike</p>
         </div>
 
-        {pundits.length > 0 ? (
-          <LeaderboardFilter pundits={pundits} />
-        ) : (
-          <div className="bg-white border rounded-xl p-12 text-center">
-            <p className="text-slate-500 font-medium">No pundit data found. Start by populating the database!</p>
-          </div>
-        )}
+        <LeaderboardTabs pundits={pundits} />
       </section>
     </div>
   )

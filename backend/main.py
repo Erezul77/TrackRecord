@@ -11,7 +11,8 @@ import logging
 from dotenv import load_dotenv
 
 from database.session import get_db
-from database.models import Pundit, PunditMetrics, Prediction, MatchReviewQueue
+from database.models import Pundit, PunditMetrics, Prediction, MatchReviewQueue, PredictionVote
+from sqlalchemy import func
 from schemas import PunditResponse, PredictionResponse, MatchReviewResponse
 from pydantic import BaseModel
 import hashlib
@@ -763,6 +764,135 @@ async def get_pending_submissions(
     # Return only pending ones
     pending = [s for s in submissions if s.get("status") == "pending_review"]
     return {"submissions": pending, "total": len(pending)}
+
+
+# ============================================
+# Prediction Voting System
+# ============================================
+
+class VoteInput(BaseModel):
+    user_id: str
+    vote_type: str  # 'up' or 'down'
+
+@app.post("/api/predictions/{prediction_id}/vote")
+async def vote_on_prediction(
+    prediction_id: uuid.UUID,
+    vote_data: VoteInput,
+    db: AsyncSession = Depends(get_db)
+):
+    """Vote on a prediction (only registered community users can vote)"""
+    from database.models import CommunityUser
+    
+    # Validate vote type
+    if vote_data.vote_type not in ['up', 'down']:
+        raise HTTPException(status_code=400, detail="Vote type must be 'up' or 'down'")
+    
+    # Verify user exists
+    try:
+        user_uuid = uuid.UUID(vote_data.user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    result = await db.execute(
+        select(CommunityUser).where(CommunityUser.id == user_uuid)
+    )
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=403, detail="Only registered users can vote")
+    
+    # Verify prediction exists
+    result = await db.execute(
+        select(Prediction).where(Prediction.id == prediction_id)
+    )
+    prediction = result.scalar_one_or_none()
+    if not prediction:
+        raise HTTPException(status_code=404, detail="Prediction not found")
+    
+    # Check for existing vote
+    result = await db.execute(
+        select(PredictionVote).where(
+            PredictionVote.prediction_id == prediction_id,
+            PredictionVote.user_id == user_uuid
+        )
+    )
+    existing_vote = result.scalar_one_or_none()
+    
+    if existing_vote:
+        if existing_vote.vote_type == vote_data.vote_type:
+            # Same vote - remove it (toggle off)
+            await db.delete(existing_vote)
+            await db.commit()
+            return {"status": "removed", "message": "Vote removed"}
+        else:
+            # Different vote - update it
+            existing_vote.vote_type = vote_data.vote_type
+            existing_vote.created_at = datetime.utcnow()
+            await db.commit()
+            return {"status": "updated", "message": f"Vote changed to {vote_data.vote_type}"}
+    
+    # Create new vote
+    vote = PredictionVote(
+        id=uuid.uuid4(),
+        prediction_id=prediction_id,
+        user_id=user_uuid,
+        vote_type=vote_data.vote_type,
+        created_at=datetime.utcnow()
+    )
+    db.add(vote)
+    await db.commit()
+    
+    return {"status": "created", "message": f"Vote {vote_data.vote_type} recorded"}
+
+
+@app.get("/api/predictions/{prediction_id}/votes")
+async def get_prediction_votes(
+    prediction_id: uuid.UUID,
+    user_id: Optional[str] = None,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get vote counts for a prediction"""
+    # Count upvotes
+    result = await db.execute(
+        select(func.count(PredictionVote.id)).where(
+            PredictionVote.prediction_id == prediction_id,
+            PredictionVote.vote_type == 'up'
+        )
+    )
+    upvotes = result.scalar() or 0
+    
+    # Count downvotes
+    result = await db.execute(
+        select(func.count(PredictionVote.id)).where(
+            PredictionVote.prediction_id == prediction_id,
+            PredictionVote.vote_type == 'down'
+        )
+    )
+    downvotes = result.scalar() or 0
+    
+    # Check user's vote if user_id provided
+    user_vote = None
+    if user_id:
+        try:
+            user_uuid = uuid.UUID(user_id)
+            result = await db.execute(
+                select(PredictionVote).where(
+                    PredictionVote.prediction_id == prediction_id,
+                    PredictionVote.user_id == user_uuid
+                )
+            )
+            vote = result.scalar_one_or_none()
+            if vote:
+                user_vote = vote.vote_type
+        except ValueError:
+            pass
+    
+    return {
+        "prediction_id": str(prediction_id),
+        "upvotes": upvotes,
+        "downvotes": downvotes,
+        "score": upvotes - downvotes,
+        "user_vote": user_vote
+    }
 
 
 # ============================================
