@@ -4,7 +4,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { Shield } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -25,9 +24,11 @@ export default function RootLayout({
         <header className="bg-white border-b sticky top-0 z-50">
           <div className="container mx-auto px-4 h-16 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
-              <div className="bg-blue-600 p-1.5 rounded-lg">
-                <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              </div>
+              <img 
+                src="/TrackRecord_Logo1.png" 
+                alt="TrackRecord" 
+                className="h-8 sm:h-10 w-auto"
+              />
               <span className="text-lg sm:text-xl font-black tracking-tighter text-slate-900">TRACKRECORD</span>
             </Link>
             
@@ -54,7 +55,11 @@ export default function RootLayout({
           <div className="container mx-auto px-4 grid md:grid-cols-4 gap-8">
             <div className="col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <Shield className="h-6 w-6 text-white" />
+                <img 
+                  src="/TrackRecord_Logo1.png" 
+                  alt="TrackRecord" 
+                  className="h-8 w-auto brightness-0 invert"
+                />
                 <span className="text-xl font-black tracking-tighter text-white">TRACKRECORD</span>
               </div>
               <p className="text-sm leading-relaxed max-w-sm">
