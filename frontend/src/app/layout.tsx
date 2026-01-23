@@ -84,7 +84,7 @@ export default function RootLayout({
             </div>
           </div>
           <div className="container mx-auto px-4 border-t border-slate-800 mt-12 pt-8 text-xs text-center">
-            © 2026 TrackRecord. Not financial advice. For informational purposes only.
+            © 2026 TrackRecord. All rights reserved. Created by Erez Ashkenazi & Lior Gabzo.
           </div>
         </footer>
       </body>
