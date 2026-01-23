@@ -92,10 +92,11 @@ export const api = {
     return res.json()
   },
 
-  async getRecentPredictions(limit: number = 50, category?: string) {
+  async getRecentPredictions(limit: number = 50, category?: string, sort?: string) {
     const params = new URLSearchParams()
     params.append('limit', String(limit))
     if (category) params.append('category', category)
+    if (sort) params.append('sort', sort)
     
     const res = await fetch(`${API_BASE_URL}/api/predictions/recent?${params}`, {
       cache: 'no-store'  // Always fetch fresh data

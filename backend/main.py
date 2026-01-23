@@ -126,6 +126,7 @@ async def get_pundit_predictions(pundit_id: uuid.UUID, db: AsyncSession = Depend
 async def get_recent_predictions(
     limit: int = Query(50, ge=1, le=100),
     category: Optional[str] = None,
+    sort: str = Query("default", description="Sort: default, newest, oldest, resolving_soon, boldest, highest_score"),
     db: AsyncSession = Depends(get_db)
 ):
     """Get recent predictions from all pundits with pundit info and outcome"""
@@ -144,17 +145,38 @@ async def get_recent_predictions(
     result = await db.execute(query)
     predictions = result.scalars().all()
     
-    # Sort: Open predictions first (newest first), then resolved (newest first)
-    def sort_key(p):
-        has_outcome = p.position and p.position.outcome
-        # 0 = open (no outcome), 1 = resolved (has outcome)
-        # Then sort by captured_at descending (negative timestamp for descending)
-        return (
-            1 if has_outcome else 0,  # Open first
-            -(p.captured_at.timestamp() if p.captured_at else 0)  # Newest first
-        )
+    # Sort based on sort parameter
+    if sort == "oldest":
+        # Oldest first
+        sorted_predictions = sorted(predictions, key=lambda p: p.captured_at.timestamp() if p.captured_at else 0)
+    elif sort == "resolving_soon":
+        # Soonest timeframe first (open predictions only, then resolved)
+        def resolving_key(p):
+            has_outcome = p.position and p.position.outcome
+            if has_outcome:
+                return (1, float('inf'))  # Resolved at the end
+            return (0, p.timeframe.timestamp() if p.timeframe else float('inf'))
+        sorted_predictions = sorted(predictions, key=resolving_key)
+    elif sort == "boldest":
+        # Highest boldness score first
+        sorted_predictions = sorted(predictions, key=lambda p: -(p.tr_boldness_score or 0))
+    elif sort == "highest_score":
+        # Highest TR Index score first
+        sorted_predictions = sorted(predictions, key=lambda p: -(p.tr_index_score or 0))
+    elif sort == "newest":
+        # Simply newest first
+        sorted_predictions = sorted(predictions, key=lambda p: -(p.captured_at.timestamp() if p.captured_at else 0))
+    else:
+        # Default: Open predictions first (newest first), then resolved (newest first)
+        def sort_key(p):
+            has_outcome = p.position and p.position.outcome
+            return (
+                1 if has_outcome else 0,  # Open first
+                -(p.captured_at.timestamp() if p.captured_at else 0)  # Newest first
+            )
+        sorted_predictions = sorted(predictions, key=sort_key)
     
-    sorted_predictions = sorted(predictions, key=sort_key)[:limit]
+    sorted_predictions = sorted_predictions[:limit]
     
     return [
         {
