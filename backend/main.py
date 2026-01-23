@@ -139,10 +139,22 @@ async def get_recent_predictions(
     if category:
         query = query.where(Prediction.category == category)
     
-    query = query.order_by(desc(Prediction.captured_at)).limit(limit)
+    query = query.order_by(desc(Prediction.captured_at)).limit(limit * 2)  # Get more to sort properly
     
     result = await db.execute(query)
     predictions = result.scalars().all()
+    
+    # Sort: Open predictions first (newest first), then resolved (newest first)
+    def sort_key(p):
+        has_outcome = p.position and p.position.outcome
+        # 0 = open (no outcome), 1 = resolved (has outcome)
+        # Then sort by captured_at descending (negative timestamp for descending)
+        return (
+            1 if has_outcome else 0,  # Open first
+            -(p.captured_at.timestamp() if p.captured_at else 0)  # Newest first
+        )
+    
+    sorted_predictions = sorted(predictions, key=sort_key)[:limit]
     
     return [
         {
@@ -170,7 +182,7 @@ async def get_recent_predictions(
                 "avatar_url": p.pundit.avatar_url
             }
         }
-        for p in predictions
+        for p in sorted_predictions
     ]
 
 # Admin Endpoints
