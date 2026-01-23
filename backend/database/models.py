@@ -75,6 +75,16 @@ class Prediction(Base):
     flag_reason: Mapped[Optional[str]] = mapped_column(Text)
     verified_by_pundit: Mapped[Optional[bool]] = mapped_column(Boolean)
     
+    # TR Prediction Index - Scoring System
+    tr_index_score: Mapped[Optional[float]] = mapped_column(Float)  # Total score (0-100)
+    tr_specificity_score: Mapped[Optional[float]] = mapped_column(Float)  # 0-35, min 15 required
+    tr_verifiability_score: Mapped[Optional[float]] = mapped_column(Float)  # 0-25, min 10 required
+    tr_boldness_score: Mapped[Optional[float]] = mapped_column(Float)  # 0-20, no minimum
+    tr_relevance_score: Mapped[Optional[float]] = mapped_column(Float)  # 0-15, min 5 required (time-based)
+    tr_stakes_score: Mapped[Optional[float]] = mapped_column(Float)  # 0-5, no minimum
+    tr_rejected: Mapped[bool] = mapped_column(Boolean, default=False)
+    tr_rejection_reason: Mapped[Optional[str]] = mapped_column(Text)
+    
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     pundit = relationship("Pundit", back_populates="predictions")

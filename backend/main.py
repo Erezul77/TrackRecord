@@ -105,7 +105,18 @@ async def get_pundit_predictions(pundit_id: uuid.UUID, db: AsyncSession = Depend
             "source_type": p.source_type,
             "timeframe": p.timeframe.isoformat() if p.timeframe else None,
             "captured_at": p.captured_at.isoformat() if p.captured_at else None,
-            "outcome": p.position.outcome if p.position and p.position.outcome else None
+            "outcome": p.position.outcome if p.position and p.position.outcome else None,
+            "tr_index": {
+                "score": p.tr_index_score,
+                "tier": "gold" if p.tr_index_score and p.tr_index_score >= 80 else 
+                        "silver" if p.tr_index_score and p.tr_index_score >= 60 else 
+                        "bronze" if p.tr_index_score and p.tr_index_score >= 40 else None,
+                "specificity": p.tr_specificity_score,
+                "verifiability": p.tr_verifiability_score,
+                "boldness": p.tr_boldness_score,
+                "relevance": p.tr_relevance_score,
+                "stakes": p.tr_stakes_score
+            } if p.tr_index_score else None
         }
         for p in predictions
     ]
@@ -145,6 +156,12 @@ async def get_recent_predictions(
             "timeframe": p.timeframe.isoformat() if p.timeframe else None,
             "captured_at": p.captured_at.isoformat() if p.captured_at else None,
             "outcome": p.position.outcome if p.position and p.position.outcome else None,
+            "tr_index": {
+                "score": p.tr_index_score,
+                "tier": "gold" if p.tr_index_score and p.tr_index_score >= 80 else 
+                        "silver" if p.tr_index_score and p.tr_index_score >= 60 else 
+                        "bronze" if p.tr_index_score and p.tr_index_score >= 40 else None
+            } if p.tr_index_score else None,
             "pundit": {
                 "id": str(p.pundit.id),
                 "name": p.pundit.name,
@@ -250,6 +267,11 @@ class ManualPredictionInput(BaseModel):
     confidence: float = 0.6  # Default medium confidence
     category: str = "general"
     timeframe_days: int = 90  # Days from now until resolution
+    # TR Index scoring (1-5 scale for simplified entry)
+    tr_specificity: int = 3  # 1=vague, 5=very specific
+    tr_verifiability: int = 3  # 1=hard to verify, 5=easily verified
+    tr_boldness: int = 1  # 1=consensus, 5=very contrarian
+    tr_stakes: int = 2  # 1=minor, 5=major impact
 
 @app.post("/api/admin/predictions/add")
 async def add_manual_prediction(
@@ -258,6 +280,8 @@ async def add_manual_prediction(
     admin = Depends(require_admin)
 ):
     """Manually add a prediction for a pundit"""
+    from tr_index import quick_score
+    from datetime import timedelta
     
     # Find pundit by username
     result = await db.execute(
@@ -281,10 +305,26 @@ async def add_manual_prediction(
         raise HTTPException(status_code=400, detail="This prediction already exists")
     
     # Calculate timeframe
-    from datetime import timedelta
     timeframe = datetime.utcnow() + timedelta(days=prediction_input.timeframe_days)
     
-    # Create prediction
+    # Calculate TR Index score
+    tr_score = quick_score(
+        prediction_date=datetime.utcnow(),
+        timeframe=timeframe,
+        specificity_level=prediction_input.tr_specificity,
+        verifiability_level=prediction_input.tr_verifiability,
+        boldness_level=prediction_input.tr_boldness,
+        stakes_level=prediction_input.tr_stakes
+    )
+    
+    # Check if prediction passes TR Index thresholds
+    if not tr_score.passed:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Prediction rejected: {tr_score.rejection_reason}. TR Score: {tr_score.total:.1f}/100"
+        )
+    
+    # Create prediction with TR Index scores
     new_prediction = Prediction(
         id=uuid.uuid4(),
         pundit_id=pundit.id,
@@ -299,6 +339,14 @@ async def add_manual_prediction(
         content_hash=content_hash,
         status="pending",
         flagged=False,
+        # TR Index scores
+        tr_index_score=tr_score.total,
+        tr_specificity_score=tr_score.specificity,
+        tr_verifiability_score=tr_score.verifiability,
+        tr_boldness_score=tr_score.boldness,
+        tr_relevance_score=tr_score.relevance,
+        tr_stakes_score=tr_score.stakes,
+        tr_rejected=False,
         created_at=datetime.utcnow()
     )
     
@@ -309,8 +357,90 @@ async def add_manual_prediction(
         "status": "success",
         "prediction_id": str(new_prediction.id),
         "pundit": pundit.name,
-        "claim": prediction_input.claim
+        "claim": prediction_input.claim,
+        "tr_index": {
+            "total": tr_score.total,
+            "tier": tr_score.tier,
+            "breakdown": {
+                "specificity": tr_score.specificity,
+                "verifiability": tr_score.verifiability,
+                "boldness": tr_score.boldness,
+                "relevance": tr_score.relevance,
+                "stakes": tr_score.stakes
+            }
+        }
     }
+
+# ============================================
+# TR Prediction Index Scoring
+# ============================================
+
+class TRIndexCalculateInput(BaseModel):
+    timeframe_days: int = 90  # Days from now
+    specificity: int = 3  # 1-5
+    verifiability: int = 3  # 1-5
+    boldness: int = 1  # 1-5
+    stakes: int = 2  # 1-5
+
+@app.post("/api/tr-index/calculate")
+async def calculate_tr_index_preview(
+    input_data: TRIndexCalculateInput
+):
+    """
+    Preview TR Prediction Index score before submitting.
+    Returns score breakdown and whether it passes thresholds.
+    """
+    from tr_index import quick_score
+    from datetime import timedelta
+    
+    timeframe = datetime.utcnow() + timedelta(days=input_data.timeframe_days)
+    
+    score = quick_score(
+        prediction_date=datetime.utcnow(),
+        timeframe=timeframe,
+        specificity_level=input_data.specificity,
+        verifiability_level=input_data.verifiability,
+        boldness_level=input_data.boldness,
+        stakes_level=input_data.stakes
+    )
+    
+    return {
+        "passed": score.passed,
+        "total": round(score.total, 1),
+        "tier": score.tier,
+        "rejection_reason": score.rejection_reason,
+        "breakdown": {
+            "specificity": {"score": round(score.specificity, 1), "max": 35, "min_required": 15},
+            "verifiability": {"score": round(score.verifiability, 1), "max": 25, "min_required": 10},
+            "boldness": {"score": round(score.boldness, 1), "max": 20, "min_required": 0},
+            "relevance": {"score": round(score.relevance, 1), "max": 15, "min_required": 5},
+            "stakes": {"score": round(score.stakes, 1), "max": 5, "min_required": 0}
+        },
+        "thresholds": {
+            "minimum_total": 40,
+            "maximum_timeframe_months": 12
+        }
+    }
+
+@app.get("/api/tr-index/tiers")
+async def get_tr_index_tiers():
+    """Get TR Index tier definitions"""
+    return {
+        "tiers": [
+            {"name": "gold", "min_score": 80, "description": "Exceptional prediction quality"},
+            {"name": "silver", "min_score": 60, "description": "Strong prediction quality"},
+            {"name": "bronze", "min_score": 40, "description": "Meets minimum standards"},
+            {"name": "rejected", "min_score": 0, "description": "Does not meet minimum thresholds"}
+        ],
+        "components": [
+            {"name": "Specificity", "weight": 35, "min_required": 15, "description": "How concrete and measurable is the claim?"},
+            {"name": "Verifiability", "weight": 25, "min_required": 10, "description": "Can we objectively verify the outcome?"},
+            {"name": "Boldness", "weight": 20, "min_required": 0, "description": "How contrarian/against-consensus is this?"},
+            {"name": "Relevance", "weight": 15, "min_required": 5, "description": "Time horizon (shorter = more relevant)"},
+            {"name": "Stakes", "weight": 5, "min_required": 0, "description": "How significant if true?"}
+        ]
+    }
+
 
 @app.get("/api/admin/pundits/list")
 async def list_pundits_simple(db: AsyncSession = Depends(get_db)):

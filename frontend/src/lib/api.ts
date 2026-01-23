@@ -25,6 +25,16 @@ export interface PunditMetrics {
   global_rank: number
 }
 
+export interface TRIndex {
+  score: number
+  tier: 'gold' | 'silver' | 'bronze' | null
+  specificity?: number
+  verifiability?: number
+  boldness?: number
+  relevance?: number
+  stakes?: number
+}
+
 export interface PredictionWithPundit {
   id: string
   claim: string
@@ -37,6 +47,7 @@ export interface PredictionWithPundit {
   source_type: string
   timeframe: string
   captured_at: string
+  tr_index?: TRIndex | null  // TR Prediction Index score
   pundit: {
     id: string
     name: string

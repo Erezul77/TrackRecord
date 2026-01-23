@@ -2,7 +2,7 @@
 import { api, PredictionWithPundit } from "@/lib/api"
 import Link from "next/link"
 import { formatDate, cn } from "@/lib/utils"
-import { ExternalLink, User, CheckCircle, XCircle, Clock } from "lucide-react"
+import { ExternalLink, User, CheckCircle, XCircle, Clock, Sparkles } from "lucide-react"
 
 async function getRecentPredictions() {
   try {
@@ -57,7 +57,20 @@ export default async function PredictionsPage() {
                     <StatusIcon className="h-4 w-4" />
                     <span className="text-xs font-black uppercase tracking-wider">{statusDisplay.label}</span>
                   </div>
-                  <span className="text-xs font-semibold uppercase tracking-wider opacity-80">{pred.category}</span>
+                  <div className="flex items-center gap-2">
+                    {pred.tr_index?.score && (
+                      <span className={cn(
+                        "flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full",
+                        pred.tr_index.tier === 'gold' ? 'bg-yellow-400/90 text-yellow-900' :
+                        pred.tr_index.tier === 'silver' ? 'bg-slate-300/90 text-slate-800' :
+                        'bg-orange-300/90 text-orange-900'
+                      )}>
+                        <Sparkles className="h-3 w-3" />
+                        {pred.tr_index.score.toFixed(0)}
+                      </span>
+                    )}
+                    <span className="text-xs font-semibold uppercase tracking-wider opacity-80">{pred.category}</span>
+                  </div>
                 </div>
                 
                 <div className="p-4">

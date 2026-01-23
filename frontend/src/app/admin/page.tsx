@@ -39,15 +39,28 @@ export default function AdminPage() {
     p.username.toLowerCase().includes(punditSearch.toLowerCase())
   )
   
-  // Manual entry form - NO confidence field, predictions are 100% owned
+  // Manual entry form with TR Index scoring
   const [formData, setFormData] = useState({
     pundit_username: '',
     claim: '',
     quote: '',
     source_url: '',
     category: 'general',
-    timeframe_days: 90
+    timeframe_days: 90,
+    // TR Index scores (1-5 scale)
+    tr_specificity: 3,
+    tr_verifiability: 3,
+    tr_boldness: 1,
+    tr_stakes: 2
   })
+  
+  // TR Index preview state
+  const [trPreview, setTrPreview] = useState<{
+    passed: boolean
+    total: number
+    tier: string
+    rejection_reason: string | null
+  } | null>(null)
   
   // New pundit form
   const [newPundit, setNewPundit] = useState({
@@ -99,17 +112,23 @@ export default function AdminPage() {
       const data = await res.json()
       
       if (res.ok) {
-        setMessage({ type: 'success', text: `Prediction added for ${data.pundit}: "${data.claim}"` })
+        const trInfo = data.tr_index ? ` (TR Index: ${data.tr_index.total.toFixed(0)} - ${data.tr_index.tier})` : ''
+        setMessage({ type: 'success', text: `Prediction added for ${data.pundit}: "${data.claim}"${trInfo}` })
         setFormData({
           pundit_username: '',
           claim: '',
           quote: '',
           source_url: '',
           category: 'general',
-          timeframe_days: 90
+          timeframe_days: 90,
+          tr_specificity: 3,
+          tr_verifiability: 3,
+          tr_boldness: 1,
+          tr_stakes: 2
         })
         setSelectedPundit(null)
         setPunditSearch('')
+        setTrPreview(null)
       } else {
         setMessage({ type: 'error', text: data.detail || 'Failed to add prediction' })
       }
@@ -311,14 +330,150 @@ export default function AdminPage() {
                 onChange={(e) => setFormData({...formData, timeframe_days: parseInt(e.target.value)})}
                 className="w-full border rounded-lg px-4 py-2 text-slate-900"
                 min={1}
-                max={3650}
+                max={365}
               />
+              <p className="text-xs text-slate-400 mt-1">Max 12 months (365 days)</p>
             </div>
           </div>
           
-          <p className="text-xs text-slate-400 italic">
-            Note: All predictions are tracked at 100% accountability. If they said it, they own it.
-          </p>
+          {/* TR Prediction Index Scoring */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="h-5 w-5 text-blue-600" />
+              <h3 className="font-bold text-slate-900">TR Prediction Index</h3>
+              {trPreview && (
+                <span className={`ml-auto text-sm font-bold px-3 py-1 rounded-full ${
+                  trPreview.tier === 'gold' ? 'bg-yellow-100 text-yellow-700' :
+                  trPreview.tier === 'silver' ? 'bg-slate-200 text-slate-700' :
+                  trPreview.tier === 'bronze' ? 'bg-orange-100 text-orange-700' :
+                  'bg-rose-100 text-rose-700'
+                }`}>
+                  {trPreview.passed ? `${trPreview.total.toFixed(0)}/100 ${trPreview.tier.toUpperCase()}` : 'REJECTED'}
+                </span>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Specificity */}
+              <div>
+                <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
+                  <span>Specificity</span>
+                  <span className="text-blue-600">{formData.tr_specificity}/5</span>
+                </label>
+                <input
+                  type="range"
+                  min={1}
+                  max={5}
+                  value={formData.tr_specificity}
+                  onChange={(e) => setFormData({...formData, tr_specificity: parseInt(e.target.value)})}
+                  className="w-full accent-blue-600"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  {formData.tr_specificity <= 2 ? '⚠️ Too vague - needs concrete numbers/dates' : 
+                   formData.tr_specificity === 3 ? '✓ Has measurable outcome' : 
+                   '✓✓ Very specific with clear targets'}
+                </p>
+              </div>
+              
+              {/* Verifiability */}
+              <div>
+                <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
+                  <span>Verifiability</span>
+                  <span className="text-blue-600">{formData.tr_verifiability}/5</span>
+                </label>
+                <input
+                  type="range"
+                  min={1}
+                  max={5}
+                  value={formData.tr_verifiability}
+                  onChange={(e) => setFormData({...formData, tr_verifiability: parseInt(e.target.value)})}
+                  className="w-full accent-blue-600"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  {formData.tr_verifiability <= 2 ? '⚠️ Hard to verify objectively' : 
+                   formData.tr_verifiability === 3 ? '✓ Can be verified with public data' : 
+                   '✓✓ Easily verified, clear criteria'}
+                </p>
+              </div>
+              
+              {/* Boldness */}
+              <div>
+                <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
+                  <span>Boldness</span>
+                  <span className="text-blue-600">{formData.tr_boldness}/5</span>
+                </label>
+                <input
+                  type="range"
+                  min={1}
+                  max={5}
+                  value={formData.tr_boldness}
+                  onChange={(e) => setFormData({...formData, tr_boldness: parseInt(e.target.value)})}
+                  className="w-full accent-blue-600"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  {formData.tr_boldness === 1 ? 'Consensus view' : 
+                   formData.tr_boldness <= 3 ? 'Somewhat contrarian' : 
+                   '🔥 Very contrarian, against consensus'}
+                </p>
+              </div>
+              
+              {/* Stakes */}
+              <div>
+                <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
+                  <span>Stakes/Impact</span>
+                  <span className="text-blue-600">{formData.tr_stakes}/5</span>
+                </label>
+                <input
+                  type="range"
+                  min={1}
+                  max={5}
+                  value={formData.tr_stakes}
+                  onChange={(e) => setFormData({...formData, tr_stakes: parseInt(e.target.value)})}
+                  className="w-full accent-blue-600"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  {formData.tr_stakes <= 2 ? 'Minor impact' : 
+                   formData.tr_stakes <= 3 ? 'Moderate impact' : 
+                   '💥 Major market/world impact'}
+                </p>
+              </div>
+            </div>
+            
+            {/* Preview button */}
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await fetch(`${API_URL}/api/tr-index/calculate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      timeframe_days: formData.timeframe_days,
+                      specificity: formData.tr_specificity,
+                      verifiability: formData.tr_verifiability,
+                      boldness: formData.tr_boldness,
+                      stakes: formData.tr_stakes
+                    })
+                  })
+                  const data = await res.json()
+                  setTrPreview(data)
+                } catch (err) {
+                  console.error('Failed to calculate TR Index:', err)
+                }
+              }}
+              className="mt-4 w-full bg-white border border-blue-300 text-blue-600 font-bold py-2 rounded-lg hover:bg-blue-50 transition-colors"
+            >
+              Preview Score
+            </button>
+            
+            {trPreview && !trPreview.passed && (
+              <div className="mt-3 p-3 bg-rose-50 border border-rose-200 rounded-lg">
+                <p className="text-sm text-rose-700 font-medium">
+                  ❌ {trPreview.rejection_reason}
+                </p>
+              </div>
+            )}
+          </div>
 
           <button
             type="submit"
