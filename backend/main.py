@@ -560,6 +560,96 @@ async def run_auto_agent(
     finally:
         db.close()
 
+@app.post("/api/admin/ai-extract")
+async def ai_extract_predictions(
+    feed_key: Optional[str] = None,
+    limit: int = Query(10, ge=1, le=50),
+    admin = Depends(require_admin)
+):
+    """
+    Fetch RSS articles and use AI (Claude) to extract specific predictions.
+    Returns extracted predictions for review.
+    """
+    from services.rss_ingestion import RSSIngestionService
+    from services.prediction_extractor import process_rss_articles
+    
+    # Fetch articles
+    service = RSSIngestionService()
+    if feed_key:
+        articles = service.fetch_feed(feed_key)
+    else:
+        articles = service.fetch_all_feeds()
+    
+    # Filter for prediction-like content
+    prediction_articles = service.filter_prediction_articles(articles)[:limit]
+    
+    # Convert to dict format
+    articles_data = [
+        {
+            "title": a.title,
+            "url": a.url,
+            "summary": a.summary,
+            "source": a.source,
+            "published": a.published.isoformat()
+        }
+        for a in prediction_articles
+    ]
+    
+    # Extract predictions using AI
+    extractions = await process_rss_articles(articles_data)
+    
+    # Save extractions for review
+    import json
+    from pathlib import Path
+    
+    extractions_file = Path(__file__).parent / "ai_extracted_predictions.json"
+    
+    try:
+        if extractions_file.exists():
+            with open(extractions_file, "r") as f:
+                existing = json.load(f)
+        else:
+            existing = []
+        
+        # Add new extractions with timestamp
+        for ext in extractions:
+            ext["extracted_at"] = datetime.utcnow().isoformat()
+            ext["status"] = "pending_review"
+            existing.append(ext)
+        
+        with open(extractions_file, "w") as f:
+            json.dump(existing, f, indent=2)
+            
+    except Exception as e:
+        logging.error(f"Failed to save extractions: {e}")
+    
+    return {
+        "articles_processed": len(articles_data),
+        "predictions_extracted": len(extractions),
+        "extractions": extractions
+    }
+
+
+@app.get("/api/admin/ai-extractions")
+async def get_ai_extractions(
+    admin = Depends(require_admin)
+):
+    """Get all AI-extracted predictions pending review"""
+    import json
+    from pathlib import Path
+    
+    extractions_file = Path(__file__).parent / "ai_extracted_predictions.json"
+    
+    if not extractions_file.exists():
+        return {"extractions": [], "total": 0}
+    
+    with open(extractions_file, "r") as f:
+        extractions = json.load(f)
+    
+    pending = [e for e in extractions if e.get("status") == "pending_review"]
+    return {"extractions": pending, "total": len(pending)}
+
+
 @app.post("/api/admin/polymarket/search")
 async def search_polymarket_markets(
     query: str,
