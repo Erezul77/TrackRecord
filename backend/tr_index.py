@@ -54,11 +54,12 @@ def calculate_relevance_score(prediction_date: datetime, timeframe: datetime) ->
     Shorter timeframes = higher scores (more relevant, more testable)
     
     Scoring:
-        0-1 month: 15 (max)
-        1-3 months: 12
-        3-6 months: 9
-        6-12 months: 6 (minimum passing)
-        12+ months: 0 (rejected)
+        0-3 months: 15 (max)
+        3-6 months: 12
+        6-12 months: 9
+        1-2 years: 6
+        2-5 years: 5 (minimum passing)
+        5+ years: 0 (rejected)
     """
     days_until = (timeframe - prediction_date).days
     
@@ -68,16 +69,18 @@ def calculate_relevance_score(prediction_date: datetime, timeframe: datetime) ->
     
     months = days_until / 30.0
     
-    if months <= 1:
+    if months <= 3:
         return 15.0
-    elif months <= 3:
-        return 12.0
     elif months <= 6:
-        return 9.0
+        return 12.0
     elif months <= 12:
+        return 9.0
+    elif months <= 24:
         return 6.0
+    elif months <= 60:
+        return 5.0  # Minimum passing
     else:
-        return 0.0  # Rejected - too far out
+        return 0.0  # Rejected - too far out (5+ years)
 
 
 def calculate_specificity_score(

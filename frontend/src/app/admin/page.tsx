@@ -330,9 +330,9 @@ export default function AdminPage() {
                 onChange={(e) => setFormData({...formData, timeframe_days: parseInt(e.target.value)})}
                 className="w-full border rounded-lg px-4 py-2 text-slate-900"
                 min={1}
-                max={365}
+                max={1825}
               />
-              <p className="text-xs text-slate-400 mt-1">Max 12 months (365 days)</p>
+              <p className="text-xs text-slate-400 mt-1">Max 5 years (1825 days). Shorter predictions score higher.</p>
             </div>
           </div>
           
