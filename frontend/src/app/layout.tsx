@@ -35,6 +35,7 @@ export default function RootLayout({
             <nav className="hidden md:flex items-center gap-8">
               <Link href="/" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Leaderboard</Link>
               <Link href="/predictions" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Predictions</Link>
+              <Link href="/submit" className="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors">+ Submit</Link>
               <Link href="/admin" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Admin</Link>
             </nav>
 

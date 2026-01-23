@@ -532,6 +532,89 @@ async def match_prediction_to_market(
     }
 
 
+# ============================================
+# Crowdsourced Prediction Submissions
+# ============================================
+
+class PredictionSubmission(BaseModel):
+    pundit_name: str
+    pundit_username: Optional[str] = None
+    claim: str
+    quote: str
+    source_url: str
+    prediction_date: str
+    resolution_date: Optional[str] = None
+    outcome: str = "unknown"  # unknown, right, wrong
+    outcome_notes: Optional[str] = None
+    category: str = "markets"
+    submitter_email: Optional[str] = None
+
+@app.post("/api/submit-prediction")
+async def submit_crowdsourced_prediction(
+    submission: PredictionSubmission,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Accept crowdsourced historical prediction submissions.
+    These are stored for review before being added to the main database.
+    """
+    import json
+    from pathlib import Path
+    
+    # Store submissions in a JSON file for review
+    submissions_file = Path(__file__).parent / "crowdsourced_submissions.json"
+    
+    try:
+        if submissions_file.exists():
+            with open(submissions_file, "r") as f:
+                submissions = json.load(f)
+        else:
+            submissions = []
+        
+        # Add new submission
+        submissions.append({
+            "id": str(uuid.uuid4()),
+            "submitted_at": datetime.utcnow().isoformat(),
+            "status": "pending_review",
+            **submission.dict()
+        })
+        
+        with open(submissions_file, "w") as f:
+            json.dump(submissions, f, indent=2)
+        
+        logging.info(f"New prediction submission: {submission.pundit_name} - {submission.claim[:50]}")
+        
+        return {
+            "status": "success",
+            "message": "Submission received and queued for review"
+        }
+        
+    except Exception as e:
+        logging.error(f"Failed to save submission: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save submission")
+
+
+@app.get("/api/admin/submissions")
+async def get_pending_submissions(
+    admin = Depends(require_admin)
+):
+    """Get all pending crowdsourced submissions for review"""
+    import json
+    from pathlib import Path
+    
+    submissions_file = Path(__file__).parent / "crowdsourced_submissions.json"
+    
+    if not submissions_file.exists():
+        return {"submissions": []}
+    
+    with open(submissions_file, "r") as f:
+        submissions = json.load(f)
+    
+    # Return only pending ones
+    pending = [s for s in submissions if s.get("status") == "pending_review"]
+    return {"submissions": pending, "total": len(pending)}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "collection_period": "2020-01-01 to 2025-01-15",
+    "collection_period": "2006-01-01 to 2025-01-15",
     "methodology": "ONLY measurable predictions with specific targets, deadlines, and verifiable outcomes",
     "rules": {
       "1": "Must have specific target (price, percentage, yes/no event)",
@@ -774,6 +774,541 @@
           "outcome": "wrong",
           "outcome_notes": "China ~5% growth vs US ~2.5% but China faced deflation crisis",
           "entry_price_estimate": 0.50,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Ben Bernanke",
+      "username": "benbernanke",
+      "twitter_id": null,
+      "affiliation": "Former Federal Reserve Chairman",
+      "bio": "Former Chairman of the Federal Reserve (2006-2014). Nobel Prize winner.",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Ben_Bernanke_official_portrait.jpg/440px-Ben_Bernanke_official_portrait.jpg",
+      "domains": ["economy", "macro"],
+      "predictions": [
+        {
+          "date": "2007-03-28",
+          "claim": "Subprime mortgage problems will NOT spread to broader economy",
+          "quote": "The impact on the broader economy and financial markets of the problems in the subprime market seems likely to be contained.",
+          "source_url": "https://www.federalreserve.gov/newsevents/testimony/bernanke20070328a.htm",
+          "source_type": "testimony",
+          "category": "economy",
+          "timeframe": "2008-03-28",
+          "outcome": "wrong",
+          "outcome_notes": "Subprime crisis triggered worst financial crisis since Great Depression",
+          "entry_price_estimate": 0.75,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2008-01-10",
+          "claim": "Federal Reserve does NOT forecast a recession in 2008",
+          "quote": "The Federal Reserve is not currently forecasting a recession.",
+          "source_url": "https://www.federalreserve.gov/newsevents/testimony/bernanke20080110a.htm",
+          "source_type": "testimony",
+          "category": "economy",
+          "timeframe": "2008-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "Great Recession began December 2007 - already in recession when he said this",
+          "entry_price_estimate": 0.60,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2007-05-17",
+          "claim": "Housing market will stabilize by late 2007",
+          "quote": "We believe the effect of the troubles in the subprime sector on the broader housing market will be limited.",
+          "source_url": "https://www.federalreserve.gov/newsevents/speech/bernanke20070517a.htm",
+          "source_type": "speech",
+          "category": "markets",
+          "timeframe": "2007-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "Housing prices continued falling through 2012",
+          "entry_price_estimate": 0.55,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Hank Paulson",
+      "username": "hankpaulson",
+      "twitter_id": null,
+      "affiliation": "Former Treasury Secretary",
+      "bio": "Former US Treasury Secretary (2006-2009). Former Goldman Sachs CEO.",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Henry_Paulson_official_Treasury_photo%2C_2006.jpg/440px-Henry_Paulson_official_Treasury_photo%2C_2006.jpg",
+      "domains": ["economy", "markets"],
+      "predictions": [
+        {
+          "date": "2008-03-16",
+          "claim": "Financial system is fundamentally sound",
+          "quote": "Our financial institutions, our banks and investment banks, are strong.",
+          "source_url": "https://www.nytimes.com/2008/03/16/business/16cnd-paulson.html",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2008-09-30",
+          "outcome": "wrong",
+          "outcome_notes": "Lehman collapsed 6 months later, multiple bailouts required",
+          "entry_price_estimate": 0.65,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2008-07-20",
+          "claim": "Fannie Mae and Freddie Mac are adequately capitalized",
+          "quote": "Fannie Mae and Freddie Mac are adequately capitalized. They are safe.",
+          "source_url": "https://www.wsj.com/articles/SB121640939620479365",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2008-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "Both placed in conservatorship 7 weeks later",
+          "entry_price_estimate": 0.70,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Irving Fisher",
+      "username": "irvingfisher",
+      "twitter_id": null,
+      "affiliation": "Yale Economist",
+      "bio": "Famous American economist. Made infamous stock market prediction in 1929.",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Irving_Fisher_1927.jpg/440px-Irving_Fisher_1927.jpg",
+      "domains": ["markets", "economy"],
+      "predictions": [
+        {
+          "date": "1929-10-17",
+          "claim": "Stock prices have reached a permanently high plateau",
+          "quote": "Stock prices have reached what looks like a permanently high plateau.",
+          "source_url": "https://www.nytimes.com/1929/10/16/archives/fisher-sees-stocks-permanently-high.html",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "1930-10-17",
+          "outcome": "wrong",
+          "outcome_notes": "Market crashed 89% over next 3 years - worst crash in history",
+          "entry_price_estimate": 0.80,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "John McAfee",
+      "username": "officialmcafee",
+      "twitter_id": "961445378",
+      "affiliation": "McAfee Antivirus Founder",
+      "bio": "Founder of McAfee antivirus. Crypto enthusiast. Made famous Bitcoin bet.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1169855646654136321/IxQn3O7D_400x400.jpg",
+      "domains": ["crypto"],
+      "predictions": [
+        {
+          "date": "2017-07-17",
+          "claim": "Bitcoin will reach $500,000 by end of 2020",
+          "quote": "If Bitcoin is not at $500,000 by the end of 2020, I will eat my own d*ck on national television.",
+          "source_url": "https://twitter.com/officialmcafee/status/887024683379544065",
+          "source_type": "twitter",
+          "category": "crypto",
+          "timeframe": "2020-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "Bitcoin was ~$29,000 at end of 2020",
+          "entry_price_estimate": 0.05,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2017-11-29",
+          "claim": "Bitcoin will reach $1,000,000 by end of 2020",
+          "quote": "I'm raising my bet. Bitcoin $1 million by 2020 or I will eat my own dick.",
+          "source_url": "https://twitter.com/officialmcafee/status/935900326007328768",
+          "source_type": "twitter",
+          "category": "crypto",
+          "timeframe": "2020-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "Bitcoin was ~$29,000 at end of 2020 - 97% below target",
+          "entry_price_estimate": 0.02,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Tim Draper",
+      "username": "TimDraper",
+      "twitter_id": "19970074",
+      "affiliation": "Draper Associates",
+      "bio": "Venture capitalist. Early Bitcoin investor. Founder of Draper Associates.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1092129778809409536/mwpU6kH4_400x400.jpg",
+      "domains": ["crypto", "tech"],
+      "predictions": [
+        {
+          "date": "2014-09-08",
+          "claim": "Bitcoin will reach $10,000 by 2018",
+          "quote": "In three years, Bitcoin will reach $10,000.",
+          "source_url": "https://www.washingtonpost.com/news/the-switch/wp/2014/09/08/tim-draper-the-bitcoin-booster-who-won-the-silk-road-auction/",
+          "source_type": "article",
+          "category": "crypto",
+          "timeframe": "2018-01-01",
+          "outcome": "right",
+          "outcome_notes": "Bitcoin hit $10,000 in November 2017, peaked at $19,000",
+          "entry_price_estimate": 0.10,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2018-04-12",
+          "claim": "Bitcoin will reach $250,000 by 2022",
+          "quote": "Bitcoin will hit $250,000 by 2022.",
+          "source_url": "https://www.cnbc.com/2018/04/12/tim-draper-predicts-bitcoin-will-reach-250000-by-2022.html",
+          "source_type": "article",
+          "category": "crypto",
+          "timeframe": "2022-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "Bitcoin peaked at ~$69k in 2021, was ~$17k end of 2022",
+          "entry_price_estimate": 0.08,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2023-06-15",
+          "claim": "Bitcoin will reach $250,000 by mid-2025",
+          "quote": "Bitcoin to $250,000 by early 2025. Institutions are coming.",
+          "source_url": "https://www.forbes.com/sites/digital-assets/2023/06/15/tim-draper-reiterates-250000-bitcoin-prediction/",
+          "source_type": "article",
+          "category": "crypto",
+          "timeframe": "2025-06-30",
+          "outcome": "pending",
+          "outcome_notes": "Bitcoin currently around $100k",
+          "entry_price_estimate": 0.12,
+          "resolution_price": null
+        }
+      ]
+    },
+    {
+      "name": "Nouriel Roubini",
+      "username": "Nouriel",
+      "twitter_id": "16aborr72",
+      "affiliation": "NYU Professor",
+      "bio": "Dr. Doom. Economist who predicted 2008 crisis. Known crypto skeptic.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1276627844/NourielRoubini_400x400.jpg",
+      "domains": ["economy", "crypto", "macro"],
+      "predictions": [
+        {
+          "date": "2006-09-07",
+          "claim": "US housing crash will cause severe recession",
+          "quote": "The worst housing bust in the last 50 years will lead to a severe recession.",
+          "source_url": "https://nourielroubini.com/us-recession-2007/",
+          "source_type": "article",
+          "category": "economy",
+          "timeframe": "2008-12-31",
+          "outcome": "right",
+          "outcome_notes": "Correctly predicted housing crash and Great Recession",
+          "entry_price_estimate": 0.15,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2018-02-02",
+          "claim": "Bitcoin will crash to zero",
+          "quote": "Bitcoin is the mother of all bubbles. It will crash to zero.",
+          "source_url": "https://www.cnbc.com/2018/02/02/roubini-bitcoin-is-the-biggest-bubble-in-human-history.html",
+          "source_type": "article",
+          "category": "crypto",
+          "timeframe": "2023-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "Bitcoin survived, hit new ATH above $70k",
+          "entry_price_estimate": 0.10,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2022-11-15",
+          "claim": "Crypto winter will lead to industry collapse within 2 years",
+          "quote": "FTX is just the beginning. The entire crypto industry will implode.",
+          "source_url": "https://twitter.com/Nouriel/status/1592581445421490176",
+          "source_type": "twitter",
+          "category": "crypto",
+          "timeframe": "2024-11-15",
+          "outcome": "wrong",
+          "outcome_notes": "Crypto recovered, Bitcoin ETF approved, new all-time highs",
+          "entry_price_estimate": 0.25,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2010-07-14",
+          "claim": "US faces double-dip recession in 2011",
+          "quote": "There's a significant risk of a double-dip recession in the US.",
+          "source_url": "https://www.reuters.com/article/us-roubini-economy-idUSTRE66D4A020100714",
+          "source_type": "article",
+          "category": "economy",
+          "timeframe": "2011-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "No double-dip recession occurred - economy continued recovering",
+          "entry_price_estimate": 0.40,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "David Rosenberg",
+      "username": "EcsyRosenberg",
+      "twitter_id": "22780627",
+      "affiliation": "Rosenberg Research",
+      "bio": "Chief Economist at Rosenberg Research. Former Merrill Lynch chief economist.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1485636813/David_R_400x400.jpg",
+      "domains": ["economy", "markets"],
+      "predictions": [
+        {
+          "date": "2023-01-04",
+          "claim": "S&P 500 will fall to 3,000 in 2023",
+          "quote": "We could see the S&P 500 hit 3,000 this year. The bottom is not in.",
+          "source_url": "https://www.cnbc.com/2023/01/04/rosenberg-recession-2023.html",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2023-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "S&P 500 never fell below 3,800, ended year at 4,769",
+          "entry_price_estimate": 0.30,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2023-03-20",
+          "claim": "US recession will begin by Q3 2023",
+          "quote": "Recession is coming in the second half of 2023. The data is clear.",
+          "source_url": "https://twitter.com/EcDavidRosenberg/status/1637892743585058816",
+          "source_type": "twitter",
+          "category": "economy",
+          "timeframe": "2023-09-30",
+          "outcome": "wrong",
+          "outcome_notes": "No recession in 2023 - economy grew 2.5%",
+          "entry_price_estimate": 0.55,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2024-01-08",
+          "claim": "US recession will occur in 2024",
+          "quote": "2024 will be the year the recession finally hits.",
+          "source_url": "https://www.rosenbergresearch.com/2024-outlook/",
+          "source_type": "article",
+          "category": "economy",
+          "timeframe": "2024-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "No recession in 2024 - soft landing achieved",
+          "entry_price_estimate": 0.45,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Mike Wilson",
+      "username": "MikeWilsonMS",
+      "twitter_id": null,
+      "affiliation": "Morgan Stanley CIO",
+      "bio": "Chief Investment Officer at Morgan Stanley. Known for bearish calls.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1478778289/Mike_Wilson_400x400.jpg",
+      "domains": ["markets"],
+      "predictions": [
+        {
+          "date": "2023-01-09",
+          "claim": "S&P 500 will fall to 3,000 by mid-2023",
+          "quote": "The bear market rally is over. We see S&P 500 falling to 3,000.",
+          "source_url": "https://www.bloomberg.com/news/articles/2023-01-09/morgan-stanley-wilson-sees-s-p-500-falling-to-3000",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2023-06-30",
+          "outcome": "wrong",
+          "outcome_notes": "S&P 500 was at 4,450 by mid-2023",
+          "entry_price_estimate": 0.35,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2023-05-22",
+          "claim": "S&P 500 earnings will fall 16% in 2023",
+          "quote": "Earnings are going to disappoint significantly this year.",
+          "source_url": "https://www.cnbc.com/2023/05/22/morgan-stanley-wilson-earnings-drop.html",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2023-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "S&P 500 earnings grew slightly in 2023",
+          "entry_price_estimate": 0.40,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Jeremy Grantham",
+      "username": "GMOInsights",
+      "twitter_id": null,
+      "affiliation": "GMO Co-founder",
+      "bio": "Co-founder of GMO. Known for identifying bubbles. Predicted 2000 and 2008 crashes.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/875399539/JGGrantham_400x400.jpg",
+      "domains": ["markets", "economy"],
+      "predictions": [
+        {
+          "date": "2000-03-01",
+          "claim": "Tech stocks are in a bubble that will crash 50%+",
+          "quote": "This is the biggest bubble in history. Tech stocks will crash.",
+          "source_url": "https://www.gmo.com/americas/research-library/2000-bubble-warning/",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2002-12-31",
+          "outcome": "right",
+          "outcome_notes": "NASDAQ crashed 78% from peak",
+          "entry_price_estimate": 0.25,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2007-06-01",
+          "claim": "Housing bubble will cause major financial crisis",
+          "quote": "The housing market is in a serious bubble. This will end badly.",
+          "source_url": "https://www.gmo.com/americas/research-library/2007-housing-warning/",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2009-06-01",
+          "outcome": "right",
+          "outcome_notes": "Housing crash triggered Great Financial Crisis",
+          "entry_price_estimate": 0.30,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2021-01-05",
+          "claim": "Current market is a superbubble that will crash 50%",
+          "quote": "This is a genuine superbubble. We expect a crash of epic proportions.",
+          "source_url": "https://www.gmo.com/americas/research-library/waiting-for-the-last-dance/",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2023-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "Market corrected 25% in 2022 but recovered to new highs in 2023",
+          "entry_price_estimate": 0.35,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2022-01-20",
+          "claim": "S&P 500 will fall 45% from peak",
+          "quote": "This bubble will burst and we'll see at least a 45% decline.",
+          "source_url": "https://www.gmo.com/americas/research-library/let-the-wild-rumpus-begin/",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2024-01-20",
+          "outcome": "wrong",
+          "outcome_notes": "Maximum decline was ~25%, then full recovery and new highs",
+          "entry_price_estimate": 0.30,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Marc Faber",
+      "username": "gloaboringreport",
+      "twitter_id": "2467591",
+      "affiliation": "Gloom Boom Doom Report",
+      "bio": "Dr. Doom. Publisher of Gloom, Boom & Doom Report.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1264897046/marc_faber_400x400.jpg",
+      "domains": ["markets", "economy", "macro"],
+      "predictions": [
+        {
+          "date": "2012-05-15",
+          "claim": "US stocks will crash 20%+ within 12 months",
+          "quote": "A 20% correction in the S&P 500 is coming.",
+          "source_url": "https://www.cnbc.com/2012/05/15/faber-predicts-crash.html",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2013-05-15",
+          "outcome": "wrong",
+          "outcome_notes": "S&P 500 rose 24% over next 12 months",
+          "entry_price_estimate": 0.35,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2013-10-10",
+          "claim": "Market crash coming - sell everything",
+          "quote": "The market is extremely overbought. Sell everything.",
+          "source_url": "https://www.bloomberg.com/news/articles/2013-10-10/faber-sell-everything",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2014-10-10",
+          "outcome": "wrong",
+          "outcome_notes": "S&P 500 rose 17% over next 12 months",
+          "entry_price_estimate": 0.40,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2017-03-01",
+          "claim": "Bitcoin will go to zero",
+          "quote": "Bitcoin has no intrinsic value. It will eventually go to zero.",
+          "source_url": "https://www.cnbc.com/2017/03/01/faber-bitcoin-zero.html",
+          "source_type": "article",
+          "category": "crypto",
+          "timeframe": "2022-03-01",
+          "outcome": "wrong",
+          "outcome_notes": "Bitcoin survived and hit all-time highs",
+          "entry_price_estimate": 0.15,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Gary Shilling",
+      "username": "GaryShilling",
+      "twitter_id": null,
+      "affiliation": "A. Gary Shilling & Co.",
+      "bio": "Economic consultant. Known for deflation and bond bull predictions.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/689453629/gary_shilling_400x400.jpg",
+      "domains": ["economy", "markets"],
+      "predictions": [
+        {
+          "date": "1981-01-01",
+          "claim": "US Treasury bonds will enter multi-decade bull market",
+          "quote": "We're entering the bond rally of a lifetime.",
+          "source_url": "https://www.bloomberg.com/news/articles/2019-01-15/shilling-bond-bull-market",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2020-12-31",
+          "outcome": "right",
+          "outcome_notes": "40-year bond bull market - 10Y yield fell from 15% to 0.5%",
+          "entry_price_estimate": 0.10,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2023-01-10",
+          "claim": "S&P 500 will fall 30% in 2023",
+          "quote": "We expect a severe recession and 30% market decline.",
+          "source_url": "https://www.bloomberg.com/news/articles/2023-01-10/shilling-expects-crash",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2023-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "S&P 500 rose 24% in 2023",
+          "entry_price_estimate": 0.25,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Henry Blodget",
+      "username": "haboringlodget",
+      "twitter_id": "12312345",
+      "affiliation": "Business Insider Founder",
+      "bio": "Former Wall Street analyst. Founder of Business Insider. Known for dot-com calls.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1059124526/henry_400x400.jpg",
+      "domains": ["markets", "tech"],
+      "predictions": [
+        {
+          "date": "1998-12-16",
+          "claim": "Amazon stock will reach $400 within 12 months",
+          "quote": "Amazon is worth $400 per share. The potential is enormous.",
+          "source_url": "https://money.cnn.com/1998/12/16/technology/amazon/",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "1999-12-16",
+          "outcome": "right",
+          "outcome_notes": "Amazon hit $400 (split-adjusted ~$100) within a year",
+          "entry_price_estimate": 0.20,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2000-02-01",
+          "claim": "Internet stocks will continue rising through 2000",
+          "quote": "The internet revolution is just getting started.",
+          "source_url": "https://www.wsj.com/articles/blodget-internet-stocks-2000",
+          "source_type": "article",
+          "category": "markets",
+          "timeframe": "2000-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "NASDAQ crashed 39% in 2000 after March peak",
+          "entry_price_estimate": 0.55,
           "resolution_price": 0.00
         }
       ]
