@@ -24,8 +24,8 @@ export default async function Home() {
           Public Accountability for <br />
           <span className="text-blue-600">Public Predictions.</span>
         </h1>
-        <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
-          We use AI to extract predictions from pundits across all media channels and track their financial performance via Polymarket integration.
+        <p className="text-2xl text-slate-600 max-w-2xl mx-auto leading-relaxed font-medium">
+          Everyone's got an opinion. We keep score.
         </p>
       </section>
 
