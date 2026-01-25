@@ -5,7 +5,6 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { MobileNav } from "@/components/MobileNav";
-import { LanguageSelector } from "@/components/LanguageSelector";
 import { AuthButton } from "@/components/AuthButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -49,7 +48,6 @@ export default function RootLayout({
             <div className="flex items-center gap-1 sm:gap-3">
               <ThemeToggle />
               <AuthButton />
-              <LanguageSelector />
               <span className="hidden sm:block text-[10px] font-bold text-neutral-400 uppercase tracking-widest border border-neutral-300 dark:border-neutral-700 px-2 py-0.5 rounded">Beta</span>
               {/* Mobile Nav */}
               <MobileNav />
