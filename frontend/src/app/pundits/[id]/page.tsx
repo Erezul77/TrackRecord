@@ -3,13 +3,13 @@ import { api } from "@/lib/api"
 import { PredictionCard } from "@/components/predictions/PredictionCard"
 import { formatPercent, cn } from "@/lib/utils"
 import Link from "next/link"
-import { CheckCircle, Info, ExternalLink, Target, TrendingUp, Star }
+import { CheckCircle, Info, ExternalLink, Target, TrendingUp, Star } from "lucide-react"
 
 // Generate UI Avatars URL
 function getAvatarUrl(name: string): string {
   const encoded = encodeURIComponent(name)
   return `https://ui-avatars.com/api/?name=${encoded}&background=000&color=fff&bold=true&size=256`
-} from "lucide-react"
+}
 
 async function getPunditData(id: string) {
   try {
