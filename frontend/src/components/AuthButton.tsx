@@ -32,24 +32,24 @@ export function AuthButton() {
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className="flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg font-bold text-sm hover:bg-blue-200 transition-colors"
+          className="flex items-center gap-2 bg-black text-white px-3 py-1.5 text-sm font-medium hover:bg-neutral-800 transition-colors"
         >
           <User className="h-4 w-4" />
           <span className="hidden sm:inline">{user.display_name}</span>
         </button>
         
         {showDropdown && (
-          <div className="absolute right-0 top-full mt-2 bg-white border rounded-lg shadow-lg py-2 min-w-[150px] z-50">
+          <div className="absolute right-0 top-full mt-2 bg-white border border-neutral-200 shadow-lg py-1 min-w-[150px] z-50">
             <Link
               href="/compete"
-              className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+              className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
               onClick={() => setShowDropdown(false)}
             >
               My Predictions
             </Link>
             <button
               onClick={handleLogout}
-              className="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-2"
+              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
             >
               <LogOut className="h-4 w-4" />
               Sign Out
@@ -63,7 +63,7 @@ export function AuthButton() {
   return (
     <Link
       href="/compete"
-      className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors"
+      className="flex items-center gap-2 bg-black text-white px-3 py-1.5 text-sm font-medium hover:bg-neutral-800 transition-colors"
     >
       <LogIn className="h-4 w-4" />
       <span className="hidden sm:inline">Sign In</span>
