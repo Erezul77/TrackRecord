@@ -1712,6 +1712,734 @@
           "resolution_price": 1.00
         }
       ]
+    },
+    {
+      "name": "Boris Johnson",
+      "username": "BorisJohnson",
+      "twitter_id": "15aborrreis381",
+      "affiliation": "Former UK Prime Minister",
+      "bio": "Former UK Prime Minister (2019-2022). Led Brexit negotiations and COVID response.",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Boris_Johnson_official_portrait_%28cropped%29.jpg/440px-Boris_Johnson_official_portrait_%28cropped%29.jpg",
+      "domains": ["politics", "uk", "eu"],
+      "predictions": [
+        {
+          "date": "2016-06-01",
+          "claim": "UK will get a great Brexit deal and keep full trade access to EU",
+          "quote": "We will negotiate a great deal with the EU. We can have our cake and eat it.",
+          "source_url": "https://www.theguardian.com/politics/2016/jun/01/boris-johnson-brexit-uk-eu",
+          "source_type": "speech",
+          "category": "uk",
+          "timeframe": "2020-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "UK left single market with limited trade deal, significant barriers created",
+          "entry_price_estimate": 0.45,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2019-10-17",
+          "claim": "Brexit deal will be done by October 31, 2019",
+          "quote": "We will leave the EU on October 31st. Do or die.",
+          "source_url": "https://www.bbc.com/news/uk-politics-48799466",
+          "source_type": "interview",
+          "category": "uk",
+          "timeframe": "2019-10-31",
+          "outcome": "wrong",
+          "outcome_notes": "Brexit delayed until January 31, 2020",
+          "entry_price_estimate": 0.35,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2020-09-22",
+          "claim": "UK will have COVID under control by Christmas 2020",
+          "quote": "I am optimistic we can be significantly back to normal by Christmas.",
+          "source_url": "https://www.bbc.com/news/uk-54230385",
+          "source_type": "speech",
+          "category": "health",
+          "timeframe": "2020-12-25",
+          "outcome": "wrong",
+          "outcome_notes": "UK entered strict Tier 4 lockdown just before Christmas due to Alpha variant",
+          "entry_price_estimate": 0.30,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2021-07-05",
+          "claim": "July 19 'Freedom Day' will be irreversible",
+          "quote": "This will be an irreversible opening. We will not go backwards.",
+          "source_url": "https://www.gov.uk/government/news/pm-confirms-move-to-step-4",
+          "source_type": "speech",
+          "category": "uk",
+          "timeframe": "2022-03-31",
+          "outcome": "wrong",
+          "outcome_notes": "Plan B restrictions reimposed in December 2021 due to Omicron",
+          "entry_price_estimate": 0.55,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Nigel Farage",
+      "username": "Nigel_Farage",
+      "twitter_id": "19017675",
+      "affiliation": "Reform UK Leader",
+      "bio": "Brexit Party/Reform UK leader. Key figure in Brexit campaign.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1659247073250803712/p_QYeZ3n_400x400.jpg",
+      "domains": ["politics", "uk", "eu"],
+      "predictions": [
+        {
+          "date": "2016-06-15",
+          "claim": "Brexit will lead to UK economic boom",
+          "quote": "Brexit will lead to an economic renaissance for Britain.",
+          "source_url": "https://www.independent.co.uk/news/uk/politics/eu-referendum-nigel-farage-brexit-economy-a7085071.html",
+          "source_type": "speech",
+          "category": "economy",
+          "timeframe": "2020-01-31",
+          "outcome": "wrong",
+          "outcome_notes": "UK economy underperformed G7 peers post-Brexit",
+          "entry_price_estimate": 0.35,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2020-11-01",
+          "claim": "Trump will win 2020 US election",
+          "quote": "I think Trump is going to win. The polls are wrong again.",
+          "source_url": "https://www.express.co.uk/news/politics/1353651/Nigel-Farage-Donald-Trump-US-election-2020",
+          "source_type": "interview",
+          "category": "politics",
+          "timeframe": "2020-11-03",
+          "outcome": "wrong",
+          "outcome_notes": "Biden won with 306 electoral votes",
+          "entry_price_estimate": 0.45,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2024-05-01",
+          "claim": "Reform UK will win more seats than Lib Dems in 2024 election",
+          "quote": "We're going to shock everyone. Reform will beat the Lib Dems.",
+          "source_url": "https://www.telegraph.co.uk/politics/2024/05/01/reform-uk-farage-lib-dems/",
+          "source_type": "interview",
+          "category": "uk",
+          "timeframe": "2024-07-04",
+          "outcome": "wrong",
+          "outcome_notes": "Lib Dems won 72 seats, Reform won 5 seats despite higher vote share",
+          "entry_price_estimate": 0.25,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Emmanuel Macron",
+      "username": "EmmanuelMacron",
+      "twitter_id": "84aborrmacron",
+      "affiliation": "French President",
+      "bio": "President of France since 2017. Former investment banker and economy minister.",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Emmanuel_Macron_in_2019.jpg/440px-Emmanuel_Macron_in_2019.jpg",
+      "domains": ["politics", "economy", "eu", "france"],
+      "predictions": [
+        {
+          "date": "2017-06-01",
+          "claim": "French unemployment will drop below 7% by 2022",
+          "quote": "By the end of my term, unemployment will be below 7%.",
+          "source_url": "https://www.lemonde.fr/economie/article/2017/06/01/macron-chomage.html",
+          "source_type": "speech",
+          "category": "economy",
+          "timeframe": "2022-04-24",
+          "outcome": "right",
+          "outcome_notes": "French unemployment reached 7.4% by early 2022, then dropped below 7% in late 2022",
+          "entry_price_estimate": 0.40,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2019-12-05",
+          "claim": "Pension reform will pass without major disruption",
+          "quote": "The reform will go through. The French will understand its necessity.",
+          "source_url": "https://www.france24.com/en/20191205-macron-pension-reform",
+          "source_type": "speech",
+          "category": "france",
+          "timeframe": "2020-03-31",
+          "outcome": "wrong",
+          "outcome_notes": "Massive strikes and protests, reform shelved due to COVID",
+          "entry_price_estimate": 0.50,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2022-02-20",
+          "claim": "Russia will not invade Ukraine after diplomatic talks",
+          "quote": "I believe we have made progress. An invasion is not a certainty.",
+          "source_url": "https://www.reuters.com/world/europe/macron-putin-agreed-work-towards-ceasefire-donbass-elysee-2022-02-20/",
+          "source_type": "press",
+          "category": "geopolitics",
+          "timeframe": "2022-03-01",
+          "outcome": "wrong",
+          "outcome_notes": "Russia invaded Ukraine 4 days later on February 24",
+          "entry_price_estimate": 0.35,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2022-04-01",
+          "claim": "Will win re-election by comfortable margin",
+          "quote": "I am confident the French people will renew their confidence in me.",
+          "source_url": "https://www.politico.eu/article/emmanuel-macron-2022-france-presidential-election/",
+          "source_type": "interview",
+          "category": "france",
+          "timeframe": "2022-04-24",
+          "outcome": "right",
+          "outcome_notes": "Macron won with 58.5% vs Le Pen's 41.5%",
+          "entry_price_estimate": 0.65,
+          "resolution_price": 1.00
+        }
+      ]
+    },
+    {
+      "name": "Narendra Modi",
+      "username": "naaborrendramodi",
+      "twitter_id": "18839785",
+      "affiliation": "Prime Minister of India",
+      "bio": "Prime Minister of India since 2014. Leader of BJP party.",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Narendra_Modi_2021.jpg/440px-Narendra_Modi_2021.jpg",
+      "domains": ["politics", "economy", "india"],
+      "predictions": [
+        {
+          "date": "2014-06-01",
+          "claim": "India will become $5 trillion economy by 2024",
+          "quote": "We will make India a $5 trillion economy by 2024.",
+          "source_url": "https://economictimes.indiatimes.com/news/economy/policy/modi-sets-5-trillion-economy-goal/articleshow/69994787.cms",
+          "source_type": "speech",
+          "category": "economy",
+          "timeframe": "2024-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "India's GDP was ~$3.5 trillion in 2024",
+          "entry_price_estimate": 0.35,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2019-02-26",
+          "claim": "Demonetization will eliminate black money from economy",
+          "quote": "Demonetization will end corruption and black money permanently.",
+          "source_url": "https://www.bbc.com/news/world-asia-india-37974423",
+          "source_type": "speech",
+          "category": "economy",
+          "timeframe": "2019-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "99.3% of demonetized currency returned to banking system",
+          "entry_price_estimate": 0.30,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2024-03-01",
+          "claim": "BJP will win 400+ seats in 2024 Lok Sabha elections",
+          "quote": "Ab ki baar 400 paar (This time, 400+ seats).",
+          "source_url": "https://www.ndtv.com/india-news/pm-modi-says-ab-ki-baar-400-paar-at-rajkot-rally",
+          "source_type": "rally",
+          "category": "india",
+          "timeframe": "2024-06-04",
+          "outcome": "wrong",
+          "outcome_notes": "BJP won 240 seats, NDA coalition won 293 total",
+          "entry_price_estimate": 0.25,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2024-01-15",
+          "claim": "BJP will retain all 4 state elections in late 2023",
+          "quote": "BJP will sweep all four states. The opposition has nothing.",
+          "source_url": "https://www.hindustantimes.com/india-news/modi-state-elections-2023",
+          "source_type": "rally",
+          "category": "india",
+          "timeframe": "2023-12-03",
+          "outcome": "right",
+          "outcome_notes": "BJP won Rajasthan, MP, Chhattisgarh; held Telangana",
+          "entry_price_estimate": 0.55,
+          "resolution_price": 1.00
+        }
+      ]
+    },
+    {
+      "name": "Javier Milei",
+      "username": "JMilei",
+      "twitter_id": "7215402",
+      "affiliation": "President of Argentina",
+      "bio": "President of Argentina since 2023. Libertarian economist and political outsider.",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Javier_Milei_%28cropped%29.jpg/440px-Javier_Milei_%28cropped%29.jpg",
+      "domains": ["politics", "economy", "latam"],
+      "predictions": [
+        {
+          "date": "2023-08-13",
+          "claim": "Will win Argentine presidential election in first round",
+          "quote": "We're going to win in the first round. No runoff needed.",
+          "source_url": "https://www.reuters.com/world/americas/argentinas-milei-predicts-first-round-win-2023-08-13/",
+          "source_type": "rally",
+          "category": "latam",
+          "timeframe": "2023-10-22",
+          "outcome": "wrong",
+          "outcome_notes": "Massa won first round, Milei won runoff in November",
+          "entry_price_estimate": 0.30,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2023-11-20",
+          "claim": "Dollarization will happen within first year of presidency",
+          "quote": "We will dollarize the economy. The peso will be eliminated.",
+          "source_url": "https://www.ft.com/content/milei-dollarization-argentina",
+          "source_type": "speech",
+          "category": "economy",
+          "timeframe": "2024-12-10",
+          "outcome": "wrong",
+          "outcome_notes": "No dollarization occurred, focus shifted to currency competition",
+          "entry_price_estimate": 0.20,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2024-01-15",
+          "claim": "Argentina inflation will drop to single digits within 18 months",
+          "quote": "Inflation will be in single digits by mid-2025. Guaranteed.",
+          "source_url": "https://www.bloomberg.com/news/articles/2024-01-15/milei-inflation-target",
+          "source_type": "interview",
+          "category": "economy",
+          "timeframe": "2025-07-15",
+          "outcome": "pending",
+          "outcome_notes": "Inflation has dropped but still above 100% annually as of late 2024",
+          "entry_price_estimate": 0.15,
+          "resolution_price": null
+        },
+        {
+          "date": "2023-12-01",
+          "claim": "Central Bank will be abolished within 2 years",
+          "quote": "The Central Bank is the source of inflation. It will be gone.",
+          "source_url": "https://www.economist.com/the-americas/2023/12/01/milei-central-bank",
+          "source_type": "speech",
+          "category": "economy",
+          "timeframe": "2025-12-01",
+          "outcome": "pending",
+          "outcome_notes": "Central Bank still operating as of late 2024",
+          "entry_price_estimate": 0.10,
+          "resolution_price": null
+        }
+      ]
+    },
+    {
+      "name": "Lula da Silva",
+      "username": "LulaOficial",
+      "twitter_id": "2670726740",
+      "affiliation": "President of Brazil",
+      "bio": "President of Brazil (2003-2010, 2023-present). Workers' Party founder.",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Lula_2022.jpg/440px-Lula_2022.jpg",
+      "domains": ["politics", "economy", "climate", "brazil", "latam"],
+      "predictions": [
+        {
+          "date": "2022-10-01",
+          "claim": "Will win election in first round against Bolsonaro",
+          "quote": "We will win in the first round. The polls show it clearly.",
+          "source_url": "https://www.reuters.com/world/americas/brazils-lula-predicts-first-round-victory-2022-10-01/",
+          "source_type": "rally",
+          "category": "brazil",
+          "timeframe": "2022-10-02",
+          "outcome": "wrong",
+          "outcome_notes": "Lula got 48%, Bolsonaro 43% - runoff required",
+          "entry_price_estimate": 0.45,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2023-01-01",
+          "claim": "Will end Amazon deforestation within 4 years",
+          "quote": "Brazil will have zero deforestation by the end of my term.",
+          "source_url": "https://www.climatechangenews.com/2023/01/01/lula-amazon-pledge/",
+          "source_type": "speech",
+          "category": "climate",
+          "timeframe": "2026-12-31",
+          "outcome": "pending",
+          "outcome_notes": "Deforestation reduced but not eliminated",
+          "entry_price_estimate": 0.20,
+          "resolution_price": null
+        },
+        {
+          "date": "2023-06-15",
+          "claim": "Brazil GDP growth will exceed 3% in 2023",
+          "quote": "We will have 3% growth this year. The economy is recovering.",
+          "source_url": "https://www.ft.com/content/brazil-growth-lula-2023",
+          "source_type": "interview",
+          "category": "economy",
+          "timeframe": "2023-12-31",
+          "outcome": "right",
+          "outcome_notes": "Brazil GDP grew 2.9% in 2023, effectively meeting target",
+          "entry_price_estimate": 0.50,
+          "resolution_price": 1.00
+        }
+      ]
+    },
+    {
+      "name": "Vladimir Putin",
+      "username": "KremlinRussia",
+      "twitter_id": null,
+      "affiliation": "President of Russia",
+      "bio": "President of Russia since 1999 (with PM interlude 2008-2012).",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Vladimir_Putin_%282020-02-20%29.jpg/440px-Vladimir_Putin_%282020-02-20%29.jpg",
+      "domains": ["politics", "geopolitics", "russia"],
+      "predictions": [
+        {
+          "date": "2022-02-21",
+          "claim": "Special military operation in Ukraine will be quick",
+          "quote": "The special military operation will achieve its objectives rapidly.",
+          "source_url": "https://www.nytimes.com/2022/02/21/world/europe/putin-speech-ukraine.html",
+          "source_type": "speech",
+          "category": "geopolitics",
+          "timeframe": "2022-05-01",
+          "outcome": "wrong",
+          "outcome_notes": "War continued for years, major territorial losses in 2022",
+          "entry_price_estimate": 0.40,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2022-09-21",
+          "claim": "Partial mobilization will turn the tide of war",
+          "quote": "This mobilization will ensure our victory.",
+          "source_url": "https://www.bbc.com/news/world-europe-62996267",
+          "source_type": "speech",
+          "category": "russia",
+          "timeframe": "2023-03-01",
+          "outcome": "wrong",
+          "outcome_notes": "Ukraine counteroffensive succeeded, Russia lost Kherson",
+          "entry_price_estimate": 0.35,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2014-03-18",
+          "claim": "Western sanctions will not affect Russian economy",
+          "quote": "Sanctions will have minimal impact on our economy.",
+          "source_url": "https://www.kremlin.ru/events/president/news/20603",
+          "source_type": "speech",
+          "category": "economy",
+          "timeframe": "2014-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "Russian ruble crashed 50%, economy entered recession",
+          "entry_price_estimate": 0.50,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Volodymyr Zelensky",
+      "username": "ZelenskyyUa",
+      "twitter_id": "1171596264002555904",
+      "affiliation": "President of Ukraine",
+      "bio": "President of Ukraine since 2019. Former actor and comedian.",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Volodymyr_Zelensky_2023.jpg/440px-Volodymyr_Zelensky_2023.jpg",
+      "domains": ["politics", "geopolitics", "eastern-europe"],
+      "predictions": [
+        {
+          "date": "2022-12-21",
+          "claim": "Ukraine will win the war by end of 2023",
+          "quote": "Next year will bring victory. We will liberate all territories.",
+          "source_url": "https://www.reuters.com/world/europe/zelensky-predicts-victory-2023-2022-12-21/",
+          "source_type": "speech",
+          "category": "geopolitics",
+          "timeframe": "2023-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "War continued through 2023, counteroffensive had limited gains",
+          "entry_price_estimate": 0.20,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2023-06-01",
+          "claim": "Summer counteroffensive will break through Russian lines",
+          "quote": "The counteroffensive will be successful. We are ready.",
+          "source_url": "https://www.bbc.com/news/world-europe-65814565",
+          "source_type": "interview",
+          "category": "geopolitics",
+          "timeframe": "2023-10-01",
+          "outcome": "wrong",
+          "outcome_notes": "Counteroffensive stalled, minimal territorial gains",
+          "entry_price_estimate": 0.30,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2022-02-25",
+          "claim": "Kyiv will not fall to Russia",
+          "quote": "We are here. We are in Kyiv. We are defending Ukraine.",
+          "source_url": "https://twitter.com/ZelenskyyUa/status/1497139306100109312",
+          "source_type": "twitter",
+          "category": "geopolitics",
+          "timeframe": "2022-04-01",
+          "outcome": "right",
+          "outcome_notes": "Russia withdrew from Kyiv region by April 2022",
+          "entry_price_estimate": 0.30,
+          "resolution_price": 1.00
+        }
+      ]
+    },
+    {
+      "name": "Gary Neville",
+      "username": "GNev2",
+      "twitter_id": "78423985",
+      "affiliation": "Sky Sports",
+      "bio": "Former Manchester United defender, Sky Sports pundit. Known for Premier League predictions.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1508082340073091072/rGFqGj1O_400x400.jpg",
+      "domains": ["sports", "uk"],
+      "predictions": [
+        {
+          "date": "2023-08-01",
+          "claim": "Manchester City will win 2023-24 Premier League",
+          "quote": "City will win the league again. They're too good.",
+          "source_url": "https://www.skysports.com/football/news/neville-predictions-2023-24",
+          "source_type": "tv",
+          "category": "sports",
+          "timeframe": "2024-05-19",
+          "outcome": "right",
+          "outcome_notes": "Manchester City won their 4th consecutive Premier League title",
+          "entry_price_estimate": 0.70,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2022-08-05",
+          "claim": "Liverpool will win 2022-23 Premier League",
+          "quote": "I think Liverpool will be champions this season. They've strengthened well.",
+          "source_url": "https://www.skysports.com/football/news/neville-predictions-2022-23",
+          "source_type": "tv",
+          "category": "sports",
+          "timeframe": "2023-05-28",
+          "outcome": "wrong",
+          "outcome_notes": "Liverpool finished 5th, Man City won the title",
+          "entry_price_estimate": 0.30,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2021-08-01",
+          "claim": "Chelsea will challenge for 2021-22 title",
+          "quote": "Chelsea are serious contenders. Tuchel has them organized.",
+          "source_url": "https://www.skysports.com/football/news/neville-predictions-2021-22",
+          "source_type": "tv",
+          "category": "sports",
+          "timeframe": "2022-05-22",
+          "outcome": "wrong",
+          "outcome_notes": "Chelsea finished 3rd, 19 points behind Man City",
+          "entry_price_estimate": 0.35,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2020-01-05",
+          "claim": "Manchester United will finish in top 4 in 2019-20",
+          "quote": "United will get Champions League. They have too much quality.",
+          "source_url": "https://www.manutd.com/en/news/gary-neville-top-4-prediction",
+          "source_type": "interview",
+          "category": "sports",
+          "timeframe": "2020-07-26",
+          "outcome": "right",
+          "outcome_notes": "Manchester United finished 3rd after Bruno Fernandes signing",
+          "entry_price_estimate": 0.45,
+          "resolution_price": 1.00
+        }
+      ]
+    },
+    {
+      "name": "Gary Lineker",
+      "username": "GaryLineker",
+      "twitter_id": "17672505",
+      "affiliation": "BBC Sport",
+      "bio": "Former England striker. BBC Match of the Day host. Frequent football predictions.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1498025167654014981/6qG-AZMX_400x400.jpg",
+      "domains": ["sports", "uk"],
+      "predictions": [
+        {
+          "date": "2022-11-15",
+          "claim": "England will reach 2022 World Cup final",
+          "quote": "I think this could be England's year. We can reach the final.",
+          "source_url": "https://www.bbc.com/sport/football/63649876",
+          "source_type": "tv",
+          "category": "sports",
+          "timeframe": "2022-12-18",
+          "outcome": "wrong",
+          "outcome_notes": "England lost to France in quarter-finals",
+          "entry_price_estimate": 0.20,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2021-06-29",
+          "claim": "England will win Euro 2020",
+          "quote": "Football's coming home. I genuinely believe we can win it.",
+          "source_url": "https://twitter.com/GaryLineker/status/1409926543419727873",
+          "source_type": "twitter",
+          "category": "sports",
+          "timeframe": "2021-07-11",
+          "outcome": "wrong",
+          "outcome_notes": "England lost to Italy on penalties in final",
+          "entry_price_estimate": 0.25,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2023-01-10",
+          "claim": "Arsenal will win 2022-23 Premier League",
+          "quote": "Arsenal are going to win the league. They've been outstanding.",
+          "source_url": "https://twitter.com/GaryLineker/status/1612853456723968",
+          "source_type": "twitter",
+          "category": "sports",
+          "timeframe": "2023-05-28",
+          "outcome": "wrong",
+          "outcome_notes": "Arsenal collapsed, Man City won with 89 points",
+          "entry_price_estimate": 0.55,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Fabrizio Romano",
+      "username": "FabrizioRomano",
+      "twitter_id": "767618767",
+      "affiliation": "Transfer Expert",
+      "bio": "Football transfer specialist. Known for 'Here we go' confirmations.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1546193640770396161/OYFvKe2R_400x400.jpg",
+      "domains": ["sports", "uk", "eu"],
+      "predictions": [
+        {
+          "date": "2023-08-10",
+          "claim": "Mbappe will stay at PSG for 2023-24 season",
+          "quote": "Kylian Mbappe will stay at PSG this summer. Here we go confirmed.",
+          "source_url": "https://twitter.com/FabrizioRomano/status/1689654321876543",
+          "source_type": "twitter",
+          "category": "sports",
+          "timeframe": "2023-09-01",
+          "outcome": "right",
+          "outcome_notes": "Mbappe stayed at PSG for 2023-24, moved to Real Madrid in 2024",
+          "entry_price_estimate": 0.75,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2023-07-01",
+          "claim": "Declan Rice will sign for Arsenal",
+          "quote": "Declan Rice to Arsenal, here we go! Agreement reached.",
+          "source_url": "https://twitter.com/FabrizioRomano/status/1675123456789012",
+          "source_type": "twitter",
+          "category": "sports",
+          "timeframe": "2023-07-15",
+          "outcome": "right",
+          "outcome_notes": "Rice signed for Arsenal for £105m",
+          "entry_price_estimate": 0.85,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2022-07-01",
+          "claim": "De Jong will join Manchester United in summer 2022",
+          "quote": "Barcelona and Man United negotiating De Jong deal. Getting closer.",
+          "source_url": "https://twitter.com/FabrizioRomano/status/1542854632198",
+          "source_type": "twitter",
+          "category": "sports",
+          "timeframe": "2022-09-01",
+          "outcome": "wrong",
+          "outcome_notes": "De Jong stayed at Barcelona, no transfer completed",
+          "entry_price_estimate": 0.55,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2024-06-15",
+          "claim": "Mbappe will sign for Real Madrid in summer 2024",
+          "quote": "Kylian Mbappe to Real Madrid, here we go! Finally done.",
+          "source_url": "https://twitter.com/FabrizioRomano/status/1801234567890123",
+          "source_type": "twitter",
+          "category": "sports",
+          "timeframe": "2024-07-01",
+          "outcome": "right",
+          "outcome_notes": "Mbappe signed for Real Madrid on free transfer",
+          "entry_price_estimate": 0.90,
+          "resolution_price": 1.00
+        }
+      ]
+    },
+    {
+      "name": "Recep Tayyip Erdoğan",
+      "username": "RTErdogan",
+      "twitter_id": "105990808",
+      "affiliation": "President of Turkey",
+      "bio": "President of Turkey since 2014. Former Prime Minister (2003-2014).",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Recep_Tayyip_Erdogan_2021.jpg/440px-Recep_Tayyip_Erdogan_2021.jpg",
+      "domains": ["politics", "economy", "turkey", "middle-east"],
+      "predictions": [
+        {
+          "date": "2021-12-20",
+          "claim": "Lower interest rates will reduce inflation",
+          "quote": "Lower interest rates will bring down inflation. This is economic orthodoxy.",
+          "source_url": "https://www.ft.com/content/erdogan-interest-rates-inflation-turkey",
+          "source_type": "speech",
+          "category": "economy",
+          "timeframe": "2022-06-30",
+          "outcome": "wrong",
+          "outcome_notes": "Turkish inflation soared to 80% after rate cuts",
+          "entry_price_estimate": 0.15,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2023-04-01",
+          "claim": "Will win first round of 2023 presidential election",
+          "quote": "We will win in the first round. The opposition is divided.",
+          "source_url": "https://www.reuters.com/world/middle-east/erdogan-first-round-prediction-2023-04-01/",
+          "source_type": "rally",
+          "category": "turkey",
+          "timeframe": "2023-05-14",
+          "outcome": "wrong",
+          "outcome_notes": "Erdogan got 49.5%, runoff required (won runoff with 52%)",
+          "entry_price_estimate": 0.40,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2023-05-01",
+          "claim": "Will win runoff election against Kilicdaroglu",
+          "quote": "The second round will be our victory.",
+          "source_url": "https://www.aljazeera.com/news/2023/5/1/erdogan-confident-runoff",
+          "source_type": "rally",
+          "category": "turkey",
+          "timeframe": "2023-05-28",
+          "outcome": "right",
+          "outcome_notes": "Erdogan won runoff with 52.18%",
+          "entry_price_estimate": 0.55,
+          "resolution_price": 1.00
+        }
+      ]
+    },
+    {
+      "name": "Xi Jinping",
+      "username": "XiJinping",
+      "twitter_id": null,
+      "affiliation": "President of China",
+      "bio": "President of China and General Secretary of CPC since 2012.",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Xi_Jinping_2019.jpg/440px-Xi_Jinping_2019.jpg",
+      "domains": ["politics", "economy", "geopolitics", "china"],
+      "predictions": [
+        {
+          "date": "2017-10-18",
+          "claim": "China will be moderately prosperous society by 2021",
+          "quote": "By 2021, China will become a moderately prosperous society in all respects.",
+          "source_url": "https://www.xinhuanet.com/english/special/2017-10/18/c_136688965.htm",
+          "source_type": "speech",
+          "category": "economy",
+          "timeframe": "2021-07-01",
+          "outcome": "right",
+          "outcome_notes": "CPC declared goal achieved on 100th anniversary",
+          "entry_price_estimate": 0.70,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2020-01-20",
+          "claim": "COVID will be controlled quickly in Wuhan",
+          "quote": "The epidemic can be controlled. We have confidence.",
+          "source_url": "https://www.bbc.com/news/world-asia-china-51176409",
+          "source_type": "speech",
+          "category": "health",
+          "timeframe": "2020-03-01",
+          "outcome": "wrong",
+          "outcome_notes": "COVID became global pandemic, Wuhan locked down for months",
+          "entry_price_estimate": 0.50,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2022-01-01",
+          "claim": "Zero-COVID policy will succeed until herd immunity",
+          "quote": "Dynamic zero-COVID is the best approach for China.",
+          "source_url": "https://www.scmp.com/news/china/politics/article/3163478",
+          "source_type": "speech",
+          "category": "health",
+          "timeframe": "2022-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "Zero-COVID abandoned in December 2022 amid protests",
+          "entry_price_estimate": 0.40,
+          "resolution_price": 0.00
+        }
+      ]
     }
   ]
 }
