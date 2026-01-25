@@ -1,14 +1,30 @@
 // src/app/submit/page.tsx
 'use client'
 import { useState } from 'react'
-import { Send, CheckCircle, AlertCircle, History, Link as LinkIcon } from 'lucide-react'
+import { Send, CheckCircle, AlertCircle, History, Link as LinkIcon, Sparkles, Loader2 } from 'lucide-react'
 import { KNOWN_PUNDITS, searchKnownPundits } from '@/data/knownPundits'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+interface ExtractedPrediction {
+  pundit_name: string
+  pundit_title?: string
+  claim: string
+  quote: string
+  category: string
+  timeframe: string
+  confidence: string
+  source_url: string
+}
+
 export default function SubmitPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  
+  // Smart URL extraction state
+  const [extractUrl, setExtractUrl] = useState('')
+  const [extracting, setExtracting] = useState(false)
+  const [extractedPredictions, setExtractedPredictions] = useState<ExtractedPrediction[]>([])
   
   // Form state
   const [formData, setFormData] = useState({
@@ -28,6 +44,57 @@ export default function SubmitPage() {
   // Pundit autocomplete
   const [showSuggestions, setShowSuggestions] = useState(false)
   const suggestions = searchKnownPundits(formData.pundit_name).slice(0, 5)
+  
+  // Smart URL extraction
+  const handleExtract = async () => {
+    if (!extractUrl.trim()) return
+    
+    setExtracting(true)
+    setExtractedPredictions([])
+    setMessage(null)
+    
+    try {
+      const res = await fetch(`${API_URL}/api/extract-from-url`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: extractUrl })
+      })
+      
+      const data = await res.json()
+      
+      if (data.success && data.predictions.length > 0) {
+        setExtractedPredictions(data.predictions)
+        setMessage({ type: 'success', text: `Found ${data.predictions.length} prediction(s)! Click one to fill the form.` })
+      } else if (data.error) {
+        setMessage({ type: 'error', text: data.error })
+      } else {
+        setMessage({ type: 'error', text: 'No predictions found in this content. Try a different URL or fill manually.' })
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Failed to extract. Please try again or fill manually.' })
+    }
+    
+    setExtracting(false)
+  }
+  
+  // Fill form from extracted prediction
+  const fillFromExtracted = (pred: ExtractedPrediction) => {
+    const username = pred.pundit_name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 30)
+    
+    setFormData({
+      ...formData,
+      pundit_name: pred.pundit_name,
+      pundit_username: username,
+      claim: pred.claim,
+      quote: pred.quote,
+      source_url: pred.source_url,
+      category: pred.category || 'markets',
+      resolution_date: pred.timeframe || ''
+    })
+    
+    setExtractedPredictions([])
+    setMessage({ type: 'success', text: 'Form filled! Review and submit.' })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,6 +145,66 @@ export default function SubmitPage() {
           <History className="h-8 w-8 text-blue-600" />
           Submit Historical Prediction
         </h1>
+        
+        {/* Smart URL Extraction */}
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6 mt-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-5 w-5 text-purple-600" />
+            <h2 className="font-bold text-purple-900">Smart Extract from URL</h2>
+          </div>
+          <p className="text-sm text-purple-700 mb-4">
+            Paste a link to an article or video - we'll automatically extract the prediction details!
+          </p>
+          
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={extractUrl}
+              onChange={(e) => setExtractUrl(e.target.value)}
+              placeholder="https://www.example.com/article..."
+              className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            />
+            <button
+              onClick={handleExtract}
+              disabled={extracting || !extractUrl.trim()}
+              className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {extracting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Extracting...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4" />
+                  Extract
+                </>
+              )}
+            </button>
+          </div>
+          
+          {/* Extracted Predictions */}
+          {extractedPredictions.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <p className="text-sm font-bold text-purple-800">Found predictions (click to use):</p>
+              {extractedPredictions.map((pred, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => fillFromExtracted(pred)}
+                  className="w-full text-left p-3 bg-white border border-purple-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-slate-900">{pred.pundit_name}</span>
+                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                      {pred.category}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600 line-clamp-2">{pred.claim}</p>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <p className="text-slate-500">
           Help us build the most comprehensive pundit accountability database. 
           Submit predictions from any public figure with a verifiable source.

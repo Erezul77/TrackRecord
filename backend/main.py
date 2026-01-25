@@ -329,6 +329,40 @@ class ManualPredictionInput(BaseModel):
     tr_boldness: int = 1  # 1=consensus, 5=very contrarian
     tr_stakes: int = 2  # 1=minor, 5=major impact
 
+
+# ============================================
+# Smart URL Extraction Endpoint
+# ============================================
+
+class URLExtractInput(BaseModel):
+    url: str
+
+@app.post("/api/extract-from-url")
+async def extract_predictions_from_url(
+    input: URLExtractInput,
+):
+    """
+    Smart URL extraction - paste a URL and get all predictions extracted automatically.
+    Works with: news articles, YouTube videos, blog posts, etc.
+    """
+    from services.url_extractor import URLExtractor
+    
+    extractor = URLExtractor()
+    
+    try:
+        result = await extractor.extract_from_url(input.url)
+        return result
+    except Exception as e:
+        return {
+            "success": False,
+            "url": input.url,
+            "error": str(e),
+            "predictions": []
+        }
+    finally:
+        await extractor.close()
+
+
 @app.post("/api/admin/predictions/add")
 async def add_manual_prediction(
     prediction_input: ManualPredictionInput,
