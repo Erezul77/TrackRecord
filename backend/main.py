@@ -47,6 +47,27 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+# Auto-start scheduler on startup (controlled by env var)
+@app.on_event("startup")
+async def startup_event():
+    auto_start = os.getenv("AUTO_START_SCHEDULER", "false").lower() == "true"
+    if auto_start:
+        from services.scheduler import start_scheduler
+        try:
+            scheduler = start_scheduler()
+            logging.info("Background scheduler auto-started")
+        except Exception as e:
+            logging.error(f"Failed to start scheduler: {e}")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    from services.scheduler import stop_scheduler
+    try:
+        stop_scheduler()
+        logging.info("Background scheduler stopped")
+    except Exception as e:
+        logging.error(f"Error stopping scheduler: {e}")
+
 # Minimum resolved predictions for official ranking (frontend handles display)
 MIN_PREDICTIONS_FOR_RANKING = 3
 
@@ -718,6 +739,77 @@ async def search_polymarket_markets(
         
     except Exception as e:
         return {"error": str(e)}
+
+# ============================================
+# Historical Data Collector & Scheduler
+# ============================================
+
+@app.get("/api/admin/scheduler/status")
+async def get_scheduler_status(admin = Depends(require_admin)):
+    """Get the status of the background scheduler"""
+    from services.scheduler import get_scheduler
+    
+    scheduler = get_scheduler()
+    return scheduler.get_status()
+
+@app.post("/api/admin/scheduler/start")
+async def start_scheduler_endpoint(
+    rss_interval_hours: int = Query(6, ge=1, le=24),
+    enable_historical: bool = True,
+    admin = Depends(require_admin)
+):
+    """Start the background scheduler"""
+    from services.scheduler import get_scheduler
+    
+    scheduler = get_scheduler()
+    scheduler.start(
+        rss_interval_hours=rss_interval_hours,
+        enable_historical=enable_historical
+    )
+    return {"status": "started", "config": scheduler.get_status()}
+
+@app.post("/api/admin/scheduler/stop")
+async def stop_scheduler_endpoint(admin = Depends(require_admin)):
+    """Stop the background scheduler"""
+    from services.scheduler import stop_scheduler
+    
+    stop_scheduler()
+    return {"status": "stopped"}
+
+@app.post("/api/admin/historical/collect")
+async def run_historical_collection(
+    start_year: int = Query(2020, ge=2015, le=2025),
+    max_per_pundit: int = Query(15, ge=1, le=50),
+    admin = Depends(require_admin)
+):
+    """
+    Manually trigger historical data collection.
+    Collects prediction-related articles from 2020-present and extracts predictions.
+    """
+    from services.historical_collector import HistoricalPipeline
+    from database.session import async_session
+    
+    async with async_session() as session:
+        pipeline = HistoricalPipeline(session)
+        results = await pipeline.run(
+            start_year=start_year,
+            max_per_pundit=max_per_pundit,
+            auto_process=True
+        )
+        return results
+
+@app.get("/api/admin/historical/pundits")
+async def get_trackable_pundits(admin = Depends(require_admin)):
+    """Get list of pundits that the historical collector tracks"""
+    from services.historical_collector import HISTORICAL_PUNDITS
+    
+    return {
+        "pundits": [
+            {"name": name, "categories": cats}
+            for name, cats in HISTORICAL_PUNDITS.items()
+        ],
+        "total": len(HISTORICAL_PUNDITS)
+    }
 
 @app.post("/api/admin/predictions/{prediction_id}/match")
 async def match_prediction_to_market(

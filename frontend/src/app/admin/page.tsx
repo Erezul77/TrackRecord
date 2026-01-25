@@ -1,7 +1,7 @@
 // src/app/admin/page.tsx
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle, UserPlus, Search, Sparkles, ClipboardCheck, XCircle, Check, X } from 'lucide-react'
+import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle, UserPlus, Search, Sparkles, ClipboardCheck, XCircle, Check, X, Bot, Play, Square, History, Zap } from 'lucide-react'
 import { KNOWN_PUNDITS, searchKnownPundits, KnownPundit } from '@/data/knownPundits'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -36,7 +36,7 @@ interface PendingPrediction {
 }
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'manual' | 'rss' | 'pundit' | 'verify'>('manual')
+  const [activeTab, setActiveTab] = useState<'manual' | 'rss' | 'pundit' | 'verify' | 'bot'>('manual')
   const [pundits, setPundits] = useState<Pundit[]>([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
@@ -44,6 +44,22 @@ export default function AdminPage() {
   // Verification state
   const [pendingPredictions, setPendingPredictions] = useState<PendingPrediction[]>([])
   const [verifyLoading, setVerifyLoading] = useState(false)
+  
+  // Bot/Scheduler state
+  const [botStatus, setBotStatus] = useState<{
+    is_running: boolean
+    jobs: Array<{ id: string; name: string; next_run: string | null }>
+    last_run_times: Record<string, string>
+    stats: Record<string, { runs: number; predictions: number; errors: number; articles?: number }>
+  } | null>(null)
+  const [botLoading, setBotLoading] = useState(false)
+  const [historicalLoading, setHistoricalLoading] = useState(false)
+  const [historicalResults, setHistoricalResults] = useState<{
+    status: string
+    articles_collected: number
+    predictions_extracted: number
+    errors: string[]
+  } | null>(null)
   
   // Pundit search state
   const [punditSearch, setPunditSearch] = useState('')
@@ -201,6 +217,84 @@ export default function AdminPage() {
     }
     setRssLoading(false)
   }
+  
+  // Bot/Scheduler functions
+  const loadBotStatus = async () => {
+    setBotLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/scheduler/status`)
+      if (res.ok) {
+        const data = await res.json()
+        setBotStatus(data)
+      }
+    } catch (err) {
+      console.error('Failed to load bot status:', err)
+    }
+    setBotLoading(false)
+  }
+  
+  const startBot = async () => {
+    setBotLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/scheduler/start?rss_interval_hours=6&enable_historical=true`, { method: 'POST' })
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'Bot started successfully!' })
+        loadBotStatus()
+      } else {
+        setMessage({ type: 'error', text: 'Failed to start bot' })
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Error starting bot' })
+    }
+    setBotLoading(false)
+  }
+  
+  const stopBot = async () => {
+    setBotLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/scheduler/stop`, { method: 'POST' })
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'Bot stopped' })
+        loadBotStatus()
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Error stopping bot' })
+    }
+    setBotLoading(false)
+  }
+  
+  const runHistoricalCollection = async (startYear: number = 2020) => {
+    setHistoricalLoading(true)
+    setHistoricalResults(null)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/historical/collect?start_year=${startYear}&max_per_pundit=15`, { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json()
+        setHistoricalResults(data)
+        setMessage({ type: 'success', text: `Collected ${data.articles_collected} articles, extracted ${data.predictions_extracted} predictions!` })
+      } else {
+        setMessage({ type: 'error', text: 'Historical collection failed' })
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Error running historical collection' })
+    }
+    setHistoricalLoading(false)
+  }
+  
+  const runAutoAgent = async () => {
+    setBotLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/auto-agent/run`, { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json()
+        setMessage({ type: 'success', text: `Auto-agent complete! Found ${data.stats?.new_predictions || 0} new predictions` })
+        loadBotStatus()
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Error running auto-agent' })
+    }
+    setBotLoading(false)
+  }
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl">
@@ -255,6 +349,20 @@ export default function AdminPage() {
         >
           <ClipboardCheck className="h-4 w-4" />
           Verify Predictions
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab('bot')
+            loadBotStatus()
+          }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+            activeTab === 'bot' 
+              ? 'bg-purple-600 text-white' 
+              : 'bg-white border text-slate-600 hover:bg-slate-50'
+          }`}
+        >
+          <Bot className="h-4 w-4" />
+          Data Bot
         </button>
       </div>
 
@@ -961,6 +1069,182 @@ export default function AdminPage() {
               <p className="text-sm text-slate-400 mt-1">All predictions are either resolved or awaiting their deadline</p>
             </div>
           )}
+        </div>
+      )}
+      
+      {/* Bot Control Tab */}
+      {activeTab === 'bot' && (
+        <div className="space-y-6">
+          {/* Scheduler Status Card */}
+          <div className="bg-white border rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <Bot className="h-5 w-5 text-purple-600" />
+                  Data Collection Bot
+                </h2>
+                <p className="text-sm text-slate-500">Automatically collects predictions from news sources</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={loadBotStatus}
+                  disabled={botLoading}
+                  className="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                >
+                  <RefreshCw className={`h-4 w-4 ${botLoading ? 'animate-spin' : ''}`} />
+                </button>
+                {botStatus?.is_running ? (
+                  <button
+                    onClick={stopBot}
+                    disabled={botLoading}
+                    className="flex items-center gap-2 bg-rose-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors disabled:opacity-50"
+                  >
+                    <Square className="h-4 w-4" />
+                    Stop Bot
+                  </button>
+                ) : (
+                  <button
+                    onClick={startBot}
+                    disabled={botLoading}
+                    className="flex items-center gap-2 bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                  >
+                    <Play className="h-4 w-4" />
+                    Start Bot
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {/* Status Display */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className={`p-4 rounded-lg ${botStatus?.is_running ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50 border border-slate-200'}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className={`h-3 w-3 rounded-full ${botStatus?.is_running ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                  <span className="text-sm font-bold text-slate-700">Status</span>
+                </div>
+                <span className={`text-lg font-black ${botStatus?.is_running ? 'text-emerald-600' : 'text-slate-500'}`}>
+                  {botStatus?.is_running ? 'Running' : 'Stopped'}
+                </span>
+              </div>
+              
+              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                <span className="text-sm font-bold text-slate-700 block mb-1">RSS Ingestion</span>
+                <span className="text-lg font-black text-blue-600">
+                  {botStatus?.stats?.rss_ingestion?.predictions || 0} predictions
+                </span>
+                <span className="text-xs text-slate-500 block">
+                  {botStatus?.stats?.rss_ingestion?.runs || 0} runs
+                </span>
+              </div>
+              
+              <div className="p-4 rounded-lg bg-purple-50 border border-purple-200">
+                <span className="text-sm font-bold text-slate-700 block mb-1">Historical Collection</span>
+                <span className="text-lg font-black text-purple-600">
+                  {botStatus?.stats?.historical_collection?.articles || 0} articles
+                </span>
+                <span className="text-xs text-slate-500 block">
+                  {botStatus?.stats?.historical_collection?.predictions || 0} predictions
+                </span>
+              </div>
+            </div>
+            
+            {/* Scheduled Jobs */}
+            {botStatus?.jobs && botStatus.jobs.length > 0 && (
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-bold text-slate-700 mb-2">Scheduled Jobs</h3>
+                <div className="space-y-2">
+                  {botStatus.jobs.map(job => (
+                    <div key={job.id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
+                      <span className="text-sm font-medium text-slate-700">{job.name}</span>
+                      <span className="text-xs text-slate-500">
+                        Next: {job.next_run ? new Date(job.next_run).toLocaleString() : 'Not scheduled'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Manual Actions */}
+          <div className="bg-white border rounded-xl p-6">
+            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <Zap className="h-5 w-5 text-amber-500" />
+              Manual Actions
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Run Auto-Agent Now */}
+              <div className="border rounded-lg p-4">
+                <h4 className="font-bold text-slate-900 mb-1">Run RSS Scan Now</h4>
+                <p className="text-sm text-slate-500 mb-3">Fetch latest articles from RSS feeds and extract predictions</p>
+                <button
+                  onClick={runAutoAgent}
+                  disabled={botLoading}
+                  className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  <Rss className="h-4 w-4" />
+                  {botLoading ? 'Running...' : 'Scan RSS Now'}
+                </button>
+              </div>
+              
+              {/* Run Historical Collection */}
+              <div className="border rounded-lg p-4">
+                <h4 className="font-bold text-slate-900 mb-1">Historical Collection</h4>
+                <p className="text-sm text-slate-500 mb-3">Collect predictions from 2020-present (takes a few minutes)</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => runHistoricalCollection(2023)}
+                    disabled={historicalLoading}
+                    className="flex-1 flex items-center justify-center gap-2 bg-purple-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                  >
+                    <History className="h-4 w-4" />
+                    {historicalLoading ? 'Collecting...' : '2023+'}
+                  </button>
+                  <button
+                    onClick={() => runHistoricalCollection(2020)}
+                    disabled={historicalLoading}
+                    className="flex-1 flex items-center justify-center gap-2 bg-purple-800 text-white font-bold px-4 py-2 rounded-lg hover:bg-purple-900 transition-colors disabled:opacity-50"
+                  >
+                    <History className="h-4 w-4" />
+                    {historicalLoading ? 'Collecting...' : '2020+'}
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Historical Results */}
+            {historicalResults && (
+              <div className={`mt-4 p-4 rounded-lg ${historicalResults.status === 'completed' ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 border border-amber-200'}`}>
+                <h4 className="font-bold text-slate-900 mb-2">Collection Results</h4>
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <span className="text-2xl font-black text-slate-900">{historicalResults.articles_collected}</span>
+                    <span className="text-xs text-slate-500 block">Articles</span>
+                  </div>
+                  <div>
+                    <span className="text-2xl font-black text-emerald-600">{historicalResults.predictions_extracted}</span>
+                    <span className="text-xs text-slate-500 block">Predictions</span>
+                  </div>
+                  <div>
+                    <span className="text-2xl font-black text-rose-600">{historicalResults.errors?.length || 0}</span>
+                    <span className="text-xs text-slate-500 block">Errors</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Info Box */}
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-6">
+            <h3 className="font-bold text-purple-900 mb-2">How the Bot Works</h3>
+            <ul className="text-sm text-purple-800 space-y-1">
+              <li>• <strong>RSS Scan</strong>: Runs every 6 hours, fetches latest news articles</li>
+              <li>• <strong>AI Extraction</strong>: Uses Claude AI to identify predictions from known pundits</li>
+              <li>• <strong>Historical Collection</strong>: Searches GDELT and Google News archives for past predictions</li>
+              <li>• <strong>Auto-matching</strong>: Attempts to match predictions to Polymarket for verification</li>
+            </ul>
+          </div>
         </div>
       )}
     </div>
