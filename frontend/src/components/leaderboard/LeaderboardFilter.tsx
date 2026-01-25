@@ -35,10 +35,10 @@ export function LeaderboardFilter({ pundits }: LeaderboardFilterProps) {
             key={cat} 
             onClick={() => setActiveCategory(cat)}
             className={cn(
-              "text-sm font-bold px-4 py-2 rounded-lg transition-colors",
+              "text-sm font-medium px-4 py-2 transition-colors",
               cat === activeCategory 
-                ? "bg-blue-600 text-white shadow-sm" 
-                : "bg-white text-slate-600 border hover:bg-slate-50"
+                ? "bg-black dark:bg-white text-white dark:text-black" 
+                : "bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white"
             )}
           >
             {cat}
@@ -46,14 +46,14 @@ export function LeaderboardFilter({ pundits }: LeaderboardFilterProps) {
         ))}
       </div>
 
-      <div className="space-y-4 mt-8">
+      <div className="space-y-3 mt-8">
         {filteredPundits.length > 0 ? (
           filteredPundits.map((pundit: Pundit, index: number) => (
             <PunditCard key={pundit.id} pundit={pundit} rank={index + 1} />
           ))
         ) : (
-          <div className="bg-white border rounded-xl p-12 text-center">
-            <p className="text-slate-500 font-medium">No pundits found in this category.</p>
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-12 text-center">
+            <p className="text-neutral-500 font-medium">No pundits found in this category.</p>
           </div>
         )}
       </div>

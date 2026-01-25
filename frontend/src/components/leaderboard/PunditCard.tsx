@@ -46,14 +46,14 @@ export function PunditCard({ pundit, rank }: PunditCardProps) {
   
   return (
     <Link href={`/pundits/${pundit.id}`} className="block group">
-      <div className="flex items-center gap-3 sm:gap-6 p-4 sm:p-5 bg-white border border-neutral-200 hover:border-black transition-all">
+      <div className="flex items-center gap-3 sm:gap-6 p-4 sm:p-5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-black dark:hover:border-white transition-all">
         {/* Rank */}
-        <div className="text-2xl sm:text-3xl font-black text-neutral-200 w-8 sm:w-12 text-center flex-shrink-0 group-hover:text-black transition-colors">
+        <div className="text-2xl sm:text-3xl font-black text-neutral-200 dark:text-neutral-700 w-8 sm:w-12 text-center flex-shrink-0 group-hover:text-black dark:group-hover:text-white transition-colors">
           {rank}
         </div>
         
         {/* Avatar */}
-        <div className="relative h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0 rounded-full border-2 border-neutral-100 overflow-hidden bg-neutral-100 flex items-center justify-center">
+        <div className="relative h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0 rounded-full border-2 border-neutral-100 dark:border-neutral-800 overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
           {!imgError && pundit.avatar_url ? (
             <img
               src={pundit.avatar_url}
@@ -69,7 +69,7 @@ export function PunditCard({ pundit, rank }: PunditCardProps) {
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <h3 className="text-sm sm:text-base font-bold text-black truncate">{pundit.name}</h3>
+            <h3 className="text-sm sm:text-base font-bold text-black dark:text-white truncate">{pundit.name}</h3>
             {pundit.verified && (
               <CheckCircle className="h-4 w-4 text-blue-500 flex-shrink-0" />
             )}
@@ -81,14 +81,14 @@ export function PunditCard({ pundit, rank }: PunditCardProps) {
           {/* Stats - Hidden on mobile, shown on desktop */}
           <div className="hidden sm:flex flex-wrap gap-4 text-xs mt-2">
             <span className="text-neutral-500">
-              <span className="font-semibold text-black">{pundit.metrics.total_predictions}</span> predictions
+              <span className="font-semibold text-black dark:text-white">{pundit.metrics.total_predictions}</span> predictions
             </span>
             <span className="text-neutral-500">
-              <span className="font-semibold text-black">{pundit.metrics.resolved_predictions}</span> resolved
+              <span className="font-semibold text-black dark:text-white">{pundit.metrics.resolved_predictions}</span> resolved
             </span>
             {pundit.net_worth && (
               <span className="text-neutral-500">
-                <span className="font-semibold text-green-600">{formatNetWorth(pundit.net_worth)}</span>
+                <span className="font-semibold text-green-600 dark:text-green-400">{formatNetWorth(pundit.net_worth)}</span>
               </span>
             )}
           </div>
@@ -111,7 +111,7 @@ export function PunditCard({ pundit, rank }: PunditCardProps) {
               <div className="text-xs font-medium text-neutral-400">
                 Pending
               </div>
-              <div className="text-[10px] text-neutral-300">
+              <div className="text-[10px] text-neutral-300 dark:text-neutral-600">
                 {pundit.metrics.resolved_predictions}/{MIN_PREDICTIONS}
               </div>
             </div>

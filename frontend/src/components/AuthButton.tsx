@@ -32,24 +32,24 @@ export function AuthButton() {
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className="flex items-center gap-2 bg-black text-white px-3 py-1.5 text-sm font-medium hover:bg-neutral-800 transition-colors"
+          className="flex items-center gap-2 bg-black dark:bg-white text-white dark:text-black px-3 py-1.5 text-sm font-medium hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
         >
           <User className="h-4 w-4" />
           <span className="hidden sm:inline">{user.display_name}</span>
         </button>
         
         {showDropdown && (
-          <div className="absolute right-0 top-full mt-2 bg-white border border-neutral-200 shadow-lg py-1 min-w-[150px] z-50">
+          <div className="absolute right-0 top-full mt-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow-lg py-1 min-w-[150px] z-50">
             <Link
               href="/compete"
-              className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
+              className="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
               onClick={() => setShowDropdown(false)}
             >
               My Predictions
             </Link>
             <button
               onClick={handleLogout}
-              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
             >
               <LogOut className="h-4 w-4" />
               Sign Out
@@ -63,7 +63,7 @@ export function AuthButton() {
   return (
     <Link
       href="/compete"
-      className="flex items-center gap-2 bg-black text-white px-3 py-1.5 text-sm font-medium hover:bg-neutral-800 transition-colors"
+      className="flex items-center gap-2 bg-black dark:bg-white text-white dark:text-black px-3 py-1.5 text-sm font-medium hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
     >
       <LogIn className="h-4 w-4" />
       <span className="hidden sm:inline">Sign In</span>
