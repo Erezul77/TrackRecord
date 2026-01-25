@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { MobileNav } from "@/components/MobileNav";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { AuthButton } from "@/components/AuthButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -44,6 +45,7 @@ export default function RootLayout({
             </nav>
 
             <div className="flex items-center gap-2 sm:gap-4">
+              <AuthButton />
               <LanguageSelector />
               <span className="hidden sm:block text-xs font-bold text-slate-400 uppercase tracking-wider">Beta</span>
               {/* Mobile Nav */}
