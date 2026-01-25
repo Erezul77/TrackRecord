@@ -1,12 +1,22 @@
 # services/url_extractor.py
 """
 URL Content Extractor Service
-Extracts predictions from any URL - articles, YouTube videos, etc.
+Extracts predictions from ANY URL:
+- News articles (CNN, BBC, CNBC, Bloomberg, Reuters, etc.)
+- YouTube videos (with transcript extraction)
+- Twitter/X posts
+- Reddit posts
+- Substack newsletters
+- Medium articles
+- Podcasts (Spotify, Apple - metadata)
+- LinkedIn posts
+- Any blog or website
 """
 import os
 import re
 import httpx
 import logging
+import json
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 from datetime import datetime
@@ -15,6 +25,14 @@ from html.parser import HTMLParser
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Try to import youtube_transcript_api for better YouTube support
+try:
+    from youtube_transcript_api import YouTubeTranscriptApi
+    YOUTUBE_TRANSCRIPT_AVAILABLE = True
+except ImportError:
+    YOUTUBE_TRANSCRIPT_AVAILABLE = False
+    logger.info("youtube-transcript-api not installed - YouTube transcripts will be limited")
 
 
 @dataclass
@@ -75,12 +93,51 @@ class URLExtractor:
     
     def _detect_url_type(self, url: str) -> str:
         """Detect what type of content the URL points to"""
-        if 'youtube.com' in url or 'youtu.be' in url:
+        url_lower = url.lower()
+        
+        # Video platforms
+        if 'youtube.com' in url_lower or 'youtu.be' in url_lower:
             return 'youtube'
-        if 'twitter.com' in url or 'x.com' in url:
+        if 'vimeo.com' in url_lower:
+            return 'vimeo'
+        if 'tiktok.com' in url_lower:
+            return 'tiktok'
+        
+        # Social media
+        if 'twitter.com' in url_lower or 'x.com' in url_lower:
             return 'twitter'
-        if 'podcasts.apple.com' in url or 'spotify.com' in url:
-            return 'podcast'
+        if 'reddit.com' in url_lower:
+            return 'reddit'
+        if 'linkedin.com' in url_lower:
+            return 'linkedin'
+        if 'facebook.com' in url_lower or 'fb.com' in url_lower:
+            return 'facebook'
+        if 'instagram.com' in url_lower:
+            return 'instagram'
+        if 'threads.net' in url_lower:
+            return 'threads'
+        
+        # Podcasts
+        if 'podcasts.apple.com' in url_lower:
+            return 'apple_podcast'
+        if 'spotify.com' in url_lower and '/episode' in url_lower:
+            return 'spotify_podcast'
+        if 'spotify.com' in url_lower:
+            return 'spotify'
+        
+        # Newsletter/Blog platforms
+        if 'substack.com' in url_lower:
+            return 'substack'
+        if 'medium.com' in url_lower:
+            return 'medium'
+        if 'mirror.xyz' in url_lower:
+            return 'mirror'
+        
+        # News sites (special handling for paywalls)
+        if any(site in url_lower for site in ['wsj.com', 'ft.com', 'economist.com', 'nytimes.com', 'washingtonpost.com']):
+            return 'paywall_news'
+        
+        # General article
         return 'article'
     
     def _extract_youtube_id(self, url: str) -> Optional[str]:
@@ -121,13 +178,14 @@ class URLExtractor:
             return {"error": str(e)}
     
     async def _fetch_youtube_content(self, url: str) -> Dict:
-        """Fetch YouTube video info and transcript"""
+        """Fetch YouTube video info and FULL transcript"""
         video_id = self._extract_youtube_id(url)
         if not video_id:
             return {"error": "Invalid YouTube URL"}
         
         content_parts = []
         title = ""
+        author = ""
         
         # Try to get video info from oEmbed (no API key needed)
         try:
@@ -138,13 +196,43 @@ class URLExtractor:
                 title = data.get("title", "")
                 author = data.get("author_name", "")
                 content_parts.append(f"Video Title: {title}")
-                content_parts.append(f"Channel: {author}")
+                content_parts.append(f"Channel/Speaker: {author}")
         except Exception as e:
             logger.debug(f"Could not get YouTube oEmbed: {e}")
         
-        # Try to get transcript using youtube-transcript-api approach
+        # Try to get FULL transcript using youtube-transcript-api
+        if YOUTUBE_TRANSCRIPT_AVAILABLE:
+            try:
+                # Get transcript (tries multiple languages)
+                transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+                
+                # Try to get English transcript first, then any available
+                transcript = None
+                try:
+                    transcript = transcript_list.find_transcript(['en', 'en-US', 'en-GB'])
+                except:
+                    try:
+                        # Get auto-generated or first available
+                        transcript = transcript_list.find_generated_transcript(['en'])
+                    except:
+                        # Get any transcript and translate to English
+                        for t in transcript_list:
+                            transcript = t.translate('en')
+                            break
+                
+                if transcript:
+                    transcript_data = transcript.fetch()
+                    # Combine transcript text
+                    full_text = " ".join([item['text'] for item in transcript_data])
+                    # Limit to reasonable size but keep enough for context
+                    full_text = full_text[:20000] if len(full_text) > 20000 else full_text
+                    content_parts.append(f"\n--- FULL VIDEO TRANSCRIPT ---\n{full_text}\n--- END TRANSCRIPT ---")
+                    logger.info(f"Got YouTube transcript: {len(full_text)} chars")
+            except Exception as e:
+                logger.debug(f"Could not get YouTube transcript: {e}")
+        
+        # Fallback: Try to get description from page
         try:
-            # Fetch video page to get transcript
             video_url = f"https://www.youtube.com/watch?v={video_id}"
             response = await self.client.get(video_url)
             
@@ -153,25 +241,140 @@ class URLExtractor:
                 desc_match = re.search(r'"description":{"simpleText":"([^"]+)"', response.text)
                 if desc_match:
                     description = desc_match.group(1).replace('\\n', '\n')
-                    content_parts.append(f"Description: {description[:2000]}")
-                
-                # Try to find auto-generated captions data
-                # This is a simplified approach - in production you'd use youtube-transcript-api
-                caption_match = re.search(r'"captionTracks":\[([^\]]+)\]', response.text)
-                if caption_match:
-                    content_parts.append("[Video has captions available - content extracted from description and title]")
+                    content_parts.append(f"\nVideo Description: {description[:3000]}")
         except Exception as e:
             logger.debug(f"Could not fetch YouTube page: {e}")
         
         if not content_parts:
-            return {"error": "Could not extract YouTube content. Try providing the video's transcript or key quotes."}
+            return {"error": "Could not extract YouTube content. Try providing the video's transcript manually."}
         
         return {
             "title": title,
             "content": "\n\n".join(content_parts),
             "url": url,
-            "type": "youtube"
+            "type": "youtube",
+            "author": author
         }
+    
+    async def _fetch_twitter_content(self, url: str) -> Dict:
+        """Fetch Twitter/X post content"""
+        # Extract tweet info using nitter or other methods
+        try:
+            # Try using a public nitter instance (Twitter frontend alternative)
+            nitter_instances = [
+                "nitter.net",
+                "nitter.unixfox.eu",
+            ]
+            
+            # Convert twitter URL to nitter format
+            tweet_path = url.split('twitter.com')[-1] if 'twitter.com' in url else url.split('x.com')[-1]
+            
+            for instance in nitter_instances:
+                try:
+                    nitter_url = f"https://{instance}{tweet_path}"
+                    response = await self.client.get(nitter_url, timeout=10)
+                    if response.status_code == 200:
+                        # Extract tweet content
+                        parser = TextExtractor()
+                        parser.feed(response.text)
+                        content = " ".join(parser.text)
+                        
+                        return {
+                            "title": f"Tweet",
+                            "content": content[:5000],
+                            "url": url,
+                            "type": "twitter"
+                        }
+                except:
+                    continue
+            
+            # Fallback: Just note it's a Twitter URL
+            return {
+                "title": "Twitter/X Post",
+                "content": f"Twitter URL: {url}\n\n[Please paste the tweet text manually if extraction failed]",
+                "url": url,
+                "type": "twitter"
+            }
+        except Exception as e:
+            return {"error": f"Could not extract Twitter content: {e}"}
+    
+    async def _fetch_reddit_content(self, url: str) -> Dict:
+        """Fetch Reddit post content using JSON API"""
+        try:
+            # Reddit provides JSON by appending .json
+            json_url = url.rstrip('/') + '.json'
+            
+            response = await self.client.get(json_url, headers={
+                'User-Agent': 'TrackRecord/1.0'
+            })
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if isinstance(data, list) and len(data) > 0:
+                    post = data[0]['data']['children'][0]['data']
+                    title = post.get('title', '')
+                    selftext = post.get('selftext', '')
+                    author = post.get('author', '')
+                    subreddit = post.get('subreddit', '')
+                    
+                    content_parts = [
+                        f"Title: {title}",
+                        f"Author: u/{author}",
+                        f"Subreddit: r/{subreddit}",
+                        f"\nContent:\n{selftext}"
+                    ]
+                    
+                    # Get top comments
+                    if len(data) > 1:
+                        comments = data[1]['data']['children'][:5]
+                        comment_texts = []
+                        for c in comments:
+                            if c['kind'] == 't1':
+                                comment_texts.append(f"- {c['data'].get('body', '')[:500]}")
+                        if comment_texts:
+                            content_parts.append(f"\nTop Comments:\n" + "\n".join(comment_texts))
+                    
+                    return {
+                        "title": title,
+                        "content": "\n".join(content_parts),
+                        "url": url,
+                        "type": "reddit",
+                        "author": author
+                    }
+            
+            return {"error": "Could not fetch Reddit content"}
+        except Exception as e:
+            return {"error": f"Reddit extraction failed: {e}"}
+    
+    async def _fetch_substack_content(self, url: str) -> Dict:
+        """Fetch Substack newsletter content"""
+        try:
+            response = await self.client.get(url)
+            if response.status_code == 200:
+                parser = TextExtractor()
+                parser.feed(response.text)
+                
+                # Try to find author
+                author_match = re.search(r'"author":\s*{\s*"name":\s*"([^"]+)"', response.text)
+                author = author_match.group(1) if author_match else ""
+                
+                return {
+                    "title": parser.title,
+                    "content": " ".join(parser.text)[:15000],
+                    "url": url,
+                    "type": "substack",
+                    "author": author
+                }
+        except Exception as e:
+            return {"error": f"Substack extraction failed: {e}"}
+        
+        return await self._fetch_article_content(url)
+    
+    async def _fetch_medium_content(self, url: str) -> Dict:
+        """Fetch Medium article content"""
+        # Medium has good semantic HTML, use standard extraction
+        return await self._fetch_article_content(url)
     
     async def _extract_with_ai(self, content: Dict) -> List[Dict]:
         """Use Claude to extract predictions from content"""
@@ -237,7 +440,17 @@ Important: Only include predictions with identifiable speakers - not anonymous s
     
     async def extract_from_url(self, url: str) -> Dict:
         """
-        Main method: Extract predictions from any URL
+        Main method: Extract predictions from ANY URL
+        
+        Supported sources:
+        - News articles (any website)
+        - YouTube videos (with full transcript)
+        - Twitter/X posts
+        - Reddit posts
+        - Substack newsletters
+        - Medium articles
+        - LinkedIn posts
+        - And more...
         
         Returns:
             {
@@ -252,11 +465,24 @@ Important: Only include predictions with identifiable speakers - not anonymous s
         url_type = self._detect_url_type(url)
         logger.info(f"Extracting from {url_type} URL: {url}")
         
-        # Fetch content based on URL type
-        if url_type == 'youtube':
-            content = await self._fetch_youtube_content(url)
-        else:
-            content = await self._fetch_article_content(url)
+        # Route to appropriate handler based on URL type
+        handlers = {
+            'youtube': self._fetch_youtube_content,
+            'twitter': self._fetch_twitter_content,
+            'reddit': self._fetch_reddit_content,
+            'substack': self._fetch_substack_content,
+            'medium': self._fetch_medium_content,
+            # These all use standard article extraction
+            'article': self._fetch_article_content,
+            'vimeo': self._fetch_article_content,
+            'linkedin': self._fetch_article_content,
+            'facebook': self._fetch_article_content,
+            'paywall_news': self._fetch_article_content,
+            'mirror': self._fetch_article_content,
+        }
+        
+        handler = handlers.get(url_type, self._fetch_article_content)
+        content = await handler(url)
         
         if "error" in content:
             return {

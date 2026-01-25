@@ -22,3 +22,4 @@ python-dotenv==1.0.0
 psycopg2-binary==2.9.9
 feedparser==6.0.10
 apscheduler==3.10.4
+youtube-transcript-api==0.6.2
