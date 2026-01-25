@@ -1,7 +1,7 @@
 // src/app/admin/page.tsx
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle, UserPlus, Search, Sparkles } from 'lucide-react'
+import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle, UserPlus, Search, Sparkles, ClipboardCheck, XCircle, Check, X } from 'lucide-react'
 import { KNOWN_PUNDITS, searchKnownPundits, KnownPundit } from '@/data/knownPundits'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -21,11 +21,29 @@ interface RSSArticle {
   pundits_mentioned: string[]
 }
 
+interface PendingPrediction {
+  id: string
+  pundit_name: string
+  pundit_username: string
+  claim: string
+  quote: string
+  category: string
+  source_url: string
+  timeframe: string
+  captured_at: string
+  status: string
+  tr_index_score: number | null
+}
+
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'manual' | 'rss' | 'pundit'>('manual')
+  const [activeTab, setActiveTab] = useState<'manual' | 'rss' | 'pundit' | 'verify'>('manual')
   const [pundits, setPundits] = useState<Pundit[]>([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  
+  // Verification state
+  const [pendingPredictions, setPendingPredictions] = useState<PendingPrediction[]>([])
+  const [verifyLoading, setVerifyLoading] = useState(false)
   
   // Pundit search state
   const [punditSearch, setPunditSearch] = useState('')
@@ -91,6 +109,39 @@ export default function AdminPage() {
       .then(res => res.json())
       .then(data => setPundits(data.pundits || []))
       .catch(err => console.error('Failed to load pundits:', err))
+  }
+  
+  const loadPendingPredictions = async () => {
+    setVerifyLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/predictions/pending`)
+      const data = await res.json()
+      setPendingPredictions(data.predictions || [])
+    } catch (err) {
+      console.error('Failed to load pending predictions:', err)
+    }
+    setVerifyLoading(false)
+  }
+  
+  const resolvePrediction = async (predictionId: string, outcome: 'correct' | 'wrong') => {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/predictions/${predictionId}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ outcome })
+      })
+      
+      if (res.ok) {
+        setMessage({ type: 'success', text: `Prediction marked as ${outcome.toUpperCase()}` })
+        // Remove from list
+        setPendingPredictions(prev => prev.filter(p => p.id !== predictionId))
+      } else {
+        const data = await res.json()
+        setMessage({ type: 'error', text: data.detail || 'Failed to resolve prediction' })
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Network error - check API connection' })
+    }
   }
 
   useEffect(() => {
@@ -190,6 +241,20 @@ export default function AdminPage() {
         >
           <Rss className="h-4 w-4" />
           RSS Feeds
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab('verify')
+            loadPendingPredictions()
+          }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+            activeTab === 'verify' 
+              ? 'bg-emerald-600 text-white' 
+              : 'bg-white border text-slate-600 hover:bg-slate-50'
+          }`}
+        >
+          <ClipboardCheck className="h-4 w-4" />
+          Verify Predictions
         </button>
       </div>
 
@@ -747,6 +812,105 @@ export default function AdminPage() {
             <div className="bg-white border rounded-xl p-12 text-center">
               <Rss className="h-12 w-12 text-slate-300 mx-auto mb-4" />
               <p className="text-slate-500">Click "Fetch Latest Articles" to pull from news feeds</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Verify Predictions Tab */}
+      {activeTab === 'verify' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Pending Verification</h2>
+              <p className="text-sm text-slate-500">Manually verify predictions that can't be auto-resolved via Polymarket</p>
+            </div>
+            <button
+              onClick={loadPendingPredictions}
+              disabled={verifyLoading}
+              className="flex items-center gap-2 bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${verifyLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
+
+          {verifyLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin h-8 w-8 border-4 border-emerald-600 border-t-transparent rounded-full" />
+            </div>
+          ) : pendingPredictions.length > 0 ? (
+            <div className="space-y-4">
+              {pendingPredictions.map(pred => (
+                <div key={pred.id} className="bg-white border rounded-xl overflow-hidden">
+                  {/* Header */}
+                  <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">
+                        {pred.category}
+                      </span>
+                      <span className="text-xs text-amber-600">•</span>
+                      <span className="text-xs text-amber-600">
+                        Resolves: {pred.timeframe ? new Date(pred.timeframe).toLocaleDateString() : 'TBD'}
+                      </span>
+                    </div>
+                    {pred.tr_index_score && (
+                      <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                        TR: {pred.tr_index_score.toFixed(0)}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-bold text-slate-900">{pred.pundit_name}</span>
+                      <span className="text-sm text-slate-500">@{pred.pundit_username}</span>
+                    </div>
+                    
+                    <p className="font-bold text-slate-900 mb-2">{pred.claim}</p>
+                    
+                    <div className="bg-slate-50 rounded-lg p-3 mb-3 border-l-4 border-slate-300 italic text-sm text-slate-600">
+                      "{pred.quote}"
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <a
+                        href={pred.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        View Source →
+                      </a>
+                      
+                      {/* Resolution Buttons */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => resolvePrediction(pred.id, 'correct')}
+                          className="flex items-center gap-1 bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                        >
+                          <Check className="h-4 w-4" />
+                          CORRECT
+                        </button>
+                        <button
+                          onClick={() => resolvePrediction(pred.id, 'wrong')}
+                          className="flex items-center gap-1 bg-rose-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                          WRONG
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white border rounded-xl p-12 text-center">
+              <ClipboardCheck className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
+              <p className="text-slate-500 font-bold">No predictions pending verification</p>
+              <p className="text-sm text-slate-400 mt-1">All predictions are either resolved or awaiting their deadline</p>
             </div>
           )}
         </div>

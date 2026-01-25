@@ -1312,6 +1312,406 @@
           "resolution_price": 0.00
         }
       ]
+    },
+    {
+      "name": "Donald Trump",
+      "username": "realDonaldTrump",
+      "twitter_id": "25073877",
+      "affiliation": "45th & 47th US President",
+      "bio": "45th and 47th President of the United States. Known for bold economic and political claims.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/874276197357596672/kUuht00m_400x400.jpg",
+      "domains": ["politics", "economy", "geopolitics"],
+      "predictions": [
+        {
+          "date": "2020-02-26",
+          "claim": "COVID-19 cases in the US will go down to near zero within days",
+          "quote": "When you have 15 people, and the 15 within a couple of days is going to be down to close to zero, that's a pretty good job we've done.",
+          "source_url": "https://www.whitehouse.gov/briefings-statements/remarks-president-trump-vice-president-pence-members-coronavirus-task-force-press-conference/",
+          "source_type": "press_conference",
+          "category": "health",
+          "timeframe": "2020-03-15",
+          "outcome": "wrong",
+          "outcome_notes": "Cases exploded to thousands within weeks, pandemic declared",
+          "entry_price_estimate": 0.70,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2020-10-15",
+          "claim": "Will win 2020 presidential election",
+          "quote": "We're going to win. We're going to win big.",
+          "source_url": "https://www.youtube.com/watch?v=nMpTPSY5ip4",
+          "source_type": "rally",
+          "category": "politics",
+          "timeframe": "2020-11-03",
+          "outcome": "wrong",
+          "outcome_notes": "Lost to Joe Biden 306-232 electoral votes",
+          "entry_price_estimate": 0.45,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2024-01-15",
+          "claim": "Will win 2024 presidential election",
+          "quote": "We're going to win in a landslide.",
+          "source_url": "https://twitter.com/realDonaldTrump/status/1747018293182644224",
+          "source_type": "twitter",
+          "category": "politics",
+          "timeframe": "2024-11-05",
+          "outcome": "right",
+          "outcome_notes": "Won 2024 election against Kamala Harris",
+          "entry_price_estimate": 0.50,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2018-07-27",
+          "claim": "US GDP will grow at 4%+ annually",
+          "quote": "We're going to have a lot of quarters like this. We could be in the 4's or maybe even the 5's.",
+          "source_url": "https://www.cnbc.com/2018/07/27/trump-economy-gdp.html",
+          "source_type": "article",
+          "category": "economy",
+          "timeframe": "2019-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "GDP growth averaged 2.3% in 2019, never sustained 4%+",
+          "entry_price_estimate": 0.35,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Joe Biden",
+      "username": "JoeBiden",
+      "twitter_id": "939091",
+      "affiliation": "46th US President",
+      "bio": "46th President of the United States. Former Vice President and Senator.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1380530524779859970/TfwVAbyX_400x400.jpg",
+      "domains": ["politics", "economy"],
+      "predictions": [
+        {
+          "date": "2022-06-21",
+          "claim": "Gas prices will come down significantly by end of summer",
+          "quote": "By the end of the summer, the price of gas is going to be down.",
+          "source_url": "https://www.whitehouse.gov/briefing-room/speeches-remarks/2022/06/21/remarks-by-president-biden-on-gas-prices/",
+          "source_type": "speech",
+          "category": "economy",
+          "timeframe": "2022-09-21",
+          "outcome": "right",
+          "outcome_notes": "Gas prices dropped from $5+ to ~$3.70 by September",
+          "entry_price_estimate": 0.45,
+          "resolution_price": 1.00
+        },
+        {
+          "date": "2021-08-18",
+          "claim": "Taliban will NOT take over Afghanistan quickly",
+          "quote": "The likelihood there's going to be the Taliban overrunning everything and owning the whole country is highly unlikely.",
+          "source_url": "https://www.whitehouse.gov/briefing-room/speeches-remarks/2021/07/08/remarks-by-president-biden-on-the-drawdown-of-u-s-forces-in-afghanistan/",
+          "source_type": "press_conference",
+          "category": "geopolitics",
+          "timeframe": "2021-09-30",
+          "outcome": "wrong",
+          "outcome_notes": "Taliban took Kabul within days, August 15, 2021",
+          "entry_price_estimate": 0.60,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2022-03-26",
+          "claim": "Putin cannot remain in power",
+          "quote": "For God's sake, this man cannot remain in power.",
+          "source_url": "https://www.bbc.com/news/world-europe-60890184",
+          "source_type": "speech",
+          "category": "geopolitics",
+          "timeframe": "2024-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "Putin remained in power, re-elected in 2024",
+          "entry_price_estimate": 0.20,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Alexandria Ocasio-Cortez",
+      "username": "AOC",
+      "twitter_id": "138203134",
+      "affiliation": "US Representative (NY-14)",
+      "bio": "US Representative for New York's 14th district. Progressive leader.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/923274881197895680/AbHcStkl_400x400.jpg",
+      "domains": ["politics", "climate", "economy"],
+      "predictions": [
+        {
+          "date": "2019-01-21",
+          "claim": "World will end in 12 years without climate action",
+          "quote": "The world is gonna end in 12 years if we don't address climate change.",
+          "source_url": "https://www.usatoday.com/story/news/politics/onpolitics/2019/01/22/ocasio-cortez-climate-change-12-years/2642481002/",
+          "source_type": "interview",
+          "category": "climate",
+          "timeframe": "2031-01-21",
+          "outcome": "pending",
+          "outcome_notes": "Deadline not yet reached",
+          "entry_price_estimate": 0.05,
+          "resolution_price": null
+        },
+        {
+          "date": "2021-03-01",
+          "claim": "Green New Deal will create millions of jobs",
+          "quote": "We could create 20 million jobs with this green transition.",
+          "source_url": "https://www.congress.gov/bill/116th-congress/house-resolution/109",
+          "source_type": "legislation",
+          "category": "economy",
+          "timeframe": "2030-12-31",
+          "outcome": "pending",
+          "outcome_notes": "Long-term prediction, GND not fully implemented",
+          "entry_price_estimate": 0.25,
+          "resolution_price": null
+        }
+      ]
+    },
+    {
+      "name": "Stephen A. Smith",
+      "username": "stephenasmith",
+      "twitter_id": "101196267",
+      "affiliation": "ESPN First Take",
+      "bio": "ESPN sports commentator known for bold takes and predictions.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1661434060338601985/6lXKiS3M_400x400.jpg",
+      "domains": ["sports"],
+      "predictions": [
+        {
+          "date": "2023-01-15",
+          "claim": "Dallas Cowboys will win Super Bowl LVIII",
+          "quote": "This is the Cowboys' year. They are going to the Super Bowl and winning it.",
+          "source_url": "https://www.youtube.com/watch?v=example_cowboys_sb",
+          "source_type": "tv",
+          "category": "sports",
+          "timeframe": "2024-02-11",
+          "outcome": "wrong",
+          "outcome_notes": "Cowboys lost in Wild Card round to Packers",
+          "entry_price_estimate": 0.15,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2022-10-01",
+          "claim": "Brooklyn Nets will win 2023 NBA Championship",
+          "quote": "Kevin Durant and Kyrie Irving are going to bring Brooklyn a championship.",
+          "source_url": "https://www.espn.com/nba/story/_/id/34567890/stephen-smith-nets-prediction",
+          "source_type": "tv",
+          "category": "sports",
+          "timeframe": "2023-06-30",
+          "outcome": "wrong",
+          "outcome_notes": "Nets were swept in first round, Durant traded",
+          "entry_price_estimate": 0.12,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2024-01-10",
+          "claim": "49ers will win Super Bowl LVIII",
+          "quote": "San Francisco is the best team in football. They're winning it all.",
+          "source_url": "https://www.youtube.com/watch?v=example_49ers_sb",
+          "source_type": "tv",
+          "category": "sports",
+          "timeframe": "2024-02-11",
+          "outcome": "wrong",
+          "outcome_notes": "49ers lost Super Bowl to Chiefs in overtime",
+          "entry_price_estimate": 0.30,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2023-10-15",
+          "claim": "LeBron James Lakers will miss 2024 playoffs",
+          "quote": "This Lakers team is not good enough. They're not making the playoffs.",
+          "source_url": "https://www.youtube.com/watch?v=example_lakers_playoffs",
+          "source_type": "tv",
+          "category": "sports",
+          "timeframe": "2024-04-20",
+          "outcome": "wrong",
+          "outcome_notes": "Lakers made playoffs through play-in tournament",
+          "entry_price_estimate": 0.45,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Skip Bayless",
+      "username": "RealSkipBayless",
+      "twitter_id": "15754281",
+      "affiliation": "FS1 Undisputed",
+      "bio": "Sports commentator known for controversial takes, especially about LeBron James and Cowboys.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/1517894627006287874/QwrXGG0p_400x400.jpg",
+      "domains": ["sports"],
+      "predictions": [
+        {
+          "date": "2022-09-01",
+          "claim": "Dallas Cowboys will win Super Bowl LVII",
+          "quote": "This is finally the year. My Cowboys are going to win it all.",
+          "source_url": "https://twitter.com/RealSkipBayless/status/1565432187654",
+          "source_type": "twitter",
+          "category": "sports",
+          "timeframe": "2023-02-12",
+          "outcome": "wrong",
+          "outcome_notes": "Cowboys lost to 49ers in divisional round",
+          "entry_price_estimate": 0.08,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2023-09-01",
+          "claim": "Dallas Cowboys will win Super Bowl LVIII",
+          "quote": "Cowboys are winning the Super Bowl. Book it.",
+          "source_url": "https://twitter.com/RealSkipBayless/status/1698765432198",
+          "source_type": "twitter",
+          "category": "sports",
+          "timeframe": "2024-02-11",
+          "outcome": "wrong",
+          "outcome_notes": "Cowboys lost to Packers in Wild Card round",
+          "entry_price_estimate": 0.10,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2020-10-01",
+          "claim": "Tom Brady will fail with Buccaneers",
+          "quote": "Tom Brady is done. He's going to fail in Tampa.",
+          "source_url": "https://www.youtube.com/watch?v=skip_brady_bucs",
+          "source_type": "tv",
+          "category": "sports",
+          "timeframe": "2021-02-07",
+          "outcome": "wrong",
+          "outcome_notes": "Brady won Super Bowl LV with Buccaneers",
+          "entry_price_estimate": 0.40,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Pat Robertson",
+      "username": "patrobertson",
+      "twitter_id": null,
+      "affiliation": "CBN (Christian Broadcasting Network)",
+      "bio": "Televangelist and founder of CBN. Known for prophecies and predictions.",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Pat_Robertson_Parlersize.jpg/440px-Pat_Robertson_Parlersize.jpg",
+      "domains": ["religion", "politics"],
+      "predictions": [
+        {
+          "date": "1976-01-01",
+          "claim": "World will end in 1982",
+          "quote": "I guarantee you by the end of 1982 there is going to be a judgment on the world.",
+          "source_url": "https://www.nytimes.com/1998/02/28/us/pat-robertson-s-apocalyptic-predictions.html",
+          "source_type": "broadcast",
+          "category": "religion",
+          "timeframe": "1982-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "World did not end in 1982",
+          "entry_price_estimate": 0.02,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2006-01-02",
+          "claim": "Tsunami will hit US coast in 2006",
+          "quote": "God told me that in 2006 a tsunami will hit America's coastline.",
+          "source_url": "https://www.cbsnews.com/news/pat-robertson-predicts-storms-tsunami/",
+          "source_type": "broadcast",
+          "category": "religion",
+          "timeframe": "2006-12-31",
+          "outcome": "wrong",
+          "outcome_notes": "No tsunami hit US coast in 2006",
+          "entry_price_estimate": 0.05,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2012-01-01",
+          "claim": "Romney will win 2012 election and serve 2 terms",
+          "quote": "God told me who the next president would be. Romney wins and serves 8 years.",
+          "source_url": "https://www.huffpost.com/entry/pat-robertson-god-told-him-romney_n_1209816",
+          "source_type": "broadcast",
+          "category": "politics",
+          "timeframe": "2012-11-06",
+          "outcome": "wrong",
+          "outcome_notes": "Obama defeated Romney 332-206",
+          "entry_price_estimate": 0.45,
+          "resolution_price": 0.00
+        }
+      ]
+    },
+    {
+      "name": "Neil deGrasse Tyson",
+      "username": "neiltyson",
+      "twitter_id": "19725644",
+      "affiliation": "Hayden Planetarium",
+      "bio": "Astrophysicist and science communicator. Director of Hayden Planetarium.",
+      "avatar_url": "https://pbs.twimg.com/profile_images/74188698/NeilTysonOriginal_400x400.jpg",
+      "domains": ["science", "tech"],
+      "predictions": [
+        {
+          "date": "2015-03-09",
+          "claim": "Commercial space travel will be common by 2025",
+          "quote": "Within 10 years, space tourism will be accessible to middle-class people.",
+          "source_url": "https://www.businessinsider.com/neil-degrasse-tyson-space-tourism-2015-3",
+          "source_type": "interview",
+          "category": "tech",
+          "timeframe": "2025-03-09",
+          "outcome": "pending",
+          "outcome_notes": "Space tourism exists but not yet 'middle-class accessible'",
+          "entry_price_estimate": 0.20,
+          "resolution_price": null
+        },
+        {
+          "date": "2018-06-15",
+          "claim": "Humans will land on Mars by 2035",
+          "quote": "I'm confident we'll have humans on Mars by 2035 if we maintain current trajectory.",
+          "source_url": "https://www.space.com/40816-neil-degrasse-tyson-mars-2035.html",
+          "source_type": "interview",
+          "category": "science",
+          "timeframe": "2035-12-31",
+          "outcome": "pending",
+          "outcome_notes": "Long-term prediction",
+          "entry_price_estimate": 0.30,
+          "resolution_price": null
+        }
+      ]
+    },
+    {
+      "name": "Anthony Fauci",
+      "username": "NIAIDNews",
+      "twitter_id": null,
+      "affiliation": "Former NIAID Director",
+      "bio": "Former director of NIAID. Chief medical advisor during COVID-19 pandemic.",
+      "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Anthony_Fauci_official_portrait_2022.jpg/440px-Anthony_Fauci_official_portrait_2022.jpg",
+      "domains": ["health", "science"],
+      "predictions": [
+        {
+          "date": "2020-03-08",
+          "claim": "No need for healthy Americans to wear masks",
+          "quote": "There's no reason to be walking around with a mask.",
+          "source_url": "https://www.cbsnews.com/news/coronavirus-prevention-face-mask-60-minutes-2020-03-08/",
+          "source_type": "tv",
+          "category": "health",
+          "timeframe": "2020-05-01",
+          "outcome": "wrong",
+          "outcome_notes": "CDC later recommended universal masking",
+          "entry_price_estimate": 0.60,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2021-05-11",
+          "claim": "Pandemic will be controlled by Fall 2021 with vaccination",
+          "quote": "If we get 70-85% vaccinated, we can have a relatively normal fall.",
+          "source_url": "https://www.cnbc.com/2021/05/11/fauci-says-us-could-have-relatively-normal-fall-if-vaccinations-continue.html",
+          "source_type": "interview",
+          "category": "health",
+          "timeframe": "2021-10-31",
+          "outcome": "wrong",
+          "outcome_notes": "Delta variant caused major fall surge despite vaccination",
+          "entry_price_estimate": 0.55,
+          "resolution_price": 0.00
+        },
+        {
+          "date": "2022-01-15",
+          "claim": "Omicron wave will peak by end of January 2022",
+          "quote": "I think we're going to see the peak of Omicron cases by late January.",
+          "source_url": "https://www.reuters.com/business/healthcare-pharmaceuticals/fauci-says-us-omicron-wave-may-peak-late-january-2022-01-15/",
+          "source_type": "interview",
+          "category": "health",
+          "timeframe": "2022-02-15",
+          "outcome": "right",
+          "outcome_notes": "Omicron cases did peak in late January 2022 in most states",
+          "entry_price_estimate": 0.60,
+          "resolution_price": 1.00
+        }
+      ]
     }
   ]
 }

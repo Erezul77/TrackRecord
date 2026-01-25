@@ -21,7 +21,7 @@ class NewsArticle:
 
 # News RSS feeds that often contain predictions
 RSS_FEEDS = {
-    # Financial News
+    # ===== FINANCIAL NEWS =====
     "cnbc_markets": {
         "url": "https://www.cnbc.com/id/10000664/device/rss/rss.html",
         "source": "CNBC Markets",
@@ -42,7 +42,8 @@ RSS_FEEDS = {
         "source": "Reuters Business",
         "categories": ["markets", "economy"]
     },
-    # Crypto News
+    
+    # ===== CRYPTO NEWS =====
     "coindesk": {
         "url": "https://www.coindesk.com/arc/outboundfeeds/rss/",
         "source": "CoinDesk",
@@ -53,31 +54,196 @@ RSS_FEEDS = {
         "source": "Cointelegraph",
         "categories": ["crypto"]
     },
-    # Politics/Policy
+    
+    # ===== POLITICS NEWS =====
     "politico": {
         "url": "https://www.politico.com/rss/politicopicks.xml",
         "source": "Politico",
         "categories": ["politics"]
     },
-    # Tech
+    "hill": {
+        "url": "https://thehill.com/feed/",
+        "source": "The Hill",
+        "categories": ["politics"]
+    },
+    "axios": {
+        "url": "https://api.axios.com/feed/",
+        "source": "Axios",
+        "categories": ["politics", "tech"]
+    },
+    "npr_politics": {
+        "url": "https://feeds.npr.org/1014/rss.xml",
+        "source": "NPR Politics",
+        "categories": ["politics"]
+    },
+    "bbc_world": {
+        "url": "http://feeds.bbci.co.uk/news/world/rss.xml",
+        "source": "BBC World",
+        "categories": ["politics", "geopolitics"]
+    },
+    
+    # ===== TECH NEWS =====
     "techcrunch": {
         "url": "https://techcrunch.com/feed/",
         "source": "TechCrunch",
         "categories": ["tech"]
     },
+    "verge": {
+        "url": "https://www.theverge.com/rss/index.xml",
+        "source": "The Verge",
+        "categories": ["tech", "entertainment"]
+    },
+    "wired": {
+        "url": "https://www.wired.com/feed/rss",
+        "source": "Wired",
+        "categories": ["tech", "science"]
+    },
+    
+    # ===== SPORTS NEWS =====
+    "espn": {
+        "url": "https://www.espn.com/espn/rss/news",
+        "source": "ESPN",
+        "categories": ["sports"]
+    },
+    "espn_nfl": {
+        "url": "https://www.espn.com/espn/rss/nfl/news",
+        "source": "ESPN NFL",
+        "categories": ["sports"]
+    },
+    "espn_nba": {
+        "url": "https://www.espn.com/espn/rss/nba/news",
+        "source": "ESPN NBA",
+        "categories": ["sports"]
+    },
+    "bleacher_report": {
+        "url": "https://bleacherreport.com/articles/feed",
+        "source": "Bleacher Report",
+        "categories": ["sports"]
+    },
+    "athletic": {
+        "url": "https://theathletic.com/feeds/rss/news/",
+        "source": "The Athletic",
+        "categories": ["sports"]
+    },
+    
+    # ===== ENTERTAINMENT NEWS =====
+    "variety": {
+        "url": "https://variety.com/feed/",
+        "source": "Variety",
+        "categories": ["entertainment", "media"]
+    },
+    "hollywood_reporter": {
+        "url": "https://www.hollywoodreporter.com/feed/",
+        "source": "Hollywood Reporter",
+        "categories": ["entertainment", "media"]
+    },
+    "deadline": {
+        "url": "https://deadline.com/feed/",
+        "source": "Deadline",
+        "categories": ["entertainment", "media"]
+    },
+    "billboard": {
+        "url": "https://www.billboard.com/feed/",
+        "source": "Billboard",
+        "categories": ["entertainment"]
+    },
+    
+    # ===== SCIENCE & HEALTH NEWS =====
+    "science_daily": {
+        "url": "https://www.sciencedaily.com/rss/all.xml",
+        "source": "Science Daily",
+        "categories": ["science"]
+    },
+    "nature": {
+        "url": "http://feeds.nature.com/nature/rss/current",
+        "source": "Nature",
+        "categories": ["science"]
+    },
+    "stat_news": {
+        "url": "https://www.statnews.com/feed/",
+        "source": "STAT News",
+        "categories": ["health", "science"]
+    },
+    "medical_news": {
+        "url": "https://www.medicalnewstoday.com/rss",
+        "source": "Medical News Today",
+        "categories": ["health"]
+    },
+    
+    # ===== CLIMATE & ENVIRONMENT =====
+    "climate_home": {
+        "url": "https://www.climatechangenews.com/feed/",
+        "source": "Climate Home News",
+        "categories": ["climate", "science"]
+    },
+    "carbon_brief": {
+        "url": "https://www.carbonbrief.org/feed/",
+        "source": "Carbon Brief",
+        "categories": ["climate", "science"]
+    },
+    
+    # ===== GEOPOLITICS =====
+    "foreign_policy": {
+        "url": "https://foreignpolicy.com/feed/",
+        "source": "Foreign Policy",
+        "categories": ["geopolitics", "politics"]
+    },
+    "al_jazeera": {
+        "url": "https://www.aljazeera.com/xml/rss/all.xml",
+        "source": "Al Jazeera",
+        "categories": ["geopolitics", "politics"]
+    },
 }
 
 # Known pundits and their variations in article text
 KNOWN_PUNDITS = {
+    # ===== FINANCE & CRYPTO =====
     "balajis": ["Balaji Srinivasan", "Balaji", "@balajis"],
     "jimcramer": ["Jim Cramer", "Cramer", "Mad Money"],
     "CathieDWood": ["Cathie Wood", "Cathie", "ARK Invest", "Ark's Cathie Wood"],
     "PeterSchiff": ["Peter Schiff", "Schiff"],
-    "NateSilver538": ["Nate Silver", "FiveThirtyEight", "538"],
     "saylor": ["Michael Saylor", "Saylor", "MicroStrategy"],
     "paulkrugman": ["Paul Krugman", "Krugman"],
     "LHSummers": ["Larry Summers", "Lawrence Summers", "Summers"],
-    # Add more as needed
+    "elonmusk": ["Elon Musk", "Musk", "Tesla CEO", "SpaceX CEO"],
+    "RayDalio": ["Ray Dalio", "Dalio", "Bridgewater"],
+    "BillAckman": ["Bill Ackman", "Ackman", "Pershing Square"],
+    
+    # ===== POLITICS =====
+    "realDonaldTrump": ["Donald Trump", "Trump", "President Trump", "former President Trump"],
+    "JoeBiden": ["Joe Biden", "Biden", "President Biden"],
+    "BernieSanders": ["Bernie Sanders", "Sanders", "Senator Sanders"],
+    "AOC": ["Alexandria Ocasio-Cortez", "AOC", "Ocasio-Cortez"],
+    "tedcruz": ["Ted Cruz", "Cruz", "Senator Cruz"],
+    "GovRonDeSantis": ["Ron DeSantis", "DeSantis", "Governor DeSantis"],
+    "GavinNewsom": ["Gavin Newsom", "Newsom", "Governor Newsom"],
+    "netanyahu": ["Benjamin Netanyahu", "Netanyahu", "Bibi"],
+    "EmmanuelMacron": ["Emmanuel Macron", "Macron", "President Macron"],
+    "JMilei": ["Javier Milei", "Milei"],
+    
+    # ===== SPORTS =====
+    "NateSilver538": ["Nate Silver", "FiveThirtyEight", "538"],
+    "stephenasmith": ["Stephen A. Smith", "Stephen A", "First Take"],
+    "RealSkipBayless": ["Skip Bayless", "Skip", "Undisputed"],
+    "ShannonSharpe": ["Shannon Sharpe", "Sharpe"],
+    "BillSimmons": ["Bill Simmons", "Simmons", "The Ringer"],
+    
+    # ===== ENTERTAINMENT =====
+    "ScottMendelson": ["Scott Mendelson", "Mendelson"],
+    
+    # ===== SCIENCE & HEALTH =====
+    "neiltyson": ["Neil deGrasse Tyson", "Neil Tyson", "deGrasse Tyson"],
+    "EricTopol": ["Eric Topol", "Topol"],
+    "MichaelEMann": ["Michael Mann", "climate scientist Mann"],
+    
+    # ===== GEOPOLITICS =====
+    "ianbremmer": ["Ian Bremmer", "Bremmer", "Eurasia Group"],
+    "PeterZeihan": ["Peter Zeihan", "Zeihan"],
+    
+    # ===== MEDIA COMMENTATORS =====
+    "benshapiro": ["Ben Shapiro", "Shapiro", "Daily Wire"],
+    "TuckerCarlson": ["Tucker Carlson", "Tucker"],
+    "joerogan": ["Joe Rogan", "Rogan", "JRE"],
 }
 
 
@@ -144,11 +310,31 @@ class RSSIngestionService:
     def filter_prediction_articles(self, articles: List[NewsArticle]) -> List[NewsArticle]:
         """Filter articles that likely contain predictions"""
         prediction_keywords = [
+            # Financial
             'predict', 'forecast', 'expect', 'will be', 'going to',
-            'by 2025', 'by 2026', 'by 2027', 'next year', 'next month',
+            'by 2025', 'by 2026', 'by 2027', 'by 2028', 'by 2030',
+            'next year', 'next month', 'next season', 'next quarter',
             'rally', 'crash', 'surge', 'plunge', 'reach', 'hit',
             'target', 'outlook', 'projection', 'bet', 'wager',
-            'bullish', 'bearish', 'bottom', 'peak', 'high', 'low'
+            'bullish', 'bearish', 'bottom', 'peak', 'high', 'low',
+            # Sports
+            'will win', 'will lose', 'championship', 'playoffs', 'super bowl',
+            'world series', 'finals', 'mvp', 'season prediction', 'odds',
+            'favored', 'underdog', 'spread', 'over under',
+            # Politics
+            'will pass', 'will fail', 'election', 'poll', 'vote',
+            'majority', 'minority', 'swing state', 'electoral',
+            'campaign promise', 'policy will', 'legislation will',
+            # Entertainment
+            'box office', 'opening weekend', 'will gross', 'blockbuster',
+            'oscar', 'emmy', 'grammy', 'nomination', 'award season',
+            'streaming numbers', 'ratings will', 'viewership',
+            # Science/Health/Climate
+            'study predicts', 'research shows', 'scientists predict',
+            'climate projection', 'temperature will', 'sea level',
+            'pandemic', 'outbreak', 'vaccine', 'trial results',
+            # General
+            'i believe', 'mark my words', 'calling it now', 'guaranteed'
         ]
         
         filtered = []

@@ -48,6 +48,13 @@ export function MobileNav() {
               + Submit Prediction
             </Link>
             <Link 
+              href="/resolve" 
+              onClick={() => setIsOpen(false)}
+              className="text-sm font-bold text-emerald-600 hover:text-emerald-700 py-2"
+            >
+              ⚖️ Resolution Center
+            </Link>
+            <Link 
               href="/admin" 
               onClick={() => setIsOpen(false)}
               className="text-sm font-bold text-slate-600 hover:text-blue-600 py-2"

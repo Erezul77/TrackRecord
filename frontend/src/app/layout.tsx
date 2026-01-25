@@ -38,6 +38,7 @@ export default function RootLayout({
               <Link href="/predictions" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Predictions</Link>
               <Link href="/compete" className="text-sm font-bold text-yellow-600 hover:text-yellow-700 transition-colors">🏆 Compete</Link>
               <Link href="/submit" className="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors">+ Submit</Link>
+              <Link href="/resolve" className="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors">⚖️ Resolve</Link>
               <Link href="/admin" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Admin</Link>
             </nav>
 

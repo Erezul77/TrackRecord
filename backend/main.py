@@ -891,6 +891,259 @@ async def get_pending_submissions(
 
 
 # ============================================
+# Resolution Center - Prediction Verification
+# ============================================
+
+class ManualResolutionInput(BaseModel):
+    outcome: str  # 'correct' or 'wrong'
+    evidence_url: str  # REQUIRED - proof of outcome
+    notes: Optional[str] = None
+
+class CommunityOutcomeVote(BaseModel):
+    user_id: str
+    predicted_outcome: str  # 'correct' or 'wrong'
+
+@app.get("/api/resolution/ready")
+async def get_predictions_ready_for_resolution(
+    db: AsyncSession = Depends(get_db)
+):
+    """Get predictions that are PAST their deadline and ready to be resolved"""
+    from sqlalchemy import or_, func
+    
+    now = datetime.utcnow()
+    
+    # Get predictions past their timeframe that are NOT resolved
+    result = await db.execute(
+        select(Prediction, Pundit)
+        .join(Pundit, Prediction.pundit_id == Pundit.id)
+        .outerjoin(Position, Position.prediction_id == Prediction.id)
+        .where(Prediction.timeframe <= now)  # Past deadline
+        .where(Prediction.status != 'resolved')  # Not yet resolved
+        .where(
+            or_(
+                Position.id == None,  # No position
+                Position.outcome == None  # Position exists but no outcome
+            )
+        )
+        .order_by(Prediction.timeframe.asc())  # Oldest deadline first
+    )
+    
+    predictions = []
+    for pred, pundit in result.all():
+        # Get community votes for this prediction
+        votes_result = await db.execute(
+            select(
+                func.count().filter(PredictionVote.vote_type == 'up').label('upvotes'),
+                func.count().filter(PredictionVote.vote_type == 'down').label('downvotes')
+            )
+            .where(PredictionVote.prediction_id == pred.id)
+        )
+        vote_counts = votes_result.first()
+        
+        days_overdue = (now - pred.timeframe).days if pred.timeframe else 0
+        
+        predictions.append({
+            "id": str(pred.id),
+            "pundit_id": str(pred.pundit_id),
+            "pundit_name": pundit.name,
+            "pundit_username": pundit.username,
+            "pundit_avatar": pundit.avatar_url,
+            "claim": pred.claim,
+            "quote": pred.quote,
+            "category": pred.category,
+            "source_url": pred.source_url,
+            "timeframe": pred.timeframe.isoformat() if pred.timeframe else None,
+            "captured_at": pred.captured_at.isoformat() if pred.captured_at else None,
+            "days_overdue": days_overdue,
+            "status": pred.status,
+            "tr_index_score": pred.tr_index_score,
+            "community_votes": {
+                "upvotes": vote_counts.upvotes if vote_counts else 0,
+                "downvotes": vote_counts.downvotes if vote_counts else 0
+            }
+        })
+    
+    return {
+        "predictions": predictions, 
+        "total": len(predictions),
+        "ready_count": len([p for p in predictions if p["days_overdue"] >= 0])
+    }
+
+@app.get("/api/resolution/history")
+async def get_resolution_history(
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get recently resolved predictions"""
+    
+    result = await db.execute(
+        select(Prediction, Pundit, Position)
+        .join(Pundit, Prediction.pundit_id == Pundit.id)
+        .outerjoin(Position, Position.prediction_id == Prediction.id)
+        .where(Prediction.status == 'resolved')
+        .order_by(Prediction.timeframe.desc())
+        .limit(limit)
+    )
+    
+    resolutions = []
+    for pred, pundit, position in result.all():
+        outcome = position.outcome if position else None
+        resolutions.append({
+            "id": str(pred.id),
+            "pundit_name": pundit.name,
+            "claim": pred.claim,
+            "category": pred.category,
+            "outcome": outcome,
+            "outcome_label": "CORRECT" if outcome == "YES" else "WRONG" if outcome == "NO" else "UNKNOWN",
+            "timeframe": pred.timeframe.isoformat() if pred.timeframe else None,
+            "resolved_at": position.entry_timestamp.isoformat() if position and position.entry_timestamp else None
+        })
+    
+    return {"resolutions": resolutions, "total": len(resolutions)}
+
+@app.get("/api/admin/predictions/pending")
+async def get_pending_predictions(
+    admin = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all predictions pending manual verification (no Polymarket match or unresolved)"""
+    from sqlalchemy import or_
+    
+    # Get predictions that are either:
+    # 1. pending_match (no Polymarket match found)
+    # 2. matched but not yet resolved
+    result = await db.execute(
+        select(Prediction, Pundit)
+        .join(Pundit, Prediction.pundit_id == Pundit.id)
+        .outerjoin(Position, Position.prediction_id == Prediction.id)
+        .where(
+            or_(
+                Prediction.status == 'pending_match',
+                Prediction.status == 'matched'
+            )
+        )
+        .where(
+            or_(
+                Position.id == None,  # No position (unmatched)
+                Position.outcome == None  # Position exists but no outcome
+            )
+        )
+        .order_by(Prediction.timeframe.asc())  # Soonest deadline first
+    )
+    
+    predictions = []
+    for pred, pundit in result.all():
+        predictions.append({
+            "id": str(pred.id),
+            "pundit_name": pundit.name,
+            "pundit_username": pundit.username,
+            "claim": pred.claim,
+            "quote": pred.quote,
+            "category": pred.category,
+            "source_url": pred.source_url,
+            "timeframe": pred.timeframe.isoformat() if pred.timeframe else None,
+            "captured_at": pred.captured_at.isoformat() if pred.captured_at else None,
+            "status": pred.status,
+            "tr_index_score": pred.tr_index_score
+        })
+    
+    return {"predictions": predictions, "total": len(predictions)}
+
+@app.post("/api/admin/predictions/{prediction_id}/resolve")
+async def resolve_prediction_manually(
+    prediction_id: uuid.UUID,
+    resolution: ManualResolutionInput,
+    admin = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Manually resolve a prediction as correct or wrong.
+    
+    RULES:
+    - Outcome must be 'correct' or 'wrong' (binary, no partial credit)
+    - Evidence URL is REQUIRED (must provide proof)
+    - Resolution is FINAL and cannot be changed
+    """
+    
+    if resolution.outcome not in ['correct', 'wrong']:
+        raise HTTPException(status_code=400, detail="Outcome must be 'correct' or 'wrong' - binary only, no partial credit")
+    
+    if not resolution.evidence_url or not resolution.evidence_url.startswith('http'):
+        raise HTTPException(status_code=400, detail="Evidence URL is required - must provide proof of outcome")
+    
+    # Get prediction
+    result = await db.execute(
+        select(Prediction).where(Prediction.id == prediction_id)
+    )
+    prediction = result.scalar_one_or_none()
+    
+    if not prediction:
+        raise HTTPException(status_code=404, detail="Prediction not found")
+    
+    # Check if already has a position with outcome
+    pos_result = await db.execute(
+        select(Position).where(Position.prediction_id == prediction_id)
+    )
+    position = pos_result.scalar_one_or_none()
+    
+    outcome = "YES" if resolution.outcome == "correct" else "NO"
+    
+    if position:
+        # Update existing position
+        position.outcome = outcome
+        position.exit_price = 1.0 if outcome == "YES" else 0.0
+        position.realized_pnl = position.shares * (position.exit_price - position.entry_price) * position.position_size
+        position.status = "closed"
+    else:
+        # Create a manual position for tracking
+        # We need a Match first - create a dummy match for manual resolution
+        from database.models import Match
+        
+        manual_match = Match(
+            prediction_id=prediction_id,
+            market_id=f"manual_{prediction_id}",
+            market_question=f"Manual verification: {prediction.claim[:100]}",
+            similarity_score=1.0,
+            status="approved",
+            approved_at=datetime.utcnow()
+        )
+        db.add(manual_match)
+        await db.flush()
+        
+        # Create position
+        position = Position(
+            prediction_id=prediction_id,
+            match_id=manual_match.id,
+            pundit_id=prediction.pundit_id,
+            market_id=f"manual_{prediction_id}",
+            market_question=f"Manual verification: {prediction.claim[:100]}",
+            entry_price=0.5,  # Assume 50/50 odds for manual
+            entry_timestamp=prediction.captured_at,
+            position_size=100.0,  # Standard bet size
+            shares=100.0 / 0.5,  # shares = size / price
+            status="closed",
+            exit_price=1.0 if outcome == "YES" else 0.0,
+            outcome=outcome,
+            realized_pnl=100.0 * (1.0 if outcome == "YES" else -1.0)  # Win 100 or lose 100
+        )
+        db.add(position)
+    
+    # Update prediction status
+    prediction.status = "resolved"
+    
+    await db.commit()
+    
+    logging.info(f"Manually resolved prediction {prediction_id} as {resolution.outcome}")
+    
+    return {
+        "status": "success",
+        "prediction_id": str(prediction_id),
+        "outcome": resolution.outcome,
+        "notes": resolution.notes
+    }
+
+
+# ============================================
 # Prediction Voting System
 # ============================================
 
