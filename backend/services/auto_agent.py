@@ -35,16 +35,29 @@ Article Text:
 {text}
 ---
 
-Look for predictions made by these known pundits: {pundits_list}
+IMPORTANT: Extract predictions from ANY notable person mentioned in the article - politicians, CEOs, analysts, experts, celebrities, athletes, commentators, etc. 
+Do NOT limit to a predefined list. If someone notable makes a prediction, capture it.
 
 A prediction must:
-1. Be attributed to a specific person (by name)
+1. Be attributed to a specific NAMED person (full name required)
 2. Make a claim about something that will/won't happen in the future
-3. Be specific enough to verify on a prediction market
+3. Be specific enough to potentially verify later
 4. Have a timeframe (explicit or implicit)
 
+The person must be notable - someone with a public profile:
+- Politicians, government officials
+- CEOs, executives, investors
+- Analysts, economists, experts
+- TV personalities, journalists
+- Athletes, coaches, sports commentators
+- Religious leaders, activists
+- Scientists, researchers
+- Celebrities with influence
+
 For each prediction found, extract:
-- pundit_name: Name of the person making the prediction (must match known pundits list)
+- pundit_name: Full name of the person (e.g., "Elon Musk", not "Musk" or "Tesla CEO")
+- pundit_title: Their role/title (e.g., "Tesla CEO", "Senator", "CNBC Host")
+- pundit_affiliation: Organization they're associated with
 - claim: The specific prediction (phrased as a statement)
 - confidence: The speaker's implied confidence (certain/high/medium/low/speculative)
 - timeframe: When this will be verifiable (date like "2026-12-31", or "within 6 months", etc.)
@@ -54,17 +67,18 @@ For each prediction found, extract:
 Return ONLY valid JSON array:
 [
   {{
-    "pundit_name": "Jim Cramer",
-    "claim": "Tesla stock will reach $400 by end of 2026",
+    "pundit_name": "Janet Yellen",
+    "pundit_title": "Treasury Secretary",
+    "pundit_affiliation": "US Treasury Department",
+    "claim": "US economy will achieve soft landing in 2026",
     "confidence": "high",
     "timeframe": "2026-12-31",
-    "quote": "Tesla is going straight to $400, you heard it here first",
-    "category": "markets"
+    "quote": "We expect the economy to continue its path to a soft landing",
+    "category": "economy"
   }}
 ]
 
-If no predictions by known pundits are found, return empty array: []
-Do NOT include predictions from unknown/untracked individuals.
+If no predictions are found, return empty array: []
 """
 
 
@@ -113,6 +127,82 @@ class AutoAgentPipeline:
         
         return None
     
+    def _create_username(self, name: str) -> str:
+        """Generate a username from a name"""
+        # Remove special chars and create lowercase username
+        import re
+        username = re.sub(r'[^a-zA-Z0-9\s]', '', name)
+        username = username.lower().replace(' ', '_')
+        return username[:50]  # Limit length
+    
+    def _auto_create_pundit(self, name: str, title: str = "", affiliation: str = "", category: str = "general") -> Pundit:
+        """Auto-create a new pundit when discovered"""
+        username = self._create_username(name)
+        
+        # Check if username already exists (might have different name variation)
+        existing = self.db.execute(
+            select(Pundit).where(Pundit.username == username)
+        ).scalar_one_or_none()
+        
+        if existing:
+            # Add to cache and return existing
+            self.pundits_cache[name.lower()] = existing
+            return existing
+        
+        # Determine domains from category
+        category_to_domains = {
+            "politics": ["politics"],
+            "economy": ["economy"],
+            "markets": ["markets"],
+            "crypto": ["crypto"],
+            "tech": ["tech"],
+            "sports": ["sports"],
+            "entertainment": ["entertainment"],
+            "religion": ["religion"],
+            "science": ["science"],
+            "health": ["health"],
+            "climate": ["climate"],
+            "geopolitics": ["geopolitics", "politics"],
+            "us": ["politics", "us"],
+            "uk": ["politics", "uk"],
+            "eu": ["politics", "eu"],
+        }
+        domains = category_to_domains.get(category.lower(), ["general"])
+        
+        # Create new pundit
+        pundit = Pundit(
+            id=uuid.uuid4(),
+            name=name,
+            username=username,
+            affiliation=affiliation or title,
+            bio=f"{title}. Auto-discovered by TrackRecord bot." if title else "Auto-discovered by TrackRecord bot.",
+            domains=domains,
+            verified=False,  # Auto-discovered pundits start unverified
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+        
+        self.db.add(pundit)
+        
+        # Create initial metrics
+        metrics = PunditMetrics(
+            pundit_id=pundit.id,
+            total_predictions=0,
+            resolved_predictions=0,
+            paper_total_pnl=0.0,
+            paper_win_rate=0.0,
+            paper_roi=0.0
+        )
+        self.db.add(metrics)
+        
+        # Add to cache
+        self.pundits_cache[name.lower()] = pundit
+        self.pundits_cache[username.lower()] = pundit
+        
+        logger.info(f"Auto-created new pundit: {name} (@{username}) - {affiliation}")
+        
+        return pundit
+    
     async def run_pipeline(self, feed_keys: Optional[List[str]] = None) -> Dict:
         """
         Run the complete pipeline:
@@ -128,6 +218,7 @@ class AutoAgentPipeline:
             "predictions_extracted": 0,
             "predictions_matched": 0,
             "predictions_stored": 0,
+            "new_pundits_created": 0,
             "errors": []
         }
         
@@ -158,6 +249,7 @@ class AutoAgentPipeline:
                     stats["predictions_extracted"] += result["predictions_found"]
                     stats["predictions_matched"] += result["predictions_matched"]
                     stats["predictions_stored"] += result["predictions_stored"]
+                    stats["new_pundits_created"] += result.get("new_pundits", 0)
                     
             except Exception as e:
                 logger.error(f"Error processing article: {e}")
@@ -171,7 +263,8 @@ class AutoAgentPipeline:
         result = {
             "predictions_found": 0,
             "predictions_matched": 0,
-            "predictions_stored": 0
+            "predictions_stored": 0,
+            "new_pundits": 0
         }
         
         # Check for duplicate by URL hash
@@ -184,10 +277,8 @@ class AutoAgentPipeline:
             logger.debug(f"Skipping duplicate article: {article.title}")
             return result
         
-        # Extract predictions using AI
-        pundits_list = ", ".join([p.name for p in self.pundits_cache.values() if isinstance(p, Pundit)][:20])
-        
-        predictions_data = await self._extract_predictions(article, pundits_list)
+        # Extract predictions using AI (now extracts from ANY notable person)
+        predictions_data = await self._extract_predictions(article)
         result["predictions_found"] = len(predictions_data)
         
         if not predictions_data:
@@ -196,11 +287,23 @@ class AutoAgentPipeline:
         # Process each extracted prediction
         for pred_data in predictions_data:
             try:
-                # Find the pundit
-                pundit = self._find_pundit(pred_data.get("pundit_name", ""))
-                if not pundit:
-                    logger.debug(f"Unknown pundit: {pred_data.get('pundit_name')}")
+                pundit_name = pred_data.get("pundit_name", "").strip()
+                if not pundit_name or len(pundit_name) < 3:
                     continue
+                
+                # Find existing pundit or auto-create new one
+                pundit = self._find_pundit(pundit_name)
+                is_new_pundit = False
+                if not pundit:
+                    # Auto-create new pundit!
+                    pundit = self._auto_create_pundit(
+                        name=pundit_name,
+                        title=pred_data.get("pundit_title", ""),
+                        affiliation=pred_data.get("pundit_affiliation", ""),
+                        category=pred_data.get("category", "general")
+                    )
+                    is_new_pundit = True
+                    result["new_pundits"] += 1
                 
                 # Create prediction
                 prediction = await self._create_prediction(pundit, pred_data, article)
@@ -224,14 +327,13 @@ class AutoAgentPipeline:
         
         return result
     
-    async def _extract_predictions(self, article: NewsArticle, pundits_list: str) -> List[Dict]:
-        """Use Claude to extract predictions from article"""
+    async def _extract_predictions(self, article: NewsArticle) -> List[Dict]:
+        """Use Claude to extract predictions from article - finds ANY notable person"""
         prompt = EXTRACTION_PROMPT.format(
             title=article.title,
             source=article.source,
             date=article.published.isoformat(),
-            text=f"{article.title}\n\n{article.summary}",
-            pundits_list=pundits_list
+            text=f"{article.title}\n\n{article.summary}"
         )
         
         try:

@@ -299,14 +299,74 @@ class HistoricalCollector:
         
         return articles
     
+    async def collect_broad_predictions(
+        self,
+        start_date: datetime,
+        end_date: datetime,
+        max_articles: int = 50
+    ) -> List[HistoricalArticle]:
+        """
+        Collect articles containing predictions from ANY notable person.
+        Searches for prediction-related content without targeting specific pundits.
+        """
+        articles = []
+        
+        # Broad prediction search queries
+        broad_queries = [
+            "CEO predicts economy",
+            "senator predicts policy",
+            "analyst predicts market",
+            "expert predicts future",
+            "economist forecast",
+            "politician claims will happen",
+            "investor predicts stock",
+            "scientist predicts climate",
+            "coach predicts championship",
+            "minister predicts growth",
+        ]
+        
+        for query in broad_queries:
+            if len(articles) >= max_articles:
+                break
+            
+            # Search GDELT
+            gdelt_results = await self.search_gdelt(query, start_date, end_date)
+            
+            for result in gdelt_results[:5]:
+                if len(articles) >= max_articles:
+                    break
+                
+                content = await self.fetch_article_content(result["url"])
+                if content and len(content) > 200:
+                    try:
+                        pub_date = datetime.fromisoformat(result["published"].replace("Z", ""))
+                    except:
+                        pub_date = start_date
+                    
+                    articles.append(HistoricalArticle(
+                        title=result["title"],
+                        url=result["url"],
+                        content=content,
+                        published=pub_date,
+                        source=result["source"],
+                        pundit="auto-discover",  # Will be extracted by AI
+                        search_query=query
+                    ))
+                    logger.info(f"Found broad prediction article: {result['title'][:50]}...")
+            
+            await asyncio.sleep(1)
+        
+        return articles
+    
     async def collect_all(
         self,
         start_year: int = 2020,
         end_year: int = None,
         pundits: Dict[str, List[str]] = None,
-        max_per_pundit: int = 15
+        max_per_pundit: int = 15,
+        include_broad_search: bool = True
     ) -> List[HistoricalArticle]:
-        """Collect historical articles for all pundits"""
+        """Collect historical articles - both from known pundits AND broad prediction search"""
         if end_year is None:
             end_year = datetime.now().year
         
@@ -318,6 +378,7 @@ class HistoricalCollector:
         
         all_articles = []
         
+        # First: Collect from known pundits (seed list)
         for pundit, categories in pundits.items():
             logger.info(f"Collecting historical data for {pundit}...")
             
@@ -334,6 +395,17 @@ class HistoricalCollector:
             
             # Rate limiting between pundits
             await asyncio.sleep(2)
+        
+        # Second: Broad prediction search to discover NEW pundits
+        if include_broad_search:
+            logger.info("Running broad prediction search to discover new pundits...")
+            broad_articles = await self.collect_broad_predictions(
+                start_date=start_date,
+                end_date=end_date,
+                max_articles=30
+            )
+            all_articles.extend(broad_articles)
+            logger.info(f"Found {len(broad_articles)} articles from broad search")
         
         self.collected_articles = all_articles
         return all_articles
