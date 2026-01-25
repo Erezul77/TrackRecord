@@ -26,7 +26,7 @@ export default async function Home() {
             <span className="text-neutral-400 dark:text-neutral-600">We keep score.</span>
           </h1>
           <p className="text-lg md:text-xl text-neutral-500 max-w-xl mx-auto leading-relaxed">
-            Tracking what pundits, politicians, and experts predict—and whether they're right.
+            They make predictions. We keep receipts.
           </p>
         </div>
       </section>
