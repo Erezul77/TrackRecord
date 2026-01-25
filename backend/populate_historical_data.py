@@ -81,6 +81,9 @@ async def populate():
                 bio=pundit_data["bio"],
                 avatar_url=pundit_data.get("avatar_url"),
                 domains=pundit_data["domains"],
+                net_worth=pundit_data.get("net_worth"),
+                net_worth_source=pundit_data.get("net_worth_source"),
+                net_worth_year=pundit_data.get("net_worth_year"),
                 verified=True,
                 verified_at=datetime.utcnow()
             )

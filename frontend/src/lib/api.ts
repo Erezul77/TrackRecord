@@ -12,6 +12,10 @@ export interface Pundit {
   domains: string[]
   verified: boolean
   metrics: PunditMetrics
+  // Net worth data from verified sources
+  net_worth?: number  // In USD millions
+  net_worth_source?: string
+  net_worth_year?: number
 }
 
 export interface PunditMetrics {

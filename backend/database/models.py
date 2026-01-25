@@ -30,6 +30,11 @@ class Pundit(Base):
     
     last_tweet_id: Mapped[Optional[str]] = mapped_column(String(50))
     last_checked_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    
+    # Net Worth / Wealth data from verified sources
+    net_worth: Mapped[Optional[float]] = mapped_column(Float)  # In USD millions
+    net_worth_source: Mapped[Optional[str]] = mapped_column(String(100))  # e.g., "Forbes", "Bloomberg"
+    net_worth_year: Mapped[Optional[int]] = mapped_column(Integer)  # Year of the estimate
 
     predictions = relationship("Prediction", back_populates="pundit")
     metrics = relationship("PunditMetrics", back_populates="pundit", uselist=False)

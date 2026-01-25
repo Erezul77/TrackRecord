@@ -23,6 +23,10 @@ class PunditResponse(BaseModel):
     domains: List[str] = []
     verified: bool
     metrics: Optional[MetricsResponse] = None
+    # Net worth data from verified sources (Forbes, Bloomberg, etc.)
+    net_worth: Optional[float] = None  # In USD millions
+    net_worth_source: Optional[str] = None
+    net_worth_year: Optional[int] = None
 
     class Config:
         from_attributes = True

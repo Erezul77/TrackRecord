@@ -1,7 +1,7 @@
 // src/components/predictions/PredictionsList.tsx
 'use client'
 import { useState, useEffect } from 'react'
-import { Clock, ArrowUpDown, Flame, Star, Calendar, SortAsc } from 'lucide-react'
+import { Clock, ArrowUpDown, Flame, Star, Calendar, SortAsc, Filter } from 'lucide-react'
 import { PredictionCardWithVotes } from './PredictionCardWithVotes'
 import { PredictionWithPundit } from '@/lib/api'
 
@@ -16,19 +16,28 @@ const SORT_OPTIONS = [
   { value: 'highest_score', label: 'Highest Rated', icon: Star, description: 'Best TR Index first' },
 ]
 
+// Topics
+const TOPIC_CATEGORIES = ['All', 'Politics', 'Economy', 'Markets', 'Crypto', 'Tech', 'Sports', 'Entertainment', 'Religion', 'Science', 'Health', 'Climate', 'Geopolitics']
+
+// Regions
+const REGION_CATEGORIES = ['US', 'UK', 'EU', 'China', 'Japan', 'India', 'Israel', 'Russia', 'Brazil', 'LATAM', 'Middle-East', 'Africa']
+
 export function PredictionsList() {
   const [predictions, setPredictions] = useState<PredictionWithPundit[]>([])
   const [loading, setLoading] = useState(true)
   const [sort, setSort] = useState('default')
+  const [category, setCategory] = useState('All')
+  const [showRegions, setShowRegions] = useState(false)
 
   useEffect(() => {
     loadPredictions()
-  }, [sort])
+  }, [sort, category])
 
   const loadPredictions = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`${API_URL}/api/predictions/recent?limit=50&sort=${sort}`, {
+      const categoryParam = category !== 'All' ? `&category=${category.toLowerCase()}` : ''
+      const res = await fetch(`${API_URL}/api/predictions/recent?limit=50&sort=${sort}${categoryParam}`, {
         cache: 'no-store'
       })
       if (res.ok) {
@@ -45,6 +54,40 @@ export function PredictionsList() {
 
   return (
     <div>
+      {/* Category Filters */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-sm font-bold text-slate-500 flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            Filter by:
+          </span>
+          <button
+            onClick={() => setShowRegions(!showRegions)}
+            className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+              showRegions ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            {showRegions ? '← Topics' : 'Regions →'}
+          </button>
+        </div>
+        
+        <div className="flex gap-2 flex-wrap">
+          {(showRegions ? ['All', ...REGION_CATEGORIES] : TOPIC_CATEGORIES).map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={`text-sm font-bold px-3 py-1.5 rounded-lg transition-colors ${
+                cat === category
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-white text-slate-600 border hover:bg-slate-50'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Sort Controls */}
       <div className="flex flex-wrap items-center gap-3 mb-8">
         <span className="text-sm font-bold text-slate-500 flex items-center gap-2">

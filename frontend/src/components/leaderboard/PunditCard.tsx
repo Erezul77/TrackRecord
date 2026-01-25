@@ -3,8 +3,16 @@
 import Link from 'next/link'
 import { Pundit } from '@/lib/api'
 import { formatPercent, cn } from '@/lib/utils'
-import { CheckCircle, User, Star, AlertCircle } from 'lucide-react'
+import { CheckCircle, User, Star, AlertCircle, DollarSign } from 'lucide-react'
 import { useState } from 'react'
+
+// Format net worth for display
+function formatNetWorth(netWorth: number): string {
+  if (netWorth >= 1000) {
+    return `$${(netWorth / 1000).toFixed(1)}B`
+  }
+  return `$${netWorth}M`
+}
 
 interface PunditCardProps {
   pundit: Pundit
@@ -80,6 +88,18 @@ export function PunditCard({ pundit, rank }: PunditCardProps) {
               <span className="text-slate-400 font-normal uppercase tracking-wider">Resolved</span>
               <span>{pundit.metrics.resolved_predictions} closed</span>
             </div>
+            {pundit.net_worth && (
+              <div className="flex flex-col">
+                <span className="text-slate-400 font-normal uppercase tracking-wider">Net Worth</span>
+                <span className="flex items-center gap-1">
+                  <DollarSign className="h-3 w-3 text-emerald-500" />
+                  <span className="text-emerald-600 font-bold">{formatNetWorth(pundit.net_worth)}</span>
+                  {pundit.net_worth_source && (
+                    <span className="text-slate-400 text-[10px]">({pundit.net_worth_source})</span>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
         </div>
         

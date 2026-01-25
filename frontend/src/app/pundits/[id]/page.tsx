@@ -92,8 +92,8 @@ export default async function PunditPage({ params }: { params: Promise<{ id: str
             </div>
           </div>
 
-          <div className="w-full md:w-auto grid grid-cols-2 gap-3">
-            <div className="bg-slate-900 text-white p-6 rounded-2xl flex flex-col justify-between h-32 w-full md:w-48">
+          <div className="w-full md:w-auto grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="bg-slate-900 text-white p-6 rounded-2xl flex flex-col justify-between h-32 w-full">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Accuracy</span>
               <div>
                 <span className="text-4xl font-black tracking-tighter">{formatPercent(pundit.metrics.paper_win_rate)}</span>
@@ -104,7 +104,7 @@ export default async function PunditPage({ params }: { params: Promise<{ id: str
                 </div>
               </div>
             </div>
-            <div className="bg-blue-600 text-white p-6 rounded-2xl flex flex-col justify-between h-32 w-full md:w-48">
+            <div className="bg-blue-600 text-white p-6 rounded-2xl flex flex-col justify-between h-32 w-full">
               <span className="text-[10px] font-black text-blue-200 uppercase tracking-widest">Record</span>
               <div>
                 <span className="text-2xl font-black tracking-tighter text-emerald-300">{correctCount}W</span>
@@ -115,6 +115,21 @@ export default async function PunditPage({ params }: { params: Promise<{ id: str
                 )}
               </div>
             </div>
+            {pundit.net_worth && (
+              <div className="bg-emerald-600 text-white p-6 rounded-2xl flex flex-col justify-between h-32 w-full col-span-2 md:col-span-1">
+                <span className="text-[10px] font-black text-emerald-200 uppercase tracking-widest">Net Worth</span>
+                <div>
+                  <span className="text-3xl font-black tracking-tighter">
+                    ${pundit.net_worth >= 1000 ? `${(pundit.net_worth / 1000).toFixed(1)}B` : `${pundit.net_worth}M`}
+                  </span>
+                  {pundit.net_worth_source && (
+                    <div className="text-xs text-emerald-200 mt-1">
+                      {pundit.net_worth_source} ({pundit.net_worth_year})
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
