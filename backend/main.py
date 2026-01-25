@@ -11,7 +11,7 @@ import logging
 from dotenv import load_dotenv
 
 from database.session import get_db
-from database.models import Pundit, PunditMetrics, Prediction, MatchReviewQueue, PredictionVote
+from database.models import Pundit, PunditMetrics, Prediction, MatchReviewQueue, PredictionVote, Position, Match
 from sqlalchemy import func
 from schemas import PunditResponse, PredictionResponse, MatchReviewResponse
 from pydantic import BaseModel
