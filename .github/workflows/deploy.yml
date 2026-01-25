@@ -1,0 +1,44 @@
+name: Deploy to DigitalOcean
+
+# Runs on every push to main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to DigitalOcean Droplet
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            cd ~/TrackRecord
+            
+            echo "📥 Pulling latest code..."
+            git pull origin main
+            
+            echo "🛑 Stopping old container..."
+            docker stop trackrecord-api || true
+            docker rm trackrecord-api || true
+            
+            echo "🔨 Building new image..."
+            docker build -t trackrecord-api ./backend
+            
+            echo "🚀 Starting new container..."
+            docker run -d \
+              --name trackrecord-api \
+              -p 8000:8000 \
+              --env-file backend/.env \
+              --restart unless-stopped \
+              trackrecord-api
+            
+            echo "✅ Deployment complete!"
+            
+            # Show container status
+            docker ps | grep trackrecord-api
