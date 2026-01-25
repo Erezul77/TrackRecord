@@ -9,7 +9,13 @@ interface LeaderboardFilterProps {
   pundits: Pundit[]
 }
 
-const CATEGORIES = ['All', 'Politics', 'Economy', 'Crypto', 'Markets', 'Tech', 'Macro', 'Sports', 'Entertainment', 'Religion', 'Science', 'Health', 'Climate', 'Geopolitics']
+// Topics
+const TOPICS = ['All', 'Politics', 'Economy', 'Crypto', 'Markets', 'Tech', 'Macro', 'Sports', 'Entertainment', 'Religion', 'Science', 'Health', 'Climate', 'Geopolitics', 'Business', 'Media']
+
+// Geographic Regions
+const REGIONS = ['Global', 'Americas', 'Europe', 'Asia-Pacific', 'Middle-East', 'Africa', 'US', 'UK', 'EU', 'China', 'Japan', 'India', 'Russia', 'Brazil', 'Israel', 'Balkans', 'LATAM', 'MENA', 'Southeast-Asia', 'Central-Asia', 'Oceania', 'Scandinavia']
+
+const CATEGORIES = [...TOPICS, ...REGIONS.filter(r => r !== 'Global')]
 
 export function LeaderboardFilter({ pundits }: LeaderboardFilterProps) {
   const [activeCategory, setActiveCategory] = useState('All')

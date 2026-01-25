@@ -864,6 +864,311 @@ export const KNOWN_PUNDITS: KnownPundit[] = [
     bio: "Podcaster with massive influence. Cultural and political commentary.",
     domains: ["media", "politics", "entertainment"]
   },
+
+  // ===== UK POLITICS =====
+  {
+    name: "Rishi Sunak",
+    username: "RishiSunak",
+    affiliation: "UK Prime Minister",
+    bio: "UK Prime Minister, former Chancellor. Economic and policy predictions.",
+    domains: ["politics", "economy", "uk"]
+  },
+  {
+    name: "Keir Starmer",
+    username: "Keir_Starmer",
+    affiliation: "Labour Party Leader",
+    bio: "UK Labour leader, former Director of Public Prosecutions.",
+    domains: ["politics", "uk"]
+  },
+  {
+    name: "Nigel Farage",
+    username: "Nigel_Farage",
+    affiliation: "Reform UK",
+    bio: "Brexit leader, political commentator. UK and EU political predictions.",
+    domains: ["politics", "uk", "eu"]
+  },
+  {
+    name: "Piers Morgan",
+    username: "piaborings_morgan",
+    affiliation: "TalkTV",
+    bio: "British broadcaster, provocative commentator on UK and global politics.",
+    domains: ["media", "politics", "uk"]
+  },
+
+  // ===== EU POLITICS =====
+  {
+    name: "Ursula von der Leyen",
+    username: "vonderleyen",
+    affiliation: "EU Commission President",
+    bio: "European Commission President. EU policy and economic predictions.",
+    domains: ["politics", "economy", "eu"]
+  },
+  {
+    name: "Olaf Scholz",
+    username: "OlafScholz",
+    affiliation: "German Chancellor",
+    bio: "German Chancellor. EU and German economic predictions.",
+    domains: ["politics", "economy", "germany", "eu"]
+  },
+  {
+    name: "Giorgia Meloni",
+    username: "GiorgiaMeloni",
+    affiliation: "Italian Prime Minister",
+    bio: "Italian PM, leader of Brothers of Italy. EU and migration predictions.",
+    domains: ["politics", "eu", "italy"]
+  },
+  {
+    name: "Viktor Orbán",
+    username: "oraborinviktaborin",
+    affiliation: "Hungarian Prime Minister",
+    bio: "Hungarian PM, conservative leader. EU and political predictions.",
+    domains: ["politics", "eu", "eastern-europe"]
+  },
+  {
+    name: "Pedro Sánchez",
+    username: "saborinchez",
+    affiliation: "Spanish Prime Minister",
+    bio: "Spanish PM, socialist leader. Spanish and EU political predictions.",
+    domains: ["politics", "eu", "spain"]
+  },
+
+  // ===== MIDDLE EAST =====
+  {
+    name: "Benny Gantz",
+    username: "gaborintzbe",
+    affiliation: "Israeli War Cabinet",
+    bio: "Israeli politician, former IDF Chief of Staff. Security predictions.",
+    domains: ["politics", "geopolitics", "israel", "middle-east"]
+  },
+  {
+    name: "Yair Lapid",
+    username: "yaborinirlapid",
+    affiliation: "Israeli Opposition Leader",
+    bio: "Former Israeli PM, centrist leader. Israeli political predictions.",
+    domains: ["politics", "israel", "middle-east"]
+  },
+  {
+    name: "Recep Tayyip Erdoğan",
+    username: "RTErdogan",
+    affiliation: "Turkish President",
+    bio: "Turkish President. Middle East and economic predictions.",
+    domains: ["politics", "geopolitics", "turkey", "middle-east"]
+  },
+  {
+    name: "Mohammed bin Salman",
+    username: "MBS_Saudi",
+    affiliation: "Saudi Crown Prince",
+    bio: "Saudi Crown Prince, Vision 2030. Economic and geopolitical predictions.",
+    domains: ["politics", "economy", "gulf-states", "middle-east"]
+  },
+
+  // ===== ASIA-PACIFIC =====
+  {
+    name: "Xi Jinping",
+    username: "XiJinping",
+    affiliation: "Chinese President",
+    bio: "Chinese President. Economic and geopolitical predictions.",
+    domains: ["politics", "economy", "geopolitics", "china"]
+  },
+  {
+    name: "Fumio Kishida",
+    username: "kishaborinda",
+    affiliation: "Japanese Prime Minister",
+    bio: "Japanese PM. Economic and security predictions.",
+    domains: ["politics", "economy", "japan"]
+  },
+  {
+    name: "Yoon Suk-yeol",
+    username: "YoonSukYeol",
+    affiliation: "South Korean President",
+    bio: "Korean President. Economic and security predictions.",
+    domains: ["politics", "economy", "south-korea"]
+  },
+  {
+    name: "Anthony Albanese",
+    username: "AlboMP",
+    affiliation: "Australian Prime Minister",
+    bio: "Australian PM. Climate and economic predictions.",
+    domains: ["politics", "climate", "australia"]
+  },
+  {
+    name: "Imran Khan",
+    username: "ImranKhanPTI",
+    affiliation: "Former Pakistani PM",
+    bio: "Former Pakistani PM. Political and economic predictions.",
+    domains: ["politics", "pakistan", "central-asia"]
+  },
+
+  // ===== LATIN AMERICA =====
+  {
+    name: "Lula da Silva",
+    username: "LulaOficial",
+    affiliation: "Brazilian President",
+    bio: "Brazilian President. Economic and environmental predictions.",
+    domains: ["politics", "economy", "climate", "brazil", "latam"]
+  },
+  {
+    name: "Gustavo Petro",
+    username: "petaboringustavo",
+    affiliation: "Colombian President",
+    bio: "Colombian President, leftist leader. Regional political predictions.",
+    domains: ["politics", "latam"]
+  },
+  {
+    name: "Andrés Manuel López Obrador",
+    username: "lopezobrador_",
+    affiliation: "Former Mexican President",
+    bio: "Former Mexican President (AMLO). Economic and political predictions.",
+    domains: ["politics", "economy", "mexico", "latam"]
+  },
+  {
+    name: "Claudia Sheinbaum",
+    username: "Claudiashein",
+    affiliation: "Mexican President",
+    bio: "Mexican President, scientist. Climate and policy predictions.",
+    domains: ["politics", "climate", "mexico", "latam"]
+  },
+
+  // ===== RUSSIA & EASTERN EUROPE =====
+  {
+    name: "Vladimir Putin",
+    username: "KremlinRussia",
+    affiliation: "Russian President",
+    bio: "Russian President. Geopolitical and military predictions.",
+    domains: ["politics", "geopolitics", "russia"]
+  },
+  {
+    name: "Volodymyr Zelensky",
+    username: "ZelenskyyUa",
+    affiliation: "Ukrainian President",
+    bio: "Ukrainian President. War and political predictions.",
+    domains: ["politics", "geopolitics", "eastern-europe"]
+  },
+
+  // ===== UK/EUROPE SPORTS =====
+  {
+    name: "Gary Lineker",
+    username: "GaryLineker",
+    affiliation: "BBC Sport",
+    bio: "Former England striker, BBC presenter. Football predictions.",
+    domains: ["sports", "uk"]
+  },
+  {
+    name: "Gary Neville",
+    username: "GNev2",
+    affiliation: "Sky Sports",
+    bio: "Former Man United defender, pundit. Premier League predictions.",
+    domains: ["sports", "uk"]
+  },
+  {
+    name: "Jamie Carragher",
+    username: "Carra23",
+    affiliation: "Sky Sports",
+    bio: "Former Liverpool defender, pundit. Football predictions.",
+    domains: ["sports", "uk"]
+  },
+  {
+    name: "Rio Ferdinand",
+    username: "raboringferdinand",
+    affiliation: "TNT Sports",
+    bio: "Former Man United defender. Football predictions.",
+    domains: ["sports", "uk"]
+  },
+  {
+    name: "Thierry Henry",
+    username: "ThierryHenry",
+    affiliation: "CBS Sports",
+    bio: "Arsenal & France legend. Football predictions.",
+    domains: ["sports", "uk", "france"]
+  },
+  {
+    name: "Fabrizio Romano",
+    username: "FabrizioRomano",
+    affiliation: "Transfer Expert",
+    bio: "Football transfer specialist. 'Here we go' predictions.",
+    domains: ["sports", "uk", "eu"]
+  },
+  {
+    name: "Guillem Balagué",
+    username: "GuillemBalague",
+    affiliation: "BBC/CBS",
+    bio: "Spanish football expert. La Liga predictions.",
+    domains: ["sports", "spain"]
+  },
+  {
+    name: "Florian Plettenberg",
+    username: "Plettigoal",
+    affiliation: "Sky Germany",
+    bio: "German football journalist. Bundesliga predictions.",
+    domains: ["sports", "germany"]
+  },
+
+  // ===== INTERNATIONAL BUSINESS LEADERS =====
+  {
+    name: "Masayoshi Son",
+    username: "masaborinson",
+    affiliation: "SoftBank CEO",
+    bio: "SoftBank founder, major tech investor. Tech and investment predictions.",
+    domains: ["tech", "markets", "japan"]
+  },
+  {
+    name: "Bernard Arnault",
+    username: "BernardArnault",
+    affiliation: "LVMH CEO",
+    bio: "World's richest person, LVMH chairman. Luxury market predictions.",
+    domains: ["business", "markets", "france"]
+  },
+  {
+    name: "Jack Ma",
+    username: "jackma",
+    affiliation: "Alibaba Founder",
+    bio: "Alibaba founder. China tech and business predictions.",
+    domains: ["tech", "business", "china"]
+  },
+  {
+    name: "Mukesh Ambani",
+    username: "reliaborince",
+    affiliation: "Reliance Industries",
+    bio: "India's richest person. Indian economy predictions.",
+    domains: ["business", "economy", "india"]
+  },
+
+  // ===== GEOPOLITICS EXPERTS =====
+  {
+    name: "Fareed Zakaria",
+    username: "FareedZakaria",
+    affiliation: "CNN GPS",
+    bio: "CNN host, author. Global affairs predictions.",
+    domains: ["geopolitics", "politics", "media"]
+  },
+  {
+    name: "Richard Haass",
+    username: "RichardHaass",
+    affiliation: "CFR President Emeritus",
+    bio: "Former Council on Foreign Relations president. Geopolitical predictions.",
+    domains: ["geopolitics", "politics"]
+  },
+  {
+    name: "Anne Applebaum",
+    username: "anneapplebaum",
+    affiliation: "The Atlantic",
+    bio: "Historian, journalist. Democracy and geopolitics predictions.",
+    domains: ["geopolitics", "politics", "eastern-europe"]
+  },
+  {
+    name: "Thomas Friedman",
+    username: "tomfriedman",
+    affiliation: "New York Times",
+    bio: "NYT columnist. Middle East and globalization predictions.",
+    domains: ["geopolitics", "economy", "middle-east"]
+  },
+  {
+    name: "Kishore Mahbubani",
+    username: "mahbubani_k",
+    affiliation: "NUS Singapore",
+    bio: "Singapore diplomat, scholar. Asia and global order predictions.",
+    domains: ["geopolitics", "asia-pacific"]
+  },
 ]
 
 // Helper to search pundits

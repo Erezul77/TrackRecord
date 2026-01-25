@@ -406,19 +406,35 @@ export default function CompetePage() {
                     onChange={(e) => setPredictionForm({...predictionForm, category: e.target.value})}
                     className="w-full border rounded-lg px-4 py-2"
                   >
-                    <option value="markets">Markets</option>
-                    <option value="crypto">Crypto</option>
-                    <option value="economy">Economy</option>
-                    <option value="politics">Politics</option>
-                    <option value="tech">Tech</option>
-                    <option value="sports">Sports</option>
-                    <option value="entertainment">Entertainment</option>
-                    <option value="religion">Religion</option>
-                    <option value="science">Science</option>
-                    <option value="health">Health</option>
-                    <option value="climate">Climate</option>
-                    <option value="geopolitics">Geopolitics</option>
-                    <option value="other">Other</option>
+                    <optgroup label="Topics">
+                      <option value="markets">Markets</option>
+                      <option value="crypto">Crypto</option>
+                      <option value="economy">Economy</option>
+                      <option value="politics">Politics</option>
+                      <option value="tech">Tech</option>
+                      <option value="sports">Sports</option>
+                      <option value="entertainment">Entertainment</option>
+                      <option value="religion">Religion</option>
+                      <option value="science">Science</option>
+                      <option value="health">Health</option>
+                      <option value="climate">Climate</option>
+                      <option value="geopolitics">Geopolitics</option>
+                      <option value="other">Other</option>
+                    </optgroup>
+                    <optgroup label="Regions">
+                      <option value="us">United States</option>
+                      <option value="uk">United Kingdom</option>
+                      <option value="eu">European Union</option>
+                      <option value="china">China</option>
+                      <option value="japan">Japan</option>
+                      <option value="india">India</option>
+                      <option value="israel">Israel</option>
+                      <option value="russia">Russia</option>
+                      <option value="brazil">Brazil</option>
+                      <option value="latam">Latin America</option>
+                      <option value="middle-east">Middle East</option>
+                      <option value="africa">Africa</option>
+                    </optgroup>
                   </select>
                 </div>
                 <div>

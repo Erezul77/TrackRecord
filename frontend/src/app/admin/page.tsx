@@ -377,22 +377,70 @@ export default function AdminPage() {
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
                 className="w-full border rounded-lg px-4 py-2 text-slate-900"
               >
-                <option value="crypto">Crypto</option>
-                <option value="markets">Markets</option>
-                <option value="economy">Economy</option>
-                <option value="politics">Politics</option>
-                <option value="tech">Tech</option>
-                <option value="macro">Macro</option>
-                <option value="sports">Sports</option>
-                <option value="entertainment">Entertainment</option>
-                <option value="religion">Religion</option>
-                <option value="science">Science</option>
-                <option value="business">Business</option>
-                <option value="media">Media</option>
-                <option value="health">Health</option>
-                <option value="climate">Climate</option>
-                <option value="geopolitics">Geopolitics</option>
-                <option value="general">General</option>
+                <optgroup label="Topics">
+                  <option value="politics">Politics</option>
+                  <option value="economy">Economy</option>
+                  <option value="markets">Markets</option>
+                  <option value="crypto">Crypto</option>
+                  <option value="tech">Tech</option>
+                  <option value="macro">Macro</option>
+                  <option value="sports">Sports</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="religion">Religion</option>
+                  <option value="science">Science</option>
+                  <option value="business">Business</option>
+                  <option value="media">Media</option>
+                  <option value="health">Health</option>
+                  <option value="climate">Climate</option>
+                  <option value="geopolitics">Geopolitics</option>
+                  <option value="general">General</option>
+                </optgroup>
+                <optgroup label="Americas">
+                  <option value="us">United States</option>
+                  <option value="us-politics">US Politics</option>
+                  <option value="us-sports">US Sports</option>
+                  <option value="latam">Latin America</option>
+                  <option value="brazil">Brazil</option>
+                  <option value="mexico">Mexico</option>
+                  <option value="canada">Canada</option>
+                </optgroup>
+                <optgroup label="Europe">
+                  <option value="uk">United Kingdom</option>
+                  <option value="uk-politics">UK Politics</option>
+                  <option value="eu">European Union</option>
+                  <option value="germany">Germany</option>
+                  <option value="france">France</option>
+                  <option value="italy">Italy</option>
+                  <option value="spain">Spain</option>
+                  <option value="scandinavia">Scandinavia</option>
+                  <option value="balkans">Balkans</option>
+                  <option value="eastern-europe">Eastern Europe</option>
+                  <option value="russia">Russia</option>
+                </optgroup>
+                <optgroup label="Asia-Pacific">
+                  <option value="china">China</option>
+                  <option value="japan">Japan</option>
+                  <option value="india">India</option>
+                  <option value="south-korea">South Korea</option>
+                  <option value="southeast-asia">Southeast Asia</option>
+                  <option value="australia">Australia</option>
+                  <option value="oceania">Oceania</option>
+                </optgroup>
+                <optgroup label="Middle East & Africa">
+                  <option value="middle-east">Middle East</option>
+                  <option value="israel">Israel</option>
+                  <option value="turkey">Turkey</option>
+                  <option value="iran">Iran</option>
+                  <option value="gulf-states">Gulf States</option>
+                  <option value="mena">MENA Region</option>
+                  <option value="africa">Africa</option>
+                  <option value="south-africa">South Africa</option>
+                </optgroup>
+                <optgroup label="Central Asia">
+                  <option value="central-asia">Central Asia</option>
+                  <option value="pakistan">Pakistan</option>
+                  <option value="afghanistan">Afghanistan</option>
+                </optgroup>
               </select>
             </div>
 
@@ -702,7 +750,7 @@ export default function AdminPage() {
               placeholder="e.g., markets, economy, crypto"
               className="w-full border rounded-lg px-4 py-2 text-slate-900"
             />
-            <p className="text-xs text-slate-400 mt-1">Options: markets, economy, crypto, politics, tech, macro, sports, entertainment, religion, science, health, etc.</p>
+            <p className="text-xs text-slate-400 mt-1">Topics: politics, economy, markets, sports, tech, religion, etc. | Regions: us, uk, eu, israel, japan, china, india, russia, brazil, latam, mena, etc.</p>
           </div>
 
           <button

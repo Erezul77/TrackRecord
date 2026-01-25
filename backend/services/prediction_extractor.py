@@ -60,7 +60,7 @@ For each valid prediction found, provide:
 4. quote: The exact or near-exact quote from the article
 5. timeframe_description: When they expect this to happen (e.g., "by end of 2026", "within 5 years")
 6. timeframe_days: Estimated days from today until resolution (e.g., 365 for "1 year")
-7. category: One of: crypto, markets, economy, politics, tech, macro, sports, entertainment, religion, science, business, media, health, climate, geopolitics
+7. category: One of: crypto, markets, economy, politics, tech, macro, sports, entertainment, religion, science, business, media, health, climate, geopolitics, us, uk, eu, china, japan, india, israel, russia, brazil, latam, middle-east, africa, asia-pacific
 8. specificity: 1-5 (1=vague, 5=very specific with numbers/dates)
 9. verifiability: 1-5 (1=hard to verify, 5=easily verified with public data)
 10. boldness: 1-5 (1=consensus view, 5=very contrarian)

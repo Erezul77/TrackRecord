@@ -49,7 +49,7 @@ For each prediction found, extract:
 - confidence: The speaker's implied confidence (certain/high/medium/low/speculative)
 - timeframe: When this will be verifiable (date like "2026-12-31", or "within 6 months", etc.)
 - quote: The exact quote from the article (verbatim)
-- category: politics/economy/markets/crypto/tech/macro/sports/entertainment/religion/science/business/media/health/climate/geopolitics
+- category: politics/economy/markets/crypto/tech/macro/sports/entertainment/religion/science/business/media/health/climate/geopolitics/us/uk/eu/china/japan/india/israel/russia/brazil/latam/middle-east/africa/asia-pacific
 
 Return ONLY valid JSON array:
 [

@@ -5,6 +5,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { MobileNav } from "@/components/MobileNav";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -42,7 +43,8 @@ export default function RootLayout({
               <Link href="/admin" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">Admin</Link>
             </nav>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <LanguageSelector />
               <span className="hidden sm:block text-xs font-bold text-slate-400 uppercase tracking-wider">Beta</span>
               {/* Mobile Nav */}
               <MobileNav />

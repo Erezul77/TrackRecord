@@ -191,7 +191,270 @@ RSS_FEEDS = {
     "al_jazeera": {
         "url": "https://www.aljazeera.com/xml/rss/all.xml",
         "source": "Al Jazeera",
-        "categories": ["geopolitics", "politics"]
+        "categories": ["geopolitics", "politics", "middle-east"]
+    },
+    
+    # ===== UK & EUROPE =====
+    "bbc_uk": {
+        "url": "http://feeds.bbci.co.uk/news/uk/rss.xml",
+        "source": "BBC UK",
+        "categories": ["uk", "uk-politics"]
+    },
+    "guardian_uk": {
+        "url": "https://www.theguardian.com/uk-news/rss",
+        "source": "The Guardian UK",
+        "categories": ["uk", "uk-politics"]
+    },
+    "telegraph": {
+        "url": "https://www.telegraph.co.uk/rss.xml",
+        "source": "The Telegraph",
+        "categories": ["uk", "uk-politics"]
+    },
+    "sky_news": {
+        "url": "https://feeds.skynews.com/feeds/rss/home.xml",
+        "source": "Sky News",
+        "categories": ["uk"]
+    },
+    "euronews": {
+        "url": "https://www.euronews.com/rss",
+        "source": "Euronews",
+        "categories": ["eu", "europe"]
+    },
+    "politico_eu": {
+        "url": "https://www.politico.eu/feed/",
+        "source": "Politico EU",
+        "categories": ["eu", "europe", "politics"]
+    },
+    "dw_europe": {
+        "url": "https://rss.dw.com/xml/rss-en-eu",
+        "source": "Deutsche Welle Europe",
+        "categories": ["eu", "germany", "europe"]
+    },
+    "france24": {
+        "url": "https://www.france24.com/en/rss",
+        "source": "France 24",
+        "categories": ["france", "europe"]
+    },
+    "the_local_eu": {
+        "url": "https://www.thelocal.com/feed/",
+        "source": "The Local EU",
+        "categories": ["eu", "europe"]
+    },
+    "balkan_insight": {
+        "url": "https://balkaninsight.com/feed/",
+        "source": "Balkan Insight",
+        "categories": ["balkans", "eastern-europe"]
+    },
+    
+    # ===== ASIA PACIFIC =====
+    "nikkei_asia": {
+        "url": "https://asia.nikkei.com/rss/feed/nar",
+        "source": "Nikkei Asia",
+        "categories": ["japan", "asia-pacific"]
+    },
+    "japan_times": {
+        "url": "https://www.japantimes.co.jp/feed/",
+        "source": "Japan Times",
+        "categories": ["japan", "asia-pacific"]
+    },
+    "scmp": {
+        "url": "https://www.scmp.com/rss/91/feed",
+        "source": "South China Morning Post",
+        "categories": ["china", "asia-pacific"]
+    },
+    "china_daily": {
+        "url": "http://www.chinadaily.com.cn/rss/world_rss.xml",
+        "source": "China Daily",
+        "categories": ["china", "asia-pacific"]
+    },
+    "hindustan_times": {
+        "url": "https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml",
+        "source": "Hindustan Times",
+        "categories": ["india", "asia-pacific"]
+    },
+    "times_of_india": {
+        "url": "https://timesofindia.indiatimes.com/rssfeedstopstories.cms",
+        "source": "Times of India",
+        "categories": ["india", "asia-pacific"]
+    },
+    "korea_herald": {
+        "url": "http://www.koreaherald.com/common/rss_xml.php",
+        "source": "Korea Herald",
+        "categories": ["south-korea", "asia-pacific"]
+    },
+    "abc_australia": {
+        "url": "https://www.abc.net.au/news/feed/51120/rss.xml",
+        "source": "ABC Australia",
+        "categories": ["australia", "oceania"]
+    },
+    "straits_times": {
+        "url": "https://www.straitstimes.com/news/asia/rss.xml",
+        "source": "Straits Times",
+        "categories": ["southeast-asia", "asia-pacific"]
+    },
+    "nikkei_japan": {
+        "url": "https://www.nikkei.com/rss/summary.xml",
+        "source": "Nikkei Japan",
+        "categories": ["japan", "asia-pacific", "markets"]
+    },
+    
+    # ===== MIDDLE EAST =====
+    "times_of_israel": {
+        "url": "https://www.timesofisrael.com/feed/",
+        "source": "Times of Israel",
+        "categories": ["israel", "middle-east"]
+    },
+    "haaretz": {
+        "url": "https://www.haaretz.com/srv/haaretz-latest-news-rss",
+        "source": "Haaretz",
+        "categories": ["israel", "middle-east"]
+    },
+    "jpost": {
+        "url": "https://www.jpost.com/rss/rssfeedsfrontpage.aspx",
+        "source": "Jerusalem Post",
+        "categories": ["israel", "middle-east"]
+    },
+    "arab_news": {
+        "url": "https://www.arabnews.com/rss.xml",
+        "source": "Arab News",
+        "categories": ["gulf-states", "middle-east", "mena"]
+    },
+    "middle_east_eye": {
+        "url": "https://www.middleeasteye.net/rss",
+        "source": "Middle East Eye",
+        "categories": ["middle-east", "mena"]
+    },
+    "al_monitor": {
+        "url": "https://www.al-monitor.com/rss",
+        "source": "Al-Monitor",
+        "categories": ["middle-east", "mena", "turkey"]
+    },
+    "daily_sabah": {
+        "url": "https://www.dailysabah.com/rssFeed/generalnews",
+        "source": "Daily Sabah",
+        "categories": ["turkey", "middle-east"]
+    },
+    
+    # ===== LATIN AMERICA =====
+    "reuters_latam": {
+        "url": "https://www.reuters.com/tools/rss",
+        "source": "Reuters LATAM",
+        "categories": ["latam"]
+    },
+    "merco_press": {
+        "url": "https://en.mercopress.com/rss",
+        "source": "MercoPress",
+        "categories": ["latam", "brazil"]
+    },
+    "buenos_aires_times": {
+        "url": "https://www.batimes.com.ar/feed",
+        "source": "Buenos Aires Times",
+        "categories": ["latam"]
+    },
+    "brazil_journal": {
+        "url": "https://braziljournal.com/feed",
+        "source": "Brazil Journal",
+        "categories": ["brazil", "latam"]
+    },
+    "mexico_news_daily": {
+        "url": "https://mexiconewsdaily.com/feed/",
+        "source": "Mexico News Daily",
+        "categories": ["mexico", "latam"]
+    },
+    
+    # ===== RUSSIA & CENTRAL ASIA =====
+    "moscow_times": {
+        "url": "https://www.themoscowtimes.com/rss/news",
+        "source": "Moscow Times",
+        "categories": ["russia", "eastern-europe"]
+    },
+    "eurasianet": {
+        "url": "https://eurasianet.org/feed",
+        "source": "Eurasianet",
+        "categories": ["central-asia", "russia"]
+    },
+    "rferl": {
+        "url": "https://www.rferl.org/api/",
+        "source": "Radio Free Europe",
+        "categories": ["russia", "eastern-europe", "central-asia"]
+    },
+    
+    # ===== AFRICA =====
+    "news24_africa": {
+        "url": "https://www.news24.com/news24/Africa/rss",
+        "source": "News24 Africa",
+        "categories": ["africa", "south-africa"]
+    },
+    "allafrica": {
+        "url": "https://allafrica.com/tools/headlines/rdf/latest/headlines.rdf",
+        "source": "AllAfrica",
+        "categories": ["africa"]
+    },
+    "daily_maverick": {
+        "url": "https://www.dailymaverick.co.za/feed/",
+        "source": "Daily Maverick",
+        "categories": ["south-africa", "africa"]
+    },
+    
+    # ===== CANADA =====
+    "cbc": {
+        "url": "https://www.cbc.ca/cmlink/rss-topstories",
+        "source": "CBC News",
+        "categories": ["canada"]
+    },
+    "globe_mail": {
+        "url": "https://www.theglobeandmail.com/arc/outboundfeeds/rss/",
+        "source": "Globe and Mail",
+        "categories": ["canada"]
+    },
+    
+    # ===== SPORTS - INTERNATIONAL =====
+    "bbc_sport": {
+        "url": "http://feeds.bbci.co.uk/sport/rss.xml",
+        "source": "BBC Sport",
+        "categories": ["sports", "uk"]
+    },
+    "skysports": {
+        "url": "https://www.skysports.com/rss/12040",
+        "source": "Sky Sports",
+        "categories": ["sports", "uk"]
+    },
+    "espn_soccer": {
+        "url": "https://www.espn.com/espn/rss/soccer/news",
+        "source": "ESPN Soccer",
+        "categories": ["sports", "europe"]
+    },
+    "goal": {
+        "url": "https://www.goal.com/feeds/en/news",
+        "source": "Goal.com",
+        "categories": ["sports"]
+    },
+    "marca": {
+        "url": "https://e00-marca.uecdn.es/rss/portada.xml",
+        "source": "Marca",
+        "categories": ["sports", "spain"]
+    },
+    "lequipe": {
+        "url": "https://www.lequipe.fr/rss/actu_rss.xml",
+        "source": "L'Equipe",
+        "categories": ["sports", "france"]
+    },
+    
+    # ===== BUSINESS - INTERNATIONAL =====
+    "financial_times": {
+        "url": "https://www.ft.com/?format=rss",
+        "source": "Financial Times",
+        "categories": ["markets", "economy", "uk"]
+    },
+    "economist": {
+        "url": "https://www.economist.com/rss",
+        "source": "The Economist",
+        "categories": ["economy", "geopolitics"]
+    },
+    "wsj": {
+        "url": "https://feeds.a.dj.com/rss/RSSWorldNews.xml",
+        "source": "Wall Street Journal",
+        "categories": ["markets", "economy", "us"]
     },
 }
 
@@ -209,7 +472,7 @@ KNOWN_PUNDITS = {
     "RayDalio": ["Ray Dalio", "Dalio", "Bridgewater"],
     "BillAckman": ["Bill Ackman", "Ackman", "Pershing Square"],
     
-    # ===== POLITICS =====
+    # ===== US POLITICS =====
     "realDonaldTrump": ["Donald Trump", "Trump", "President Trump", "former President Trump"],
     "JoeBiden": ["Joe Biden", "Biden", "President Biden"],
     "BernieSanders": ["Bernie Sanders", "Sanders", "Senator Sanders"],
@@ -217,33 +480,97 @@ KNOWN_PUNDITS = {
     "tedcruz": ["Ted Cruz", "Cruz", "Senator Cruz"],
     "GovRonDeSantis": ["Ron DeSantis", "DeSantis", "Governor DeSantis"],
     "GavinNewsom": ["Gavin Newsom", "Newsom", "Governor Newsom"],
-    "netanyahu": ["Benjamin Netanyahu", "Netanyahu", "Bibi"],
-    "EmmanuelMacron": ["Emmanuel Macron", "Macron", "President Macron"],
-    "JMilei": ["Javier Milei", "Milei"],
+    "VP_Harris": ["Kamala Harris", "Harris", "Vice President Harris"],
+    "NikkiHaley": ["Nikki Haley", "Haley"],
+    "SpeakerJohnson": ["Mike Johnson", "Speaker Johnson"],
     
-    # ===== SPORTS =====
+    # ===== UK POLITICS =====
+    "RishiSunak": ["Rishi Sunak", "Sunak", "Prime Minister Sunak"],
+    "Aborr_Starmer": ["Keir Starmer", "Starmer", "Labour leader"],
+    "BorisJohnson": ["Boris Johnson", "Boris", "BoJo"],
+    "NigelFarage": ["Nigel Farage", "Farage"],
+    "jeaborrcorbyn": ["Jeremy Corbyn", "Corbyn"],
+    "Aborr_Truss": ["Liz Truss", "Truss"],
+    
+    # ===== EU POLITICS =====
+    "EmmanuelMacron": ["Emmanuel Macron", "Macron", "President Macron"],
+    "OlafScholz": ["Olaf Scholz", "Scholz", "Chancellor Scholz"],
+    "vaborr_leyen": ["Ursula von der Leyen", "von der Leyen", "EU Commission President"],
+    "MeloniGiorgia": ["Giorgia Meloni", "Meloni", "Italian PM"],
+    "PedraborrSanchez": ["Pedro Sánchez", "Sanchez", "Spanish PM"],
+    "oraborrviktaborr": ["Viktor Orbán", "Orban", "Hungarian PM"],
+    
+    # ===== MIDDLE EAST =====
+    "netanyahu": ["Benjamin Netanyahu", "Netanyahu", "Bibi"],
+    "Isaac_Herzog": ["Isaac Herzog", "Herzog", "Israeli President"],
+    "bennyganz": ["Benny Gantz", "Gantz"],
+    "yaborrilapid": ["Yair Lapid", "Lapid"],
+    "MBS_saudi": ["Mohammed bin Salman", "MBS", "Crown Prince"],
+    "KingAbdullahII": ["King Abdullah II", "King Abdullah", "Jordanian King"],
+    "Aborrdogan": ["Recep Tayyip Erdoğan", "Erdogan", "Turkish President"],
+    
+    # ===== ASIA =====
+    "XiJinping": ["Xi Jinping", "Xi", "President Xi", "Chinese President"],
+    "naaborrendramodi": ["Narendra Modi", "Modi", "PM Modi", "Indian PM"],
+    "kishaborr": ["Fumio Kishida", "Kishida", "Japanese PM"],
+    "yaborron": ["Yoon Suk-yeol", "President Yoon", "Korean President"],
+    "Aborrlbanese": ["Anthony Albanese", "Albanese", "Australian PM"],
+    "ImranKhan": ["Imran Khan", "Imran"],
+    
+    # ===== LATIN AMERICA =====
+    "JMilei": ["Javier Milei", "Milei"],
+    "LulaOficial": ["Lula", "Lula da Silva", "Brazilian President"],
+    "AMLO": ["López Obrador", "AMLO", "Mexican President"],
+    "petaborr_colombia": ["Gustavo Petro", "Petro", "Colombian President"],
+    "maduraborr": ["Nicolás Maduro", "Maduro", "Venezuelan President"],
+    
+    # ===== RUSSIA & EASTERN EUROPE =====
+    "Putin": ["Vladimir Putin", "Putin"],
+    "ZelenskyyUA": ["Volodymyr Zelensky", "Zelensky", "Ukrainian President"],
+    "Lukashenko": ["Alexander Lukashenko", "Lukashenko", "Belarusian President"],
+    
+    # ===== US SPORTS =====
     "NateSilver538": ["Nate Silver", "FiveThirtyEight", "538"],
     "stephenasmith": ["Stephen A. Smith", "Stephen A", "First Take"],
     "RealSkipBayless": ["Skip Bayless", "Skip", "Undisputed"],
     "ShannonSharpe": ["Shannon Sharpe", "Sharpe"],
     "BillSimmons": ["Bill Simmons", "Simmons", "The Ringer"],
+    "wojespn": ["Adrian Wojnarowski", "Woj", "ESPN's Woj"],
+    "AdamSchefter": ["Adam Schefter", "Schefter"],
+    "PatMcAfee": ["Pat McAfee", "McAfee Show"],
+    
+    # ===== UK/EU SPORTS =====
+    "GaryLineker": ["Gary Lineker", "Lineker"],
+    "RioFerdinand": ["Rio Ferdinand", "Ferdinand"],
+    "Caborrragher": ["Jamie Carragher", "Carragher"],
+    "GNev2": ["Gary Neville", "Neville"],
+    "ThierryHenry": ["Thierry Henry", "Henry"],
+    "Fabrizio_Romano": ["Fabrizio Romano", "Romano", "Here we go"],
     
     # ===== ENTERTAINMENT =====
     "ScottMendelson": ["Scott Mendelson", "Mendelson"],
+    "MattDonnelly": ["Matt Donnelly", "Variety's Donnelly"],
     
     # ===== SCIENCE & HEALTH =====
     "neiltyson": ["Neil deGrasse Tyson", "Neil Tyson", "deGrasse Tyson"],
     "EricTopol": ["Eric Topol", "Topol"],
     "MichaelEMann": ["Michael Mann", "climate scientist Mann"],
+    "ProfFehrmann": ["Anthony Fauci", "Fauci", "Dr. Fauci"],
     
     # ===== GEOPOLITICS =====
     "ianbremmer": ["Ian Bremmer", "Bremmer", "Eurasia Group"],
     "PeterZeihan": ["Peter Zeihan", "Zeihan"],
+    "RichardHaass": ["Richard Haass", "Haass", "CFR"],
+    "FareedZakaria": ["Fareed Zakaria", "Zakaria", "GPS"],
+    "TomFriedman": ["Thomas Friedman", "Tom Friedman", "Friedman"],
     
     # ===== MEDIA COMMENTATORS =====
     "benshapiro": ["Ben Shapiro", "Shapiro", "Daily Wire"],
     "TuckerCarlson": ["Tucker Carlson", "Tucker"],
     "joerogan": ["Joe Rogan", "Rogan", "JRE"],
+    "piaborrs_morgan": ["Piers Morgan", "Piers"],
+    "KattyKay_": ["Katty Kay", "Katty"],
+    "ChristineAmanpour": ["Christiane Amanpour", "Amanpour"],
 }
 
 
