@@ -51,8 +51,23 @@ async def populate():
     
     print(f"\nLoaded {len(data['pundits'])} pundits from historical data\n")
     
+    from sqlalchemy import select
+    
     async with async_session() as session:
+        # Get existing usernames to skip duplicates
+        existing_result = await session.execute(select(Pundit.username))
+        existing_usernames = {row[0] for row in existing_result.fetchall()}
+        print(f"Found {len(existing_usernames)} existing pundits in database\n")
+        
+        added_count = 0
+        skipped_count = 0
+        
         for pundit_data in data["pundits"]:
+            # Skip if pundit already exists
+            if pundit_data["username"] in existing_usernames:
+                print(f"SKIPPING (exists): {pundit_data['name']}")
+                skipped_count += 1
+                continue
             print(f"Processing: {pundit_data['name']}")
             
             # Create Pundit
@@ -193,6 +208,12 @@ async def populate():
             print(f"  ├── Win Rate: {win_rate:.1%}")
             print(f"  └── Total P&L: ${total_pnl:,.2f}")
             print()
+            added_count += 1
+        
+        if added_count == 0:
+            print("No new pundits to add.")
+            print(f"Skipped {skipped_count} existing pundits.")
+            return
         
         await session.commit()
         
@@ -211,7 +232,9 @@ async def populate():
         await session.commit()
         
     print("=" * 60)
-    print("Historical data population complete!")
+    print(f"Historical data population complete!")
+    print(f"Added: {added_count} new pundits")
+    print(f"Skipped: {skipped_count} existing pundits")
     print("=" * 60)
 
 if __name__ == "__main__":
