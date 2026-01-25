@@ -10,21 +10,19 @@ export function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true)
-    // Check localStorage - default to LIGHT mode
+    // Check localStorage - default to DARK mode
     const saved = localStorage.getItem('theme')
-    const currentlyHasDark = document.documentElement.classList.contains('dark')
     
-    if (saved === 'dark') {
-      setIsDark(true)
-      if (!currentlyHasDark) {
-        document.documentElement.classList.add('dark')
-      }
-    } else {
-      // Default to light mode (remove dark if present)
+    if (saved === 'light') {
+      // User explicitly chose light mode
       setIsDark(false)
       document.documentElement.classList.remove('dark')
+    } else {
+      // Default to dark mode
+      setIsDark(true)
+      document.documentElement.classList.add('dark')
       if (!saved) {
-        localStorage.setItem('theme', 'light')
+        localStorage.setItem('theme', 'dark')
       }
     }
   }, [])
