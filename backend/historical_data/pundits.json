@@ -177,6 +177,9 @@
       "bio": "Founder, CEO & CIO of ARK Invest. Known for disruptive innovation investing and bold price targets.",
       "avatar_url": "https://pbs.twimg.com/profile_images/1364668548623405057/Emborb9S_400x400.jpg",
       "domains": ["markets", "tech", "crypto"],
+      "net_worth": 250,
+      "net_worth_source": "Forbes",
+      "net_worth_year": 2024,
       "predictions": [
         {
           "date": "2022-01-01",
@@ -227,6 +230,9 @@
       "bio": "Economist, author, and gold bug. Known for predicting the 2008 financial crisis.",
       "avatar_url": "https://pbs.twimg.com/profile_images/966461797502480384/sER5oaRm_400x400.jpg",
       "domains": ["markets", "crypto", "macro"],
+      "net_worth": 100,
+      "net_worth_source": "Celebrity Net Worth",
+      "net_worth_year": 2024,
       "predictions": [
         {
           "date": "2022-01-05",
@@ -340,6 +346,9 @@
       "bio": "Executive Chairman of MicroStrategy. Bitcoin maximalist.",
       "avatar_url": "https://pbs.twimg.com/profile_images/1485632175984836608/p95Kx5lW_400x400.jpg",
       "domains": ["crypto"],
+      "net_worth": 4000,
+      "net_worth_source": "Forbes",
+      "net_worth_year": 2025,
       "predictions": [
         {
           "date": "2022-01-10",
@@ -695,6 +704,9 @@
       "bio": "Founder and CEO of Pershing Square Capital Management.",
       "avatar_url": "https://pbs.twimg.com/profile_images/1455892134336905216/R7RxfnGP_400x400.jpg",
       "domains": ["markets", "economy"],
+      "net_worth": 9000,
+      "net_worth_source": "Forbes",
+      "net_worth_year": 2024,
       "predictions": [
         {
           "date": "2022-08-04",
@@ -745,6 +757,9 @@
       "bio": "Founder of Bridgewater Associates, the world's largest hedge fund.",
       "avatar_url": "https://pbs.twimg.com/profile_images/1484913509043249159/H1XPHxEK_400x400.jpg",
       "domains": ["markets", "economy", "macro"],
+      "net_worth": 15300,
+      "net_worth_source": "Forbes",
+      "net_worth_year": 2024,
       "predictions": [
         {
           "date": "2022-01-20",
