@@ -265,6 +265,13 @@ export default function SubmitPage() {
                 <option value="politics">Politics</option>
                 <option value="tech">Tech</option>
                 <option value="macro">Macro</option>
+                <option value="sports">Sports</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="religion">Religion</option>
+                <option value="science">Science</option>
+                <option value="health">Health</option>
+                <option value="climate">Climate</option>
+                <option value="geopolitics">Geopolitics</option>
               </select>
             </div>
           </div>

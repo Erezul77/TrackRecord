@@ -573,6 +573,297 @@ export const KNOWN_PUNDITS: KnownPundit[] = [
     bio: "Forex analyst, author, managing director at BK Asset Management.",
     domains: ["markets", "macro"]
   },
+
+  // ===== SPORTS =====
+  {
+    name: "Stephen A. Smith",
+    username: "stephenasmith",
+    affiliation: "ESPN First Take",
+    bio: "ESPN commentator, known for bold sports predictions and hot takes.",
+    domains: ["sports", "entertainment"]
+  },
+  {
+    name: "Skip Bayless",
+    username: "RealSkipBayless",
+    affiliation: "Undisputed",
+    bio: "Sports commentator known for controversial takes on NFL and NBA.",
+    domains: ["sports"]
+  },
+  {
+    name: "Shannon Sharpe",
+    username: "ShannonSharpe",
+    affiliation: "ESPN First Take",
+    bio: "NFL Hall of Famer, sports analyst with bold predictions.",
+    domains: ["sports"]
+  },
+  {
+    name: "Bill Simmons",
+    username: "BillSimmons",
+    affiliation: "The Ringer",
+    bio: "Sports and pop culture writer, founder of The Ringer.",
+    domains: ["sports", "entertainment"]
+  },
+  {
+    name: "Nate Silver",
+    username: "NateSilver538",
+    affiliation: "Silver Bulletin",
+    bio: "Statistician known for election and sports forecasting.",
+    domains: ["sports", "politics"]
+  },
+
+  // ===== ENTERTAINMENT =====
+  {
+    name: "Scott Mendelson",
+    username: "ScottMendelson",
+    affiliation: "Forbes",
+    bio: "Box office analyst, makes predictions on movie performance.",
+    domains: ["entertainment"]
+  },
+  {
+    name: "Matthew Belloni",
+    username: "MattBelloni",
+    affiliation: "Puck News",
+    bio: "Hollywood insider, entertainment industry analyst.",
+    domains: ["entertainment", "media"]
+  },
+
+  // ===== RELIGION =====
+  {
+    name: "Pat Robertson",
+    username: "patrobertson",
+    affiliation: "CBN",
+    bio: "Televangelist known for prophecies and predictions.",
+    domains: ["religion", "politics"]
+  },
+  {
+    name: "John Hagee",
+    username: "PastorJohnHagee",
+    affiliation: "Cornerstone Church",
+    bio: "Pastor known for end-times predictions and prophecies.",
+    domains: ["religion"]
+  },
+
+  // ===== SCIENCE & CLIMATE =====
+  {
+    name: "Michael Mann",
+    username: "MichaelEMann",
+    affiliation: "Penn State",
+    bio: "Climate scientist, creator of hockey stick graph, climate predictions.",
+    domains: ["climate", "science"]
+  },
+  {
+    name: "Gavin Schmidt",
+    username: "ClimateOfGavin",
+    affiliation: "NASA GISS",
+    bio: "NASA climate scientist, climate model expert.",
+    domains: ["climate", "science"]
+  },
+  {
+    name: "Neil deGrasse Tyson",
+    username: "neiltyson",
+    affiliation: "Hayden Planetarium",
+    bio: "Astrophysicist, science communicator, makes predictions about space and tech.",
+    domains: ["science", "tech"]
+  },
+
+  // ===== HEALTH =====
+  {
+    name: "Anthony Fauci",
+    username: "NIAIDNews",
+    affiliation: "Former NIAID Director",
+    bio: "Immunologist, known for public health predictions and guidance.",
+    domains: ["health", "science"]
+  },
+  {
+    name: "Eric Topol",
+    username: "EricTopol",
+    affiliation: "Scripps Research",
+    bio: "Cardiologist, digital health expert, medical futurist.",
+    domains: ["health", "tech", "science"]
+  },
+
+  // ===== GEOPOLITICS =====
+  {
+    name: "Ian Bremmer",
+    username: "iaborinremmer",
+    affiliation: "Eurasia Group",
+    bio: "Political scientist, geopolitical risk analyst.",
+    domains: ["geopolitics", "politics"]
+  },
+  {
+    name: "Peter Zeihan",
+    username: "PeterZeihan",
+    affiliation: "Zeihan on Geopolitics",
+    bio: "Geopolitical strategist, makes predictions about global order.",
+    domains: ["geopolitics", "macro"]
+  },
+  {
+    name: "George Friedman",
+    username: "Aboringfriedman",
+    affiliation: "Geopolitical Futures",
+    bio: "Founder of Stratfor, geopolitical forecaster.",
+    domains: ["geopolitics", "politics"]
+  },
+
+  // ===== POLITICIANS - US =====
+  {
+    name: "Donald Trump",
+    username: "realDonaldTrump",
+    affiliation: "47th US President",
+    bio: "45th and 47th US President, makes bold claims about economy, immigration, foreign policy.",
+    domains: ["politics", "economy", "geopolitics"]
+  },
+  {
+    name: "Joe Biden",
+    username: "JoeBiden",
+    affiliation: "46th US President",
+    bio: "46th US President, former Senator. Policy predictions on economy and foreign affairs.",
+    domains: ["politics", "economy", "geopolitics"]
+  },
+  {
+    name: "Bernie Sanders",
+    username: "BernieSanders",
+    affiliation: "US Senator",
+    bio: "Vermont Senator, progressive. Predictions on economy, healthcare, inequality.",
+    domains: ["politics", "economy", "health"]
+  },
+  {
+    name: "Alexandria Ocasio-Cortez",
+    username: "AOC",
+    affiliation: "US Representative",
+    bio: "NY Congresswoman, progressive. Climate and economic predictions.",
+    domains: ["politics", "climate", "economy"]
+  },
+  {
+    name: "Ted Cruz",
+    username: "tedcruz",
+    affiliation: "US Senator",
+    bio: "Texas Senator. Makes predictions on politics, economy, immigration.",
+    domains: ["politics", "economy"]
+  },
+  {
+    name: "Ron DeSantis",
+    username: "GovRonDeSantis",
+    affiliation: "Florida Governor",
+    bio: "Florida Governor. Policy and political predictions.",
+    domains: ["politics", "economy"]
+  },
+  {
+    name: "Gavin Newsom",
+    username: "GavinNewsom",
+    affiliation: "California Governor",
+    bio: "California Governor. Climate, tech, and economic predictions.",
+    domains: ["politics", "climate", "economy"]
+  },
+  {
+    name: "Vivek Ramaswamy",
+    username: "VivekGRamaswamy",
+    affiliation: "Entrepreneur, Politician",
+    bio: "Biotech entrepreneur, 2024 presidential candidate. Tech and policy predictions.",
+    domains: ["politics", "tech", "economy"]
+  },
+  {
+    name: "Nikki Haley",
+    username: "NikkiHaley",
+    affiliation: "Former UN Ambassador",
+    bio: "Former SC Governor, UN Ambassador. Foreign policy predictions.",
+    domains: ["politics", "geopolitics"]
+  },
+  {
+    name: "Elizabeth Warren",
+    username: "SenWarren",
+    affiliation: "US Senator",
+    bio: "Massachusetts Senator. Economic and financial regulation predictions.",
+    domains: ["politics", "economy", "markets"]
+  },
+
+  // ===== POLITICIANS - INTERNATIONAL =====
+  {
+    name: "Benjamin Netanyahu",
+    username: "netanyahu",
+    affiliation: "Israeli Prime Minister",
+    bio: "Israeli PM. Middle East security and political predictions.",
+    domains: ["politics", "geopolitics"]
+  },
+  {
+    name: "Emmanuel Macron",
+    username: "EmmanuelMacron",
+    affiliation: "French President",
+    bio: "French President. EU, economic, and climate predictions.",
+    domains: ["politics", "economy", "geopolitics"]
+  },
+  {
+    name: "Boris Johnson",
+    username: "BorisJohnson",
+    affiliation: "Former UK Prime Minister",
+    bio: "Former UK PM. Brexit and UK political predictions.",
+    domains: ["politics", "economy", "geopolitics"]
+  },
+  {
+    name: "Javier Milei",
+    username: "JMilei",
+    affiliation: "Argentine President",
+    bio: "Argentine President, libertarian economist. Bold economic predictions.",
+    domains: ["politics", "economy", "macro"]
+  },
+  {
+    name: "Narendra Modi",
+    username: "naaboringendramodi",
+    affiliation: "Indian Prime Minister",
+    bio: "Indian PM. Economic growth and development predictions.",
+    domains: ["politics", "economy", "geopolitics"]
+  },
+  {
+    name: "Justin Trudeau",
+    username: "JustinTrudeau",
+    affiliation: "Canadian Prime Minister",
+    bio: "Canadian PM. Climate, economic, and policy predictions.",
+    domains: ["politics", "climate", "economy"]
+  },
+
+  // ===== POLITICAL COMMENTATORS =====
+  {
+    name: "Ben Shapiro",
+    username: "benshapiro",
+    affiliation: "Daily Wire",
+    bio: "Conservative commentator, political predictions and analysis.",
+    domains: ["politics", "media"]
+  },
+  {
+    name: "Tucker Carlson",
+    username: "TuckerCarlson",
+    affiliation: "Tucker Carlson Network",
+    bio: "Conservative commentator, political and cultural predictions.",
+    domains: ["politics", "media", "geopolitics"]
+  },
+  {
+    name: "Rachel Maddow",
+    username: "maddow",
+    affiliation: "MSNBC",
+    bio: "Progressive commentator, political analysis and predictions.",
+    domains: ["politics", "media"]
+  },
+  {
+    name: "Chris Cuomo",
+    username: "ChrisCuomo",
+    affiliation: "NewsNation",
+    bio: "Political commentator, news anchor.",
+    domains: ["politics", "media"]
+  },
+  {
+    name: "Megyn Kelly",
+    username: "megaborinynkelly",
+    affiliation: "SiriusXM",
+    bio: "Media personality, political commentator.",
+    domains: ["politics", "media"]
+  },
+  {
+    name: "Joe Rogan",
+    username: "joerogan",
+    affiliation: "JRE Podcast",
+    bio: "Podcaster with massive influence. Cultural and political commentary.",
+    domains: ["media", "politics", "entertainment"]
+  },
 ]
 
 // Helper to search pundits

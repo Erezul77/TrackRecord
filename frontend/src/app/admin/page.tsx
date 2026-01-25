@@ -318,6 +318,15 @@ export default function AdminPage() {
                 <option value="politics">Politics</option>
                 <option value="tech">Tech</option>
                 <option value="macro">Macro</option>
+                <option value="sports">Sports</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="religion">Religion</option>
+                <option value="science">Science</option>
+                <option value="business">Business</option>
+                <option value="media">Media</option>
+                <option value="health">Health</option>
+                <option value="climate">Climate</option>
+                <option value="geopolitics">Geopolitics</option>
                 <option value="general">General</option>
               </select>
             </div>
@@ -628,7 +637,7 @@ export default function AdminPage() {
               placeholder="e.g., markets, economy, crypto"
               className="w-full border rounded-lg px-4 py-2 text-slate-900"
             />
-            <p className="text-xs text-slate-400 mt-1">Options: markets, economy, crypto, politics, tech, macro</p>
+            <p className="text-xs text-slate-400 mt-1">Options: markets, economy, crypto, politics, tech, macro, sports, entertainment, religion, science, health, etc.</p>
           </div>
 
           <button

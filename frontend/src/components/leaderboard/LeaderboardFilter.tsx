@@ -9,7 +9,7 @@ interface LeaderboardFilterProps {
   pundits: Pundit[]
 }
 
-const CATEGORIES = ['All', 'Politics', 'Economy', 'Crypto', 'Markets', 'Tech', 'Macro']
+const CATEGORIES = ['All', 'Politics', 'Economy', 'Crypto', 'Markets', 'Tech', 'Macro', 'Sports', 'Entertainment', 'Religion', 'Science', 'Health', 'Climate', 'Geopolitics']
 
 export function LeaderboardFilter({ pundits }: LeaderboardFilterProps) {
   const [activeCategory, setActiveCategory] = useState('All')
