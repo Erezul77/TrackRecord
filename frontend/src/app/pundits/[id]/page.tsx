@@ -3,7 +3,13 @@ import { api } from "@/lib/api"
 import { PredictionCard } from "@/components/predictions/PredictionCard"
 import { formatPercent, cn } from "@/lib/utils"
 import Link from "next/link"
-import { CheckCircle, Info, ExternalLink, Target, TrendingUp, User, Star } from "lucide-react"
+import { CheckCircle, Info, ExternalLink, Target, TrendingUp, Star }
+
+// Generate UI Avatars URL
+function getAvatarUrl(name: string): string {
+  const encoded = encodeURIComponent(name)
+  return `https://ui-avatars.com/api/?name=${encoded}&background=000&color=fff&bold=true&size=256`
+} from "lucide-react"
 
 async function getPunditData(id: string) {
   try {
@@ -53,16 +59,12 @@ export default async function PunditPage({ params }: { params: Promise<{ id: str
       {/* Pundit Header Card */}
       <div className="bg-white border rounded-3xl p-8 mb-8 shadow-sm">
         <div className="flex flex-col md:flex-row gap-8 items-start">
-          <div className="relative h-32 w-32 flex-shrink-0 rounded-3xl border-4 border-slate-50 shadow-inner overflow-hidden bg-slate-100 flex items-center justify-center">
-            {pundit.avatar_url ? (
-              <img
-                src={pundit.avatar_url}
-                alt={pundit.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <User className="h-16 w-16 text-slate-400" />
-            )}
+          <div className="relative h-32 w-32 flex-shrink-0 rounded-3xl border-4 border-neutral-200 dark:border-neutral-700 overflow-hidden bg-black flex items-center justify-center">
+            <img
+              src={getAvatarUrl(pundit.name)}
+              alt={pundit.name}
+              className="h-full w-full object-cover"
+            />
           </div>
           
           <div className="flex-1">

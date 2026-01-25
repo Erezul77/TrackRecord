@@ -14,6 +14,12 @@ function formatNetWorth(netWorth: number): string {
   return `$${netWorth}M`
 }
 
+// Generate UI Avatars URL - reliable avatar generation
+function getAvatarUrl(name: string): string {
+  const encoded = encodeURIComponent(name)
+  return `https://ui-avatars.com/api/?name=${encoded}&background=000&color=fff&bold=true&size=128`
+}
+
 interface PunditCardProps {
   pundit: Pundit
   rank: number
@@ -52,18 +58,13 @@ export function PunditCard({ pundit, rank }: PunditCardProps) {
           {rank}
         </div>
         
-        {/* Avatar */}
-        <div className="relative h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0 rounded-full border-2 border-neutral-100 dark:border-neutral-800 overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-          {!imgError && pundit.avatar_url ? (
-            <img
-              src={pundit.avatar_url}
-              alt={pundit.name}
-              className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all"
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <User className="h-6 w-6 sm:h-7 sm:w-7 text-neutral-400" />
-          )}
+        {/* Avatar - Using UI Avatars API */}
+        <div className="relative h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0 rounded-full border-2 border-neutral-200 dark:border-neutral-700 overflow-hidden bg-black flex items-center justify-center">
+          <img
+            src={getAvatarUrl(pundit.name)}
+            alt={pundit.name}
+            className="h-full w-full object-cover"
+          />
         </div>
         
         {/* Info */}
