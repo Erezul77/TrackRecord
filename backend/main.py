@@ -4,7 +4,7 @@ from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, and_
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 import logging
@@ -1125,6 +1125,130 @@ async def stop_scheduler_endpoint(admin = Depends(require_admin)):
     
     stop_scheduler()
     return {"status": "stopped"}
+
+
+# ============================================
+# Auto Resolution System
+# ============================================
+
+@app.post("/api/admin/auto-resolve", tags=["Admin"])
+async def run_auto_resolution_endpoint(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Manually trigger auto-resolution cycle.
+    
+    This will:
+    1. Check all Polymarket-linked predictions for resolved markets
+    2. Update outcomes and PnL for resolved positions
+    3. Flag expired predictions for manual review
+    4. Update pundit metrics
+    """
+    from services.auto_resolver import run_auto_resolution
+    
+    results = await run_auto_resolution(db)
+    return {
+        "status": "complete",
+        "market_resolved": results.get("market_resolved", 0),
+        "timeframe_flagged": results.get("timeframe_expired", 0),
+        "details": results.get("details", []),
+        "errors": results.get("errors", [])
+    }
+
+
+@app.post("/api/admin/predictions/{prediction_id}/resolve-manual", tags=["Admin"])
+async def resolve_prediction_manual(
+    prediction_id: uuid.UUID,
+    outcome: str = Query(..., regex="^(YES|NO)$"),
+    notes: str = Query("", max_length=500),
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Manually resolve a single prediction.
+    
+    Args:
+        prediction_id: UUID of the prediction
+        outcome: YES (pundit was correct) or NO (pundit was wrong)
+        notes: Optional resolution notes
+    """
+    from services.auto_resolver import get_resolver
+    
+    resolver = get_resolver()
+    result = await resolver.resolve_single_prediction(
+        db=db,
+        prediction_id=str(prediction_id),
+        outcome=outcome,
+        resolution_notes=notes
+    )
+    
+    if not result["success"]:
+        raise HTTPException(status_code=404, detail=result.get("error", "Failed to resolve"))
+    
+    return result
+
+
+@app.get("/api/admin/predictions/needs-resolution", tags=["Admin"])
+async def get_predictions_needing_resolution(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin),
+    limit: int = Query(50, ge=1, le=200)
+):
+    """
+    Get predictions that need manual resolution.
+    
+    Returns:
+    - Flagged predictions (expired timeframe)
+    - Predictions without market match that have passed timeframe
+    """
+    now = datetime.utcnow()
+    
+    # Flagged predictions
+    flagged_result = await db.execute(
+        select(Prediction)
+        .where(Prediction.flagged == True)
+        .options(selectinload(Prediction.pundit))
+        .order_by(Prediction.timeframe)
+        .limit(limit)
+    )
+    flagged = flagged_result.scalars().all()
+    
+    # Expired but not flagged
+    expired_result = await db.execute(
+        select(Prediction)
+        .where(
+            and_(
+                Prediction.timeframe < now,
+                Prediction.status.in_(['pending_match', 'matched', 'open']),
+                Prediction.flagged == False
+            )
+        )
+        .options(selectinload(Prediction.pundit))
+        .order_by(Prediction.timeframe)
+        .limit(limit)
+    )
+    expired = expired_result.scalars().all()
+    
+    def format_pred(p):
+        return {
+            "id": str(p.id),
+            "claim": p.claim,
+            "pundit_name": p.pundit.name if p.pundit else "Unknown",
+            "category": p.category,
+            "timeframe": p.timeframe.isoformat() if p.timeframe else None,
+            "status": p.status,
+            "flagged": p.flagged,
+            "flag_reason": p.flag_reason,
+            "source_url": p.source_url
+        }
+    
+    return {
+        "flagged_predictions": [format_pred(p) for p in flagged],
+        "expired_predictions": [format_pred(p) for p in expired],
+        "total_needs_resolution": len(flagged) + len(expired)
+    }
+
 
 @app.post("/api/admin/historical/collect")
 async def run_historical_collection(

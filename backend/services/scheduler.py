@@ -5,6 +5,7 @@ Runs automated tasks:
 - Historical data collection
 - RSS feed ingestion
 - Prediction extraction
+- Auto-resolution of predictions
 """
 import os
 import asyncio
@@ -30,7 +31,8 @@ class TrackRecordScheduler:
         self.last_run_times = {}
         self.run_stats = {
             "rss_ingestion": {"runs": 0, "predictions": 0, "errors": 0},
-            "historical_collection": {"runs": 0, "articles": 0, "predictions": 0, "errors": 0}
+            "historical_collection": {"runs": 0, "articles": 0, "predictions": 0, "errors": 0},
+            "auto_resolution": {"runs": 0, "resolved": 0, "flagged": 0, "errors": 0}
         }
     
     async def run_rss_ingestion(self):
@@ -118,10 +120,47 @@ class TrackRecordScheduler:
         )
         logger.info(f"Historical collection scheduled for {cron_day_of_week} at {cron_hour}:00")
     
+    async def run_auto_resolution(self):
+        """Run auto-resolution cycle to close resolved predictions"""
+        from database.session import async_session
+        from services.auto_resolver import run_auto_resolution
+        
+        logger.info("Starting auto-resolution cycle...")
+        self.last_run_times["auto_resolution"] = datetime.now()
+        
+        try:
+            async with async_session() as session:
+                results = await run_auto_resolution(session)
+                
+                self.run_stats["auto_resolution"]["runs"] += 1
+                self.run_stats["auto_resolution"]["resolved"] += results.get("market_resolved", 0)
+                self.run_stats["auto_resolution"]["flagged"] += results.get("timeframe_expired", 0)
+                
+                logger.info(f"Auto-resolution complete: {results['market_resolved']} resolved, {results['timeframe_expired']} flagged")
+                return results
+                
+        except Exception as e:
+            self.run_stats["auto_resolution"]["errors"] += 1
+            logger.error(f"Auto-resolution failed: {e}")
+            return {"error": str(e)}
+    
+    def add_auto_resolution_job(self, interval_hours: int = 4):
+        """Schedule auto-resolution job"""
+        self.scheduler.add_job(
+            self.run_auto_resolution,
+            trigger=IntervalTrigger(hours=interval_hours),
+            id="auto_resolution",
+            name="Auto Resolution",
+            replace_existing=True
+        )
+        logger.info(f"Auto-resolution scheduled every {interval_hours} hours")
+    
     def start(
         self,
         rss_interval_hours: int = 6,
-        enable_historical: bool = True
+        enable_historical: bool = True,
+        enable_auto_resolution: bool = True,
+        resolution_interval_hours: int = 4
     ):
         """Start the scheduler"""
         if self.is_running:
@@ -133,6 +172,9 @@ class TrackRecordScheduler:
         
         if enable_historical:
             self.add_historical_job()
+        
+        if enable_auto_resolution:
+            self.add_auto_resolution_job(interval_hours=resolution_interval_hours)
         
         # Start scheduler
         self.scheduler.start()
