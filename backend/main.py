@@ -139,6 +139,7 @@ async def health_check():
     return {"status": "healthy"}
 
 # Auto-start scheduler on startup (controlled by env var)
+# Note: Scheduler tasks run in background - manual start via /api/admin/scheduler/start
 @app.on_event("startup")
 async def startup_event():
     auto_start = os.getenv("AUTO_START_SCHEDULER", "false").lower() == "true"
