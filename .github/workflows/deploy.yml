@@ -35,6 +35,8 @@ jobs:
               --name trackrecord-api \
               -p 8000:8000 \
               --env-file backend/.env \
+              -e GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
+              -e GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
               --restart unless-stopped \
               trackrecord-api
             
