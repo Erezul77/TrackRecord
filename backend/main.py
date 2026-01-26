@@ -1550,8 +1550,8 @@ async def populate_massive_data_endpoint(
                 continue
             
             year = pred["year"]
-            outcome = pred.get("outcome", "OPEN")
-            status = "resolved" if outcome in ["YES", "NO"] else "open"
+            outcome_str = pred.get("outcome", "OPEN")
+            status = "resolved" if outcome_str in ["YES", "NO"] else "open"
             captured_at = datetime(year, random.randint(1, 12), random.randint(1, 28))
             timeframe = captured_at + timedelta(days=random.randint(180, 730))
             
@@ -1567,30 +1567,24 @@ async def populate_massive_data_endpoint(
                 source_type="historical",
                 content_hash=content_hash,
                 captured_at=captured_at,
-                status=status,
-                outcome=outcome if status == "resolved" else None
+                status=status
             )
             db.add(prediction)
             predictions_added += 1
         
         await db.commit()
         
-        # Update metrics
+        # Update metrics - just update total predictions count
         for pundit in pundit_map.values():
             preds_result = await db.execute(select(Prediction).where(Prediction.pundit_id == pundit.id))
             preds = preds_result.scalars().all()
             
             total = len(preds)
-            resolved = sum(1 for p in preds if p.status == "resolved")
-            correct = sum(1 for p in preds if p.outcome == "YES")
             
             metrics_result = await db.execute(select(PunditMetrics).where(PunditMetrics.pundit_id == pundit.id))
             metrics = metrics_result.scalar_one_or_none()
             if metrics:
                 metrics.total_predictions = total
-                metrics.resolved_predictions = resolved
-                metrics.paper_win_rate = correct / resolved if resolved > 0 else 0.0
-                metrics.paper_total_pnl = correct * 100 - (resolved - correct) * 100
         
         await db.commit()
         
