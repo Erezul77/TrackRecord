@@ -19,11 +19,102 @@ import hashlib
 
 load_dotenv()
 
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import HTMLResponse
+
+# Custom Swagger UI with TrackRecord branding
+swagger_ui_parameters = {
+    "docExpansion": "none",
+    "defaultModelsExpandDepth": -1,
+    "syntaxHighlight.theme": "monokai",
+    "tryItOutEnabled": True
+}
+
 app = FastAPI(
     title="TrackRecord API",
     version="1.0.0",
-    description="Pundit prediction tracking and accountability"
+    description="Pundit prediction tracking and accountability platform. Track what experts predict and whether they're right.",
+    swagger_ui_parameters=swagger_ui_parameters,
+    docs_url=None,  # Disable default docs, we'll serve custom
+    redoc_url="/redoc",
+    openapi_tags=[
+        {"name": "Leaderboard", "description": "Pundit rankings and stats"},
+        {"name": "Predictions", "description": "Prediction data and voting"},
+        {"name": "Community", "description": "User registration and competition"},
+        {"name": "Admin", "description": "Admin operations"},
+    ]
 )
+
+# Custom CSS for Swagger UI - Sharp B&W theme
+CUSTOM_SWAGGER_CSS = """
+/* TrackRecord B&W Sharp Theme */
+.swagger-ui .topbar { display: none !important; }
+.swagger-ui .info .title { font-size: 32px; font-weight: 900; color: #000; }
+.swagger-ui .info .title small { background: #000; color: #fff; padding: 2px 8px; margin-left: 8px; border-radius: 0; }
+.swagger-ui .info .description { color: #555; }
+.swagger-ui .scheme-container { background: #f5f5f5; padding: 16px; border-radius: 0; }
+.swagger-ui .opblock { border-radius: 0 !important; border: 1px solid #ddd; }
+.swagger-ui .opblock .opblock-summary { border-radius: 0 !important; }
+.swagger-ui .opblock.opblock-get { border-color: #000; background: rgba(0,0,0,0.02); }
+.swagger-ui .opblock.opblock-get .opblock-summary { border-color: #000; }
+.swagger-ui .opblock.opblock-post { border-color: #000; background: rgba(0,0,0,0.05); }
+.swagger-ui .opblock.opblock-post .opblock-summary { border-color: #000; }
+.swagger-ui .opblock.opblock-put { border-color: #666; }
+.swagger-ui .opblock.opblock-delete { border-color: #c00; }
+.swagger-ui .btn { border-radius: 0 !important; }
+.swagger-ui .btn.execute { background: #000 !important; border-color: #000 !important; }
+.swagger-ui .btn.cancel { background: #fff !important; border: 1px solid #000 !important; color: #000 !important; }
+.swagger-ui select { border-radius: 0 !important; }
+.swagger-ui input[type=text], .swagger-ui textarea { border-radius: 0 !important; }
+.swagger-ui .model-box { border-radius: 0 !important; }
+.swagger-ui .opblock-tag { border-radius: 0; border-bottom: 2px solid #000; }
+.swagger-ui .opblock-tag:hover { background: rgba(0,0,0,0.05); }
+.swagger-ui .response-col_status { font-weight: bold; }
+.swagger-ui .responses-table { border-radius: 0; }
+.swagger-ui .response { border-radius: 0 !important; }
+.swagger-ui .model { border-radius: 0 !important; }
+.swagger-ui .tab li { border-radius: 0 !important; }
+.swagger-ui .tab li.active { background: #000; color: #fff; }
+.swagger-ui .copy-to-clipboard { border-radius: 0 !important; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+"""
+
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    return HTMLResponse(content=f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TrackRecord API - Documentation</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+    <link rel="icon" type="image/png" href="https://trackrecord.life/TrackRecord_Logo1.png">
+    <style>
+    {CUSTOM_SWAGGER_CSS}
+    </style>
+</head>
+<body>
+    <div id="swagger-ui"></div>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+        window.onload = function() {{
+            SwaggerUIBundle({{
+                url: "{app.openapi_url}",
+                dom_id: '#swagger-ui',
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIBundle.SwaggerUIStandalonePreset
+                ],
+                layout: "BaseLayout",
+                docExpansion: "none",
+                defaultModelsExpandDepth: -1,
+                syntaxHighlight: {{ theme: "monokai" }},
+                tryItOutEnabled: true
+            }});
+        }};
+    </script>
+</body>
+</html>
+""", media_type="text/html")
 
 # CORS configuration
 app.add_middleware(
