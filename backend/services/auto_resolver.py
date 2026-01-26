@@ -35,7 +35,8 @@ class AutoResolver:
         """
         results = {
             "market_resolved": 0,
-            "timeframe_expired": 0,
+            "expired_auto_resolved": 0,
+            "flagged_for_review": 0,
             "errors": [],
             "details": []
         }
@@ -48,11 +49,13 @@ class AutoResolver:
             
             # 2. Check expired timeframe predictions
             expired_results = await self._check_expired_predictions(db)
-            results["timeframe_expired"] = expired_results["flagged"]
+            results["expired_auto_resolved"] = expired_results.get("auto_resolved", 0)
+            results["flagged_for_review"] = expired_results.get("flagged", 0)
             results["details"].extend(expired_results["details"])
             
             # 3. Update pundit metrics after resolutions
-            if results["market_resolved"] > 0:
+            total_resolved = results["market_resolved"] + results["expired_auto_resolved"]
+            if total_resolved > 0:
                 await self._update_pundit_metrics(db)
             
             await db.commit()
@@ -145,8 +148,15 @@ class AutoResolver:
         return results
     
     async def _check_expired_predictions(self, db: AsyncSession) -> Dict:
-        """Check for predictions whose timeframe has expired"""
-        results = {"flagged": 0, "details": []}
+        """
+        Check for predictions whose timeframe has expired.
+        
+        Logic:
+        - If timeframe passed and prediction was about something happening BY a date,
+          and it didn't happen → auto-resolve as NO (wrong)
+        - The absence of the event IS the proof
+        """
+        results = {"auto_resolved": 0, "flagged": 0, "details": []}
         
         now = datetime.utcnow()
         
@@ -157,28 +167,71 @@ class AutoResolver:
                 and_(
                     Prediction.timeframe < now,
                     Prediction.status.in_(['pending_match', 'matched', 'open']),
-                    Prediction.flagged == False
                 )
             )
+            .options(selectinload(Prediction.position))
         )
         
         result = await db.execute(query)
         predictions = result.scalars().all()
         
         for pred in predictions:
-            # Flag for review - don't auto-resolve without market data
-            pred.flagged = True
-            pred.flag_reason = f"Timeframe expired on {pred.timeframe.isoformat()}. Needs manual resolution."
+            # Analyze the claim to determine if it's a "by date X" type prediction
+            claim_lower = pred.claim.lower()
             
-            results["flagged"] += 1
-            results["details"].append({
-                "prediction_id": str(pred.id),
-                "claim": pred.claim[:100],
-                "timeframe": pred.timeframe.isoformat(),
-                "action": "flagged_for_review"
-            })
+            # Keywords that suggest the prediction is about something happening BY a deadline
+            deadline_keywords = [
+                'will reach', 'will hit', 'will be', 'will become', 
+                'will win', 'will pass', 'will happen', 'will occur',
+                'by end of', 'by the end', 'before', 'within'
+            ]
             
-            logger.info(f"Flagged expired prediction {pred.id}")
+            is_deadline_prediction = any(kw in claim_lower for kw in deadline_keywords)
+            
+            if is_deadline_prediction:
+                # Auto-resolve as NO - the event didn't happen by the deadline
+                pred.status = "resolved"
+                pred.flagged = False
+                pred.flag_reason = None
+                
+                # Update position if exists
+                if pred.position:
+                    pred.position.status = "closed"
+                    pred.position.outcome = "NO"  # Prediction was wrong
+                    pred.position.exit_timestamp = now
+                    
+                    # Calculate loss
+                    if pred.position.entry_price and pred.position.shares:
+                        pred.position.realized_pnl = -pred.position.entry_price * pred.position.shares
+                
+                resolution_note = f"Auto-resolved: Timeframe expired on {pred.timeframe.strftime('%Y-%m-%d')}. The predicted event did not occur by the deadline."
+                
+                results["auto_resolved"] += 1
+                results["details"].append({
+                    "prediction_id": str(pred.id),
+                    "claim": pred.claim[:100],
+                    "timeframe": pred.timeframe.isoformat(),
+                    "outcome": "NO",
+                    "action": "auto_resolved_expired",
+                    "reason": resolution_note
+                })
+                
+                logger.info(f"Auto-resolved expired prediction {pred.id} as NO (wrong)")
+            
+            else:
+                # Can't auto-determine - flag for manual review
+                pred.flagged = True
+                pred.flag_reason = f"Timeframe expired on {pred.timeframe.isoformat()}. Needs manual resolution - unable to auto-determine outcome."
+                
+                results["flagged"] += 1
+                results["details"].append({
+                    "prediction_id": str(pred.id),
+                    "claim": pred.claim[:100],
+                    "timeframe": pred.timeframe.isoformat(),
+                    "action": "flagged_for_review"
+                })
+                
+                logger.info(f"Flagged expired prediction {pred.id} for manual review")
         
         return results
     

@@ -1141,9 +1141,12 @@ async def run_auto_resolution_endpoint(
     
     This will:
     1. Check all Polymarket-linked predictions for resolved markets
-    2. Update outcomes and PnL for resolved positions
-    3. Flag expired predictions for manual review
+    2. Auto-resolve expired "by date X" predictions as WRONG (event didn't happen)
+    3. Flag ambiguous expired predictions for manual review
     4. Update pundit metrics
+    
+    Note: Predictions like "Bitcoin will reach $1M by 2025" are auto-resolved as WRONG
+    when the deadline passes - no quote needed, the current reality is the proof.
     """
     from services.auto_resolver import run_auto_resolution
     
@@ -1151,7 +1154,9 @@ async def run_auto_resolution_endpoint(
     return {
         "status": "complete",
         "market_resolved": results.get("market_resolved", 0),
-        "timeframe_flagged": results.get("timeframe_expired", 0),
+        "expired_auto_resolved": results.get("expired_auto_resolved", 0),
+        "flagged_for_review": results.get("flagged_for_review", 0),
+        "total_resolved": results.get("market_resolved", 0) + results.get("expired_auto_resolved", 0),
         "details": results.get("details", []),
         "errors": results.get("errors", [])
     }
