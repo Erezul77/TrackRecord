@@ -77,7 +77,7 @@ export default function RootLayout({
               <h4 className="text-white dark:text-black font-bold mb-4 uppercase tracking-widest text-xs">Resources</h4>
               <ul className="space-y-3 text-sm">
                 <li><Link href="/methodology" className="text-neutral-400 dark:text-neutral-600 hover:text-white dark:hover:text-black transition-colors">Methodology</Link></li>
-                <li><Link href="/api-docs" className="text-neutral-400 dark:text-neutral-600 hover:text-white dark:hover:text-black transition-colors">API</Link></li>
+                <li><a href="https://api.trackrecord.life/docs" target="_blank" rel="noopener noreferrer" className="text-neutral-400 dark:text-neutral-600 hover:text-white dark:hover:text-black transition-colors">API</a></li>
               </ul>
             </div>
             <div>
