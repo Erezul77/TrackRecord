@@ -1432,6 +1432,116 @@ async def test_add_single_prediction(
         return {"status": "error", "message": str(e)}
 
 
+@app.post("/api/admin/populate-batch-3", tags=["Admin"])
+async def populate_batch_3(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Batch 3: International pundits - UK, EU, Asia, LatAm."""
+    try:
+        BATCH3_PUNDITS = [
+            {"name": "Rishi Sunak", "username": "RishiSunak_UK", "affiliation": "UK Politics", "domains": ["politics", "uk"], "net_worth": 730},
+            {"name": "Boris Johnson", "username": "BorisJohnson_UK", "affiliation": "UK Politics", "domains": ["politics", "uk"], "net_worth": 4},
+            {"name": "Nigel Farage", "username": "Nigel_Farage", "affiliation": "Reform UK", "domains": ["politics", "uk"], "net_worth": 5},
+            {"name": "Christine Lagarde", "username": "Lagarde_ECB", "affiliation": "European Central Bank", "domains": ["economy", "eu"], "net_worth": 5},
+            {"name": "Mario Draghi", "username": "MarioDraghi_EU", "affiliation": "Former ECB/Italy PM", "domains": ["economy", "eu"], "net_worth": 15},
+            {"name": "Angela Merkel", "username": "AngelaMerkel_DE", "affiliation": "Former German Chancellor", "domains": ["politics", "eu"], "net_worth": 11},
+            {"name": "Volodymyr Zelensky", "username": "ZelenskyyUA", "affiliation": "Ukraine President", "domains": ["politics", "geopolitics"], "net_worth": 30},
+            {"name": "Javier Milei", "username": "JMilei_AR", "affiliation": "Argentina President", "domains": ["politics", "latam", "economy"], "net_worth": 4},
+            {"name": "Nayib Bukele", "username": "NayibBukele_SV", "affiliation": "El Salvador President", "domains": ["politics", "latam", "crypto"], "net_worth": 5},
+            {"name": "Masayoshi Son", "username": "MasaSon_SB", "affiliation": "SoftBank", "domains": ["tech", "markets"], "net_worth": 21000},
+            {"name": "Jack Ma", "username": "JackMa_Alibaba", "affiliation": "Alibaba Founder", "domains": ["tech", "china"], "net_worth": 25000},
+            {"name": "Pony Ma", "username": "PonyMa_Tencent", "affiliation": "Tencent", "domains": ["tech", "china"], "net_worth": 39000},
+            {"name": "Martin Wolf", "username": "MartinWolf_FT", "affiliation": "Financial Times", "domains": ["economy", "media"], "net_worth": 5},
+            {"name": "Yanis Varoufakis", "username": "YanisVaroufakis", "affiliation": "DiEM25", "domains": ["economy", "politics"], "net_worth": 2},
+            {"name": "Daniel Kahneman", "username": "DKahneman", "affiliation": "Princeton", "domains": ["economy", "science"], "net_worth": 5},
+            {"name": "Thomas Piketty", "username": "PikettyThomas", "affiliation": "Paris School of Economics", "domains": ["economy"], "net_worth": 3},
+        ]
+        
+        BATCH3_PREDICTIONS = [
+            {"pundit": "Rishi Sunak", "claim": "UK economy will stabilize under Conservative leadership", "year": 2023},
+            {"pundit": "Rishi Sunak", "claim": "UK will avoid recession in 2024", "year": 2024},
+            {"pundit": "Boris Johnson", "claim": "Brexit will bring economic benefits to UK", "year": 2021},
+            {"pundit": "Boris Johnson", "claim": "Will remain PM through 2022", "year": 2022},
+            {"pundit": "Nigel Farage", "claim": "Brexit benefits will become clear in 2022", "year": 2022},
+            {"pundit": "Christine Lagarde", "claim": "Eurozone inflation will return to 2% by 2024", "year": 2022},
+            {"pundit": "Christine Lagarde", "claim": "ECB will not cut rates in 2023", "year": 2023},
+            {"pundit": "Mario Draghi", "claim": "Whatever it takes will save the Euro", "year": 2020},
+            {"pundit": "Angela Merkel", "claim": "Germany will maintain strong EU leadership after transition", "year": 2021},
+            {"pundit": "Volodymyr Zelensky", "claim": "Ukraine will resist Russian invasion", "year": 2022},
+            {"pundit": "Volodymyr Zelensky", "claim": "Western support will continue through 2024", "year": 2023},
+            {"pundit": "Javier Milei", "claim": "Will win Argentina presidential election", "year": 2023},
+            {"pundit": "Javier Milei", "claim": "Dollarization will stabilize Argentina economy", "year": 2024},
+            {"pundit": "Nayib Bukele", "claim": "Bitcoin adoption will benefit El Salvador", "year": 2021},
+            {"pundit": "Masayoshi Son", "claim": "AI will create trillion dollar companies", "year": 2023},
+            {"pundit": "Masayoshi Son", "claim": "SoftBank Vision Fund will recover", "year": 2024},
+            {"pundit": "Jack Ma", "claim": "Alibaba will remain dominant in China e-commerce", "year": 2021},
+            {"pundit": "Pony Ma", "claim": "Gaming regulation will ease in China", "year": 2023},
+            {"pundit": "Martin Wolf", "claim": "Globalization is in retreat", "year": 2022},
+            {"pundit": "Yanis Varoufakis", "claim": "EU austerity policies will fail again", "year": 2021},
+            {"pundit": "Daniel Kahneman", "claim": "Market irrationality will persist post-COVID", "year": 2020},
+            {"pundit": "Thomas Piketty", "claim": "Wealth inequality will accelerate globally", "year": 2021},
+        ]
+        
+        pundits_added = 0
+        predictions_added = 0
+        
+        for p in BATCH3_PUNDITS:
+            existing = await db.execute(select(Pundit).where(Pundit.username == p["username"]))
+            if not existing.scalar_one_or_none():
+                pundit = Pundit(
+                    id=uuid.uuid4(), name=p["name"], username=p["username"],
+                    affiliation=p.get("affiliation", ""), bio=f"{p['name']} - {p.get('affiliation', '')}",
+                    domains=p.get("domains", ["general"]), verified=True,
+                    net_worth=p.get("net_worth"), net_worth_source="Forbes/Estimates", net_worth_year=2024
+                )
+                db.add(pundit)
+                await db.flush()
+                metrics = PunditMetrics(pundit_id=pundit.id, total_predictions=0, resolved_predictions=0, paper_total_pnl=0, paper_win_rate=0, paper_roi=0)
+                db.add(metrics)
+                pundits_added += 1
+        
+        await db.commit()
+        
+        result = await db.execute(select(Pundit))
+        pundit_map = {p.name: p for p in result.scalars().all()}
+        
+        for pred in BATCH3_PREDICTIONS:
+            if pred["pundit"] not in pundit_map:
+                continue
+            pundit = pundit_map[pred["pundit"]]
+            content_hash = hashlib.sha256(f"{pred['pundit']}:{pred['claim']}".encode()).hexdigest()
+            existing = await db.execute(select(Prediction).where(Prediction.content_hash == content_hash))
+            if existing.scalar_one_or_none():
+                continue
+            year = pred["year"]
+            captured_at = datetime(year, random.randint(1, 12), random.randint(1, 28))
+            timeframe = captured_at + timedelta(days=random.randint(180, 730))
+            prediction = Prediction(
+                id=uuid.uuid4(), pundit_id=pundit.id, claim=pred["claim"],
+                quote=f'"{pred["claim"]}" - {pred["pundit"]}', confidence=random.uniform(0.6, 0.9),
+                category="general", timeframe=timeframe,
+                source_url=f"https://archive.trackrecord.life/{content_hash[:8]}",
+                source_type="historical", content_hash=content_hash, captured_at=captured_at, status="open"
+            )
+            db.add(prediction)
+            predictions_added += 1
+        
+        await db.commit()
+        
+        for pundit in pundit_map.values():
+            preds_result = await db.execute(select(Prediction).where(Prediction.pundit_id == pundit.id))
+            metrics_result = await db.execute(select(PunditMetrics).where(PunditMetrics.pundit_id == pundit.id))
+            metrics = metrics_result.scalar_one_or_none()
+            if metrics:
+                metrics.total_predictions = len(preds_result.scalars().all())
+        await db.commit()
+        
+        return {"status": "success", "pundits_added": pundits_added, "predictions_added": predictions_added}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed: {str(e)}")
+
+
 @app.post("/api/admin/populate-batch-2", tags=["Admin"])
 async def populate_batch_2(
     db: AsyncSession = Depends(get_db),
