@@ -48,6 +48,13 @@ export function MobileNav() {
               + Submit Prediction
             </Link>
             <Link 
+              href="/apply" 
+              onClick={() => setIsOpen(false)}
+              className="text-sm font-semibold text-green-600 hover:text-green-700 py-3 border-b border-neutral-100 dark:border-neutral-800"
+            >
+              Apply to be Tracked
+            </Link>
+            <Link 
               href="/resolve" 
               onClick={() => setIsOpen(false)}
               className="text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white py-3 border-b border-neutral-100 dark:border-neutral-800"

@@ -41,6 +41,7 @@ export default function RootLayout({
               <Link href="/predictions" className="text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors">Predictions</Link>
               <Link href="/compete" className="text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors">Compete</Link>
               <Link href="/submit" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">+ Submit</Link>
+              <Link href="/apply" className="text-sm font-semibold text-green-600 hover:text-green-700 transition-colors">Apply</Link>
               <Link href="/resolve" className="text-sm font-semibold text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors">Resolve</Link>
               <Link href="/admin" className="text-sm font-semibold text-neutral-400 hover:text-black dark:hover:text-white transition-colors">Admin</Link>
             </nav>
@@ -78,6 +79,8 @@ export default function RootLayout({
               <ul className="space-y-3 text-sm">
                 <li><Link href="/methodology" className="text-neutral-400 dark:text-neutral-600 hover:text-white dark:hover:text-black transition-colors">Methodology</Link></li>
                 <li><a href="https://api.trackrecord.life/docs" target="_blank" rel="noopener noreferrer" className="text-neutral-400 dark:text-neutral-600 hover:text-white dark:hover:text-black transition-colors">API</a></li>
+                <li><Link href="/apply" className="text-neutral-400 dark:text-neutral-600 hover:text-white dark:hover:text-black transition-colors">Apply to be Tracked</Link></li>
+                <li><Link href="/submit" className="text-neutral-400 dark:text-neutral-600 hover:text-white dark:hover:text-black transition-colors">Submit a Prediction</Link></li>
               </ul>
             </div>
             <div>

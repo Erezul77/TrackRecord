@@ -1652,6 +1652,149 @@ async def submit_crowdsourced_prediction(
         raise HTTPException(status_code=500, detail="Failed to save submission")
 
 
+class PunditApplication(BaseModel):
+    name: str
+    email: str
+    twitter_username: Optional[str] = None
+    youtube_channel: Optional[str] = None
+    website: Optional[str] = None
+    podcast: Optional[str] = None
+    affiliation: Optional[str] = None
+    bio: str
+    expertise: List[str]
+    sample_predictions: str
+    why_track: Optional[str] = None
+
+
+@app.post("/api/pundit-applications", tags=["Community"])
+async def submit_pundit_application(
+    application: PunditApplication,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Submit an application for a pundit/expert to be tracked on TrackRecord.
+    This allows experts to self-register for accountability tracking.
+    """
+    import json
+    from pathlib import Path
+    
+    applications_file = Path(__file__).parent / "pundit_applications.json"
+    
+    try:
+        if applications_file.exists():
+            with open(applications_file, "r") as f:
+                applications = json.load(f)
+        else:
+            applications = []
+        
+        # Check for duplicate email
+        existing_emails = [a.get("data", {}).get("email") for a in applications]
+        if application.email in existing_emails:
+            raise HTTPException(status_code=400, detail="An application with this email already exists")
+        
+        # Add new application
+        applications.append({
+            "id": str(uuid.uuid4()),
+            "submitted_at": datetime.utcnow().isoformat(),
+            "status": "pending_review",
+            "data": application.dict()
+        })
+        
+        with open(applications_file, "w") as f:
+            json.dump(applications, f, indent=2)
+        
+        logging.info(f"New pundit application: {application.name} ({application.email})")
+        
+        return {
+            "status": "success",
+            "message": "Application received! We'll review it within 48 hours."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Failed to save application: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save application")
+
+
+@app.get("/api/admin/pundit-applications", tags=["Admin"])
+async def get_pundit_applications(
+    admin = Depends(require_admin)
+):
+    """Get all pundit applications for review"""
+    import json
+    from pathlib import Path
+    
+    applications_file = Path(__file__).parent / "pundit_applications.json"
+    
+    if not applications_file.exists():
+        return {"applications": [], "total": 0}
+    
+    with open(applications_file, "r") as f:
+        applications = json.load(f)
+    
+    pending = [a for a in applications if a.get("status") == "pending_review"]
+    return {"applications": pending, "total": len(pending)}
+
+
+@app.post("/api/admin/pundit-applications/{app_id}/approve", tags=["Admin"])
+async def approve_pundit_application(
+    app_id: str,
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Approve a pundit application and create their profile"""
+    import json
+    from pathlib import Path
+    
+    applications_file = Path(__file__).parent / "pundit_applications.json"
+    
+    if not applications_file.exists():
+        raise HTTPException(status_code=404, detail="Application not found")
+    
+    with open(applications_file, "r") as f:
+        applications = json.load(f)
+    
+    # Find the application
+    app_data = None
+    for app in applications:
+        if app["id"] == app_id:
+            app_data = app
+            break
+    
+    if not app_data:
+        raise HTTPException(status_code=404, detail="Application not found")
+    
+    data = app_data["data"]
+    
+    # Create pundit in database
+    username = data.get("twitter_username", "").lstrip("@") or data["name"].lower().replace(" ", "_")
+    
+    pundit = Pundit(
+        name=data["name"],
+        username=username,
+        bio=data["bio"],
+        affiliation=data.get("affiliation"),
+        domains=data.get("expertise", ["general"])
+    )
+    db.add(pundit)
+    
+    # Update application status
+    app_data["status"] = "approved"
+    app_data["approved_at"] = datetime.utcnow().isoformat()
+    
+    with open(applications_file, "w") as f:
+        json.dump(applications, f, indent=2)
+    
+    await db.commit()
+    
+    return {
+        "status": "approved",
+        "pundit_id": str(pundit.id),
+        "message": f"Pundit {data['name']} created successfully"
+    }
+
+
 @app.get("/api/submissions/stats", tags=["Community"])
 async def get_submission_stats():
     """Get public stats about submissions for the submit page"""
