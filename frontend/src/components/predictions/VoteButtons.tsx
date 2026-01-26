@@ -96,7 +96,7 @@ export function VoteButtons({ predictionId }: VoteButtonsProps) {
       <button
         onClick={() => handleVote('up')}
         disabled={loading}
-        className={`p-1.5 rounded-lg transition-all ${
+        className={`p-1.5  transition-all ${
           userVote === 'up'
             ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
             : 'hover:bg-green-50 dark:hover:bg-green-900/20 text-neutral-400 hover:text-green-600 dark:hover:text-green-400'
@@ -117,7 +117,7 @@ export function VoteButtons({ predictionId }: VoteButtonsProps) {
       <button
         onClick={() => handleVote('down')}
         disabled={loading}
-        className={`p-1.5 rounded-lg transition-all ${
+        className={`p-1.5  transition-all ${
           userVote === 'down'
             ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
             : 'hover:bg-red-50 dark:hover:bg-red-900/20 text-neutral-400 hover:text-red-600 dark:hover:text-red-400'

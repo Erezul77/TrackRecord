@@ -6,7 +6,7 @@ export default function PrivacyPage() {
       <p className="text-neutral-500 mb-8">Last updated: January 2026</p>
 
       <div className="prose prose-neutral dark:prose-invert max-w-none">
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 space-y-6">
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6 space-y-6">
           <section>
             <h2 className="text-xl font-bold text-black dark:text-white mb-3">Information We Collect</h2>
             <p className="text-neutral-600 dark:text-neutral-400">

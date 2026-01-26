@@ -43,7 +43,7 @@ export function ThemeToggle() {
   // Prevent hydration mismatch
   if (!mounted) {
     return (
-      <button className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+      <button className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800  transition-colors">
         <div className="h-5 w-5" />
       </button>
     )
@@ -52,7 +52,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+      className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800  transition-colors"
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Light mode' : 'Dark mode'}
     >

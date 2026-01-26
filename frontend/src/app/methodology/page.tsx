@@ -13,12 +13,12 @@ export default function MethodologyPage() {
         {/* Section 1 */}
         <section>
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-black dark:bg-white rounded-lg">
+            <div className="p-2 bg-black dark:bg-white ">
               <Target className="h-5 w-5 text-white dark:text-black" />
             </div>
             <h2 className="text-2xl font-bold text-black dark:text-white">What We Track</h2>
           </div>
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6">
             <ul className="space-y-3 text-neutral-600 dark:text-neutral-400">
               <li><strong className="text-black dark:text-white">Specific predictions</strong> — Not vague opinions, but measurable claims with clear outcomes</li>
               <li><strong className="text-black dark:text-white">Clear timeframes</strong> — Every prediction must have a deadline for resolution</li>
@@ -31,12 +31,12 @@ export default function MethodologyPage() {
         {/* Section 2 */}
         <section>
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-black dark:bg-white rounded-lg">
+            <div className="p-2 bg-black dark:bg-white ">
               <BarChart3 className="h-5 w-5 text-white dark:text-black" />
             </div>
             <h2 className="text-2xl font-bold text-black dark:text-white">Scoring System</h2>
           </div>
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6">
             <p className="text-neutral-600 dark:text-neutral-400 mb-4">
               We use a paper trading simulation to calculate PnL (Profit & Loss) for each prediction:
             </p>
@@ -52,12 +52,12 @@ export default function MethodologyPage() {
         {/* Section 3 */}
         <section>
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-black dark:bg-white rounded-lg">
+            <div className="p-2 bg-black dark:bg-white ">
               <Scale className="h-5 w-5 text-white dark:text-black" />
             </div>
             <h2 className="text-2xl font-bold text-black dark:text-white">Ranking Criteria</h2>
           </div>
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6">
             <p className="text-neutral-600 dark:text-neutral-400 mb-4">
               Pundits are ranked by their paper PnL. To appear on the leaderboard:
             </p>
@@ -72,12 +72,12 @@ export default function MethodologyPage() {
         {/* Section 4 */}
         <section>
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-black dark:bg-white rounded-lg">
+            <div className="p-2 bg-black dark:bg-white ">
               <Clock className="h-5 w-5 text-white dark:text-black" />
             </div>
             <h2 className="text-2xl font-bold text-black dark:text-white">Resolution Process</h2>
           </div>
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6">
             <p className="text-neutral-600 dark:text-neutral-400 mb-4">
               Predictions are resolved through a transparent process:
             </p>
@@ -91,7 +91,7 @@ export default function MethodologyPage() {
         </section>
       </div>
 
-      <div className="mt-12 p-6 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl">
+      <div className="mt-12 p-6 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 ">
         <p className="text-sm text-neutral-500 text-center">
           Our methodology is constantly evolving. Have suggestions? Contact us at{' '}
           <a href="mailto:feedback@trackrecord.life" className="text-black dark:text-white hover:underline">

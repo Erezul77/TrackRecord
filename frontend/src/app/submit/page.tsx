@@ -147,7 +147,7 @@ export default function SubmitPage() {
         </h1>
         
         {/* Smart URL Extraction */}
-        <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 mt-6">
+        <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6 mt-6">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="h-5 w-5 text-blue-500" />
             <h2 className="font-bold text-black dark:text-white">Smart Extract from URL</h2>
@@ -162,12 +162,12 @@ export default function SubmitPage() {
               value={extractUrl}
               onChange={(e) => setExtractUrl(e.target.value)}
               placeholder="https://www.example.com/article..."
-              className="flex-1 px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white text-black dark:text-white"
+              className="flex-1 px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  focus:ring-2 focus:ring-black dark:focus:ring-white text-black dark:text-white"
             />
             <button
               onClick={handleExtract}
               disabled={extracting || !extractUrl.trim()}
-              className="flex items-center gap-2 bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-bold hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-2 bg-black dark:bg-white text-white dark:text-black px-4 py-2  font-bold hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {extracting ? (
                 <>
@@ -191,7 +191,7 @@ export default function SubmitPage() {
                 <button
                   key={idx}
                   onClick={() => fillFromExtracted(pred)}
-                  className="w-full text-left p-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:border-black dark:hover:border-white transition-colors"
+                  className="w-full text-left p-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700  hover:border-black dark:hover:border-white transition-colors"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-bold text-black dark:text-white">{pred.pundit_name}</span>
@@ -212,7 +212,7 @@ export default function SubmitPage() {
       </div>
 
       {/* Guidelines */}
-      <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 mb-8">
+      <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-4 mb-8">
         <h3 className="font-bold text-black dark:text-white mb-2">Submission Guidelines</h3>
         <ul className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
           <li>• Must be a <strong>specific, measurable prediction</strong> (not vague opinions)</li>
@@ -224,7 +224,7 @@ export default function SubmitPage() {
 
       {/* Message */}
       {message && (
-        <div className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
+        <div className={`mb-6 p-4  flex items-center gap-2 ${
           message.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
         }`}>
           {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
@@ -232,7 +232,7 @@ export default function SubmitPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6 space-y-6">
         {/* Pundit Info */}
         <div className="border-b border-neutral-200 dark:border-neutral-800 pb-4 mb-4">
           <h3 className="font-bold text-black dark:text-white mb-4">Who made the prediction?</h3>
@@ -249,13 +249,13 @@ export default function SubmitPage() {
                 }}
                 onFocus={() => setShowSuggestions(true)}
                 placeholder="e.g., Jim Cramer"
-                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
                 required
               />
               
               {/* Autocomplete */}
               {showSuggestions && formData.pundit_name.length >= 2 && suggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700  shadow-lg max-h-40 overflow-y-auto">
                   {suggestions.map(s => (
                     <button
                       key={s.username}
@@ -285,7 +285,7 @@ export default function SubmitPage() {
                 value={formData.pundit_username}
                 onChange={(e) => setFormData({...formData, pundit_username: e.target.value})}
                 placeholder="e.g., jimcramer (optional)"
-                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
               />
             </div>
           </div>
@@ -303,7 +303,7 @@ export default function SubmitPage() {
                 value={formData.claim}
                 onChange={(e) => setFormData({...formData, claim: e.target.value})}
                 placeholder="e.g., Bitcoin will reach $100,000 by end of 2024"
-                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
                 required
               />
               <p className="text-xs text-neutral-400 mt-1">Be specific: include target price/event and deadline</p>
@@ -315,7 +315,7 @@ export default function SubmitPage() {
                 value={formData.quote}
                 onChange={(e) => setFormData({...formData, quote: e.target.value})}
                 placeholder="Paste the exact words they said..."
-                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white h-24"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white h-24"
                 required
               />
             </div>
@@ -330,7 +330,7 @@ export default function SubmitPage() {
                 value={formData.source_url}
                 onChange={(e) => setFormData({...formData, source_url: e.target.value})}
                 placeholder="https://twitter.com/... or https://youtube.com/..."
-                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
                 required
               />
               <p className="text-xs text-neutral-400 mt-1">Tweet, article, video, podcast - any verifiable source</p>
@@ -349,7 +349,7 @@ export default function SubmitPage() {
                 type="date"
                 value={formData.prediction_date}
                 onChange={(e) => setFormData({...formData, prediction_date: e.target.value})}
-                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
                 required
               />
             </div>
@@ -360,7 +360,7 @@ export default function SubmitPage() {
                 type="date"
                 value={formData.resolution_date}
                 onChange={(e) => setFormData({...formData, resolution_date: e.target.value})}
-                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
               />
             </div>
           </div>
@@ -371,7 +371,7 @@ export default function SubmitPage() {
               <select
                 value={formData.outcome}
                 onChange={(e) => setFormData({...formData, outcome: e.target.value})}
-                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
               >
                 <option value="unknown">Unknown / Still Open</option>
                 <option value="right">Correct (Pundit was RIGHT)</option>
@@ -384,7 +384,7 @@ export default function SubmitPage() {
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
-                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
               >
                 <optgroup label="Topics">
                   <option value="markets">Markets / Stocks</option>
@@ -443,7 +443,7 @@ export default function SubmitPage() {
               value={formData.outcome_notes}
               onChange={(e) => setFormData({...formData, outcome_notes: e.target.value})}
               placeholder="e.g., Bitcoin reached $73k but not $100k target"
-              className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+              className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
             />
           </div>
         </div>
@@ -456,14 +456,14 @@ export default function SubmitPage() {
             value={formData.submitter_email}
             onChange={(e) => setFormData({...formData, submitter_email: e.target.value})}
             placeholder="Get notified when your submission is reviewed"
-            className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+            className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3  hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
         >
           <Send className="h-5 w-5" />
           {loading ? 'Submitting...' : 'Submit Prediction'}
@@ -476,15 +476,15 @@ export default function SubmitPage() {
       </form>
 
       {/* Examples */}
-      <div className="mt-8 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
+      <div className="mt-8 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6">
         <h3 className="font-bold text-black dark:text-white mb-4">Example Good Submissions</h3>
         <div className="space-y-4 text-sm">
-          <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-3">
+          <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700  p-3">
             <p className="font-bold text-green-500">✓ Good Prediction</p>
             <p className="text-neutral-700 dark:text-neutral-300">"Bitcoin will reach $100,000 by December 31, 2024"</p>
             <p className="text-neutral-500">Clear target + clear deadline = measurable</p>
           </div>
-          <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-3">
+          <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700  p-3">
             <p className="font-bold text-red-500">✗ Bad Prediction</p>
             <p className="text-neutral-700 dark:text-neutral-300">"Bitcoin is going to the moon"</p>
             <p className="text-neutral-500">No target + no deadline = unmeasurable</p>

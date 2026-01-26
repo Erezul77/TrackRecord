@@ -29,9 +29,9 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
 
   return (
     <div className={cn(
-      "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden hover:shadow-md transition-shadow",
-      isResolved && isCorrect && "ring-2 ring-green-200 dark:ring-green-900",
-      isResolved && !isCorrect && "ring-2 ring-red-200 dark:ring-red-900"
+      "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-md transition-shadow",
+      isResolved && isCorrect && "border-green-400 dark:border-green-700",
+      isResolved && !isCorrect && "border-red-400 dark:border-red-700"
     )}>
       {/* Status Banner */}
       <div className={cn("px-4 py-2 flex items-center justify-between", statusDisplay.color)}>
@@ -75,7 +75,7 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
         <p className="font-bold text-black dark:text-white mb-3 line-clamp-2">{pred.claim}</p>
         
         {/* Quote */}
-        <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-3 mb-3 border-l-4 border-neutral-300 dark:border-neutral-600 italic text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
+        <div className="bg-neutral-50 dark:bg-neutral-800 p-3 mb-3 border-l-4 border-neutral-300 dark:border-neutral-600 italic text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
           "{pred.quote}"
         </div>
 

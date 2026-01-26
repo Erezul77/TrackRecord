@@ -35,9 +35,9 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
 
   return (
     <div className={cn(
-      "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden transition-all",
-      prediction.outcome === 'YES' && "border-green-300 dark:border-green-700 ring-2 ring-green-100 dark:ring-green-900/30",
-      prediction.outcome === 'NO' && "border-red-300 dark:border-red-700 ring-2 ring-red-100 dark:ring-red-900/30"
+      "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden transition-all",
+      prediction.outcome === 'YES' && "border-green-400 dark:border-green-700",
+      prediction.outcome === 'NO' && "border-red-400 dark:border-red-700"
     )}>
       {/* Outcome Banner */}
       <div className={cn("px-4 py-2 flex items-center justify-between", outcomeDisplay.color)}>
@@ -57,7 +57,7 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
         </h4>
 
         {/* Quote - the exact words they said */}
-        <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-3 mb-3 border-l-4 border-neutral-300 dark:border-neutral-600 italic text-sm text-neutral-600 dark:text-neutral-400">
+        <div className="bg-neutral-50 dark:bg-neutral-800 p-3 mb-3 border-l-4 border-neutral-300 dark:border-neutral-600 italic text-sm text-neutral-600 dark:text-neutral-400">
           <Quote className="h-3 w-3 text-neutral-400 inline mr-1" />
           "{prediction.quote}"
         </div>
@@ -71,7 +71,7 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
       
       {/* Footer - Source Link */}
       {prediction.source_url && prediction.source_url !== 'https://example.com/test' && (
-        <div className="px-4 py-2 bg-neutral-50 dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700">
+        <div className="px-4 py-2 bg-neutral-50 dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-800">
           <a 
             href={prediction.source_url} 
             target="_blank" 

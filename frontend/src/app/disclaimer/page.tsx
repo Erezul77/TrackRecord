@@ -7,7 +7,7 @@ export default function DisclaimerPage() {
       <h1 className="text-4xl font-black text-black dark:text-white tracking-tighter mb-4">Disclaimer</h1>
       <p className="text-neutral-500 mb-8">Important information about TrackRecord</p>
 
-      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6 mb-8">
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800  p-6 mb-8">
         <div className="flex items-start gap-3">
           <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
           <p className="text-amber-800 dark:text-amber-300 font-medium">
@@ -16,7 +16,7 @@ export default function DisclaimerPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 space-y-6">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6 space-y-6">
         <section>
           <h2 className="text-xl font-bold text-black dark:text-white mb-3">Not Financial Advice</h2>
           <p className="text-neutral-600 dark:text-neutral-400">

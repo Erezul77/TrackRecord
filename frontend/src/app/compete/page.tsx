@@ -241,7 +241,7 @@ export default function CompetePage() {
           <button
             onClick={() => setActiveTab('dashboard')}
             className={cn(
-              "flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-colors",
+              "flex items-center gap-2 px-6 py-3 font-bold transition-colors",
               activeTab === 'dashboard' 
                 ? "bg-black dark:bg-white text-white dark:text-black" 
                 : "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
@@ -254,7 +254,7 @@ export default function CompetePage() {
         <button
           onClick={() => setActiveTab('leaderboard')}
           className={cn(
-            "flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-colors",
+            "flex items-center gap-2 px-6 py-3  font-bold transition-colors",
             activeTab === 'leaderboard' 
               ? "bg-black dark:bg-white text-white dark:text-black" 
               : "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
@@ -267,7 +267,7 @@ export default function CompetePage() {
           <button
             onClick={() => setActiveTab('auth')}
             className={cn(
-              "flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-colors",
+              "flex items-center gap-2 px-6 py-3  font-bold transition-colors",
               activeTab === 'auth' 
                 ? "bg-black dark:bg-white text-white dark:text-black" 
                 : "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
@@ -280,7 +280,7 @@ export default function CompetePage() {
         {user && (
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+            className="flex items-center gap-2 px-6 py-3  font-bold bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
           >
             Logout
           </button>
@@ -290,7 +290,7 @@ export default function CompetePage() {
       {/* Message */}
       {message && (
         <div className={cn(
-          "max-w-xl mx-auto mb-6 p-4 rounded-lg flex items-center gap-2",
+          "max-w-xl mx-auto mb-6 p-4  flex items-center gap-2",
           message.type === 'success' ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400" : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400"
         )}>
           {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
@@ -301,12 +301,12 @@ export default function CompetePage() {
       {/* Auth Tab */}
       {activeTab === 'auth' && !user && (
         <div className="max-w-md mx-auto">
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6">
             <div className="flex gap-2 mb-6">
               <button
                 onClick={() => setAuthMode('login')}
                 className={cn(
-                  "flex-1 py-2 rounded-lg font-bold text-sm",
+                  "flex-1 py-2  font-bold text-sm",
                   authMode === 'login' ? "bg-black dark:bg-white text-white dark:text-black" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
                 )}
               >
@@ -316,7 +316,7 @@ export default function CompetePage() {
               <button
                 onClick={() => setAuthMode('register')}
                 className={cn(
-                  "flex-1 py-2 rounded-lg font-bold text-sm",
+                  "flex-1 py-2  font-bold text-sm",
                   authMode === 'register' ? "bg-black dark:bg-white text-white dark:text-black" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
                 )}
               >
@@ -334,7 +334,7 @@ export default function CompetePage() {
                       type="text"
                       value={authForm.username}
                       onChange={(e) => setAuthForm({...authForm, username: e.target.value})}
-                      className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                      className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
                       required
                     />
                   </div>
@@ -344,7 +344,7 @@ export default function CompetePage() {
                       type="text"
                       value={authForm.display_name}
                       onChange={(e) => setAuthForm({...authForm, display_name: e.target.value})}
-                      className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                      className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
                       placeholder="How you'll appear on leaderboard"
                     />
                   </div>
@@ -356,7 +356,7 @@ export default function CompetePage() {
                   type="email"
                   value={authForm.email}
                   onChange={(e) => setAuthForm({...authForm, email: e.target.value})}
-                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
                   required
                 />
               </div>
@@ -366,14 +366,14 @@ export default function CompetePage() {
                   type="password"
                   value={authForm.password}
                   onChange={(e) => setAuthForm({...authForm, password: e.target.value})}
-                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
                   required
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 transition-colors"
+                className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3  hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 transition-colors"
               >
                 {loading ? 'Please wait...' : (authMode === 'login' ? 'Login' : 'Create Account')}
               </button>
@@ -387,19 +387,19 @@ export default function CompetePage() {
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Stats Cards */}
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 text-center">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6 text-center">
               <Target className="h-8 w-8 text-blue-500 mx-auto mb-2" />
               <div className="text-3xl font-black text-black dark:text-white">{user.stats.total_predictions}</div>
               <div className="text-sm text-neutral-500">Total Predictions</div>
             </div>
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 text-center">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6 text-center">
               <TrendingUp className="h-8 w-8 text-green-500 mx-auto mb-2" />
               <div className="text-3xl font-black text-green-500">
                 {(user.stats.win_rate * 100).toFixed(1)}%
               </div>
               <div className="text-sm text-neutral-500">Win Rate</div>
             </div>
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 text-center">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6 text-center">
               <Trophy className="h-8 w-8 text-amber-500 mx-auto mb-2" />
               <div className="text-3xl font-black text-black dark:text-white">
                 {user.stats.correct}W - {user.stats.wrong}L
@@ -409,7 +409,7 @@ export default function CompetePage() {
           </div>
 
           {/* Create Prediction */}
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 mb-8">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6 mb-8">
             <h3 className="font-bold text-black dark:text-white mb-4 flex items-center gap-2">
               <Send className="h-5 w-5 text-blue-500" />
               Make a Prediction
@@ -421,7 +421,7 @@ export default function CompetePage() {
                   value={predictionForm.claim}
                   onChange={(e) => setPredictionForm({...predictionForm, claim: e.target.value})}
                   placeholder="e.g., Bitcoin will reach $150,000 by the end of this timeframe"
-                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 h-20 text-black dark:text-white"
+                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 h-20 text-black dark:text-white"
                   required
                 />
                 <p className="text-xs text-neutral-400 mt-1">Be specific! Include targets and make it measurable.</p>
@@ -432,7 +432,7 @@ export default function CompetePage() {
                   <select
                     value={predictionForm.category}
                     onChange={(e) => setPredictionForm({...predictionForm, category: e.target.value})}
-                    className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
                   >
                     <optgroup label="Topics">
                       <option value="markets">Markets</option>
@@ -470,7 +470,7 @@ export default function CompetePage() {
                   <select
                     value={predictionForm.timeframe_days}
                     onChange={(e) => setPredictionForm({...predictionForm, timeframe_days: parseInt(e.target.value)})}
-                    className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
                   >
                     <option value={7}>1 Week</option>
                     <option value={14}>2 Weeks</option>
@@ -484,7 +484,7 @@ export default function CompetePage() {
               <button
                 type="submit"
                 disabled={loading || !predictionForm.claim}
-                className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 transition-colors"
+                className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3  hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 transition-colors"
               >
                 Submit Prediction
               </button>
@@ -498,7 +498,7 @@ export default function CompetePage() {
               <div className="space-y-3">
                 {predictions.map(pred => (
                   <div key={pred.id} className={cn(
-                    "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-4",
+                    "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-4",
                     pred.outcome === 'YES' && "border-green-400 dark:border-green-700 bg-green-50 dark:bg-green-900/20",
                     pred.outcome === 'NO' && "border-red-400 dark:border-red-700 bg-red-50 dark:bg-red-900/20"
                   )}>
@@ -522,7 +522,7 @@ export default function CompetePage() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-12 text-center text-neutral-400">
+              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-12 text-center text-neutral-400">
                 <Clock className="h-12 w-12 mx-auto mb-4 text-neutral-300 dark:text-neutral-600" />
                 <p className="font-bold">No predictions yet</p>
                 <p className="text-sm">Make your first prediction above!</p>
@@ -535,7 +535,7 @@ export default function CompetePage() {
       {/* Leaderboard Tab */}
       {activeTab === 'leaderboard' && (
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  overflow-hidden">
             <div className="bg-black dark:bg-white text-white dark:text-black p-4">
               <h3 className="font-bold flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-amber-400 dark:text-amber-500" />
@@ -592,7 +592,7 @@ export default function CompetePage() {
             <div className="mt-6 text-center">
               <button
                 onClick={() => setActiveTab('auth')}
-                className="bg-black dark:bg-white text-white dark:text-black font-bold px-8 py-3 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
+                className="bg-black dark:bg-white text-white dark:text-black font-bold px-8 py-3  hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
               >
                 Join the Competition
               </button>

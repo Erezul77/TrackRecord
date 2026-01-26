@@ -76,7 +76,7 @@ export function PredictionsList() {
             <button
               key={cat}
               onClick={() => setCategory(cat)}
-              className={`text-sm font-bold px-3 py-1.5 rounded-lg transition-colors ${
+              className={`text-sm font-bold px-3 py-1.5 transition-colors ${
                 cat === category
                   ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
                   : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800'
@@ -101,7 +101,7 @@ export function PredictionsList() {
               <button
                 key={option.value}
                 onClick={() => setSort(option.value)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all ${
                   sort === option.value
                     ? 'bg-black dark:bg-white text-white dark:text-black'
                     : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
@@ -128,7 +128,7 @@ export function PredictionsList() {
               <PredictionCardWithVotes key={pred.id} prediction={pred} />
             ))
           ) : (
-            <div className="col-span-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-12 sm:p-20 text-center">
+            <div className="col-span-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-12 sm:p-20 text-center">
               <Clock className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-4" />
               <p className="text-neutral-400 font-bold text-xl">No predictions found.</p>
               <p className="text-neutral-400 mt-2">Check back later as our AI processes more content.</p>
