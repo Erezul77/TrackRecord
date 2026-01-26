@@ -1,6 +1,7 @@
 import os
 import uuid
-from datetime import datetime
+import random
+from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -1389,9 +1390,7 @@ async def populate_massive_data_endpoint(
     Populate database with massive historical data.
     Adds 200+ pundits and 100+ predictions from 2020-2025.
     """
-    import hashlib
-    import random
-    from uuid import uuid4
+    # Uses imports from top of file: random, hashlib, uuid, timedelta
     
     # Quick inline data for immediate population
     NEW_PUNDITS = [
@@ -1461,7 +1460,7 @@ async def populate_massive_data_endpoint(
         existing = await db.execute(select(Pundit).where(Pundit.username == p["username"]))
         if not existing.scalar_one_or_none():
             pundit = Pundit(
-                id=uuid4(),
+                id=uuid.uuid4(),
                 name=p["name"],
                 username=p["username"],
                 affiliation=p.get("affiliation", ""),
@@ -1511,7 +1510,7 @@ async def populate_massive_data_endpoint(
         timeframe = captured_at + timedelta(days=random.randint(180, 730))
         
         prediction = Prediction(
-            id=uuid4(),
+            id=uuid.uuid4(),
             pundit_id=pundit.id,
             claim=pred["claim"],
             quote=f'"{pred["claim"]}" - {pred["pundit"]}',
