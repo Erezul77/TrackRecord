@@ -32,7 +32,8 @@ class TrackRecordScheduler:
         self.run_stats = {
             "rss_ingestion": {"runs": 0, "predictions": 0, "errors": 0},
             "historical_collection": {"runs": 0, "articles": 0, "predictions": 0, "errors": 0},
-            "auto_resolution": {"runs": 0, "resolved": 0, "flagged": 0, "errors": 0}
+            "auto_resolution": {"runs": 0, "resolved": 0, "flagged": 0, "errors": 0},
+            "twitter_collection": {"runs": 0, "tweets": 0, "predictions": 0, "errors": 0}
         }
     
     async def run_rss_ingestion(self):
@@ -155,12 +156,135 @@ class TrackRecordScheduler:
         )
         logger.info(f"Auto-resolution scheduled every {interval_hours} hours")
     
+    async def run_twitter_collection(self, max_pundits: int = 20):
+        """Run Twitter prediction collection"""
+        import os
+        
+        # Check if Twitter is configured
+        if not os.getenv("TWITTER_BEARER_TOKEN"):
+            logger.warning("Twitter collection skipped - no bearer token configured")
+            return {"skipped": True, "reason": "No Twitter token"}
+        
+        from database.session import async_session
+        from services.twitter_ingestion import TwitterPredictionCollector, get_twitter_pundits
+        from services.prediction_extractor import PredictionExtractor
+        from database.models import Prediction, Pundit
+        from sqlalchemy import select
+        import hashlib
+        
+        logger.info("Starting Twitter prediction collection...")
+        self.last_run_times["twitter_collection"] = datetime.now()
+        
+        try:
+            async with async_session() as session:
+                collector = TwitterPredictionCollector()
+                extractor = PredictionExtractor()
+                
+                # Get tracked pundits with Twitter handles
+                usernames = get_twitter_pundits()[:max_pundits]
+                
+                # Collect tweets from last 24 hours
+                results = await collector.collect_from_multiple_pundits(usernames, since_hours=24)
+                await collector.close()
+                
+                total_tweets = sum(len(tweets) for tweets in results.values())
+                new_predictions = 0
+                
+                for username, tweets in results.items():
+                    for tweet in tweets:
+                        try:
+                            content_hash = hashlib.sha256(tweet.url.encode()).hexdigest()
+                            
+                            # Skip duplicates
+                            existing = await session.execute(
+                                select(Prediction).where(Prediction.content_hash == content_hash)
+                            )
+                            if existing.scalar_one_or_none():
+                                continue
+                            
+                            # Find pundit
+                            pundit_result = await session.execute(
+                                select(Pundit).where(Pundit.username == username)
+                            )
+                            pundit = pundit_result.scalar_one_or_none()
+                            
+                            if not pundit:
+                                pundit = Pundit(
+                                    name=tweet.author_name,
+                                    username=username,
+                                    bio=f"Twitter: @{username}",
+                                    domains=["general"]
+                                )
+                                session.add(pundit)
+                                await session.flush()
+                            
+                            # Extract prediction
+                            extraction = await extractor.extract_from_text(
+                                text=tweet.text,
+                                source_url=tweet.url,
+                                author_name=tweet.author_name
+                            )
+                            
+                            if extraction and extraction.get("has_prediction"):
+                                from datetime import timedelta
+                                timeframe = datetime.now() + timedelta(days=extraction.get("timeframe_days", 365))
+                                
+                                prediction = Prediction(
+                                    pundit_id=pundit.id,
+                                    claim=extraction.get("claim", tweet.text[:500]),
+                                    quote=tweet.text,
+                                    confidence=extraction.get("confidence", 0.5),
+                                    category=extraction.get("category", "general"),
+                                    timeframe=timeframe,
+                                    source_url=tweet.url,
+                                    source_type="twitter",
+                                    content_hash=content_hash,
+                                    captured_at=tweet.created_at,
+                                    status="open"
+                                )
+                                session.add(prediction)
+                                new_predictions += 1
+                                
+                        except Exception as e:
+                            logger.error(f"Error processing tweet from {username}: {e}")
+                
+                await session.commit()
+                
+                self.run_stats["twitter_collection"]["runs"] += 1
+                self.run_stats["twitter_collection"]["tweets"] += total_tweets
+                self.run_stats["twitter_collection"]["predictions"] += new_predictions
+                
+                logger.info(f"Twitter collection complete: {total_tweets} tweets, {new_predictions} new predictions")
+                
+                return {
+                    "tweets_found": total_tweets,
+                    "new_predictions": new_predictions
+                }
+                
+        except Exception as e:
+            self.run_stats["twitter_collection"]["errors"] += 1
+            logger.error(f"Twitter collection failed: {e}")
+            return {"error": str(e)}
+    
+    def add_twitter_job(self, interval_hours: int = 6):
+        """Schedule Twitter collection job"""
+        self.scheduler.add_job(
+            self.run_twitter_collection,
+            trigger=IntervalTrigger(hours=interval_hours),
+            id="twitter_collection",
+            name="Twitter Collection",
+            replace_existing=True
+        )
+        logger.info(f"Twitter collection scheduled every {interval_hours} hours")
+    
     def start(
         self,
         rss_interval_hours: int = 6,
         enable_historical: bool = True,
         enable_auto_resolution: bool = True,
-        resolution_interval_hours: int = 4
+        resolution_interval_hours: int = 4,
+        enable_twitter: bool = True,
+        twitter_interval_hours: int = 6
     ):
         """Start the scheduler"""
         if self.is_running:
@@ -175,6 +299,9 @@ class TrackRecordScheduler:
         
         if enable_auto_resolution:
             self.add_auto_resolution_job(interval_hours=resolution_interval_hours)
+        
+        if enable_twitter:
+            self.add_twitter_job(interval_hours=twitter_interval_hours)
         
         # Start scheduler
         self.scheduler.start()

@@ -965,6 +965,218 @@ async def run_auto_agent(
     finally:
         db.close()
 
+# ============================================
+# Twitter/X Integration
+# ============================================
+
+@app.get("/api/admin/twitter/status", tags=["Admin"])
+async def get_twitter_status(admin = Depends(require_admin)):
+    """Check if Twitter API is configured and working"""
+    import os
+    
+    bearer_token = os.getenv("TWITTER_BEARER_TOKEN")
+    
+    if not bearer_token:
+        return {
+            "configured": False,
+            "error": "TWITTER_BEARER_TOKEN not set in environment"
+        }
+    
+    try:
+        from services.twitter_ingestion import TwitterService
+        twitter = TwitterService(bearer_token)
+        
+        # Test with a simple user lookup
+        user = await twitter.get_user_by_username("twitter")
+        await twitter.close()
+        
+        if user:
+            return {
+                "configured": True,
+                "status": "working",
+                "test_user": user.get("username")
+            }
+        else:
+            return {
+                "configured": True,
+                "status": "error",
+                "error": "API call failed - check token permissions"
+            }
+            
+    except Exception as e:
+        return {
+            "configured": True,
+            "status": "error", 
+            "error": str(e)
+        }
+
+
+@app.post("/api/admin/twitter/collect", tags=["Admin"])
+async def collect_twitter_predictions(
+    usernames: Optional[List[str]] = None,
+    since_hours: int = Query(24, ge=1, le=168),
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Collect prediction tweets from specified pundits.
+    
+    Args:
+        usernames: List of Twitter usernames to check (defaults to all tracked pundits)
+        since_hours: How far back to look (default 24 hours, max 168/7 days)
+    """
+    from services.twitter_ingestion import TwitterPredictionCollector, get_twitter_pundits
+    
+    try:
+        collector = TwitterPredictionCollector()
+        
+        # Use provided usernames or default to tracked pundits
+        if not usernames:
+            usernames = get_twitter_pundits()[:20]  # Limit to avoid rate limits
+        
+        # Collect tweets
+        results = await collector.collect_from_multiple_pundits(usernames, since_hours)
+        
+        await collector.close()
+        
+        # Format response
+        total_tweets = sum(len(tweets) for tweets in results.values())
+        tweet_details = []
+        
+        for username, tweets in results.items():
+            for tweet in tweets:
+                tweet_details.append({
+                    "username": username,
+                    "text": tweet.text[:280],
+                    "url": tweet.url,
+                    "created_at": tweet.created_at.isoformat(),
+                    "likes": tweet.metrics.get("like_count", 0),
+                    "retweets": tweet.metrics.get("retweet_count", 0)
+                })
+        
+        return {
+            "status": "success",
+            "pundits_checked": len(usernames),
+            "total_prediction_tweets": total_tweets,
+            "tweets": tweet_details[:50]  # Limit response size
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e)
+        }
+
+
+@app.post("/api/admin/twitter/process", tags=["Admin"])
+async def process_twitter_predictions(
+    usernames: Optional[List[str]] = None,
+    since_hours: int = Query(24, ge=1, le=168),
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Collect tweets AND extract predictions using AI, then store in database.
+    Full pipeline: Twitter -> AI Extraction -> Database
+    """
+    from services.twitter_ingestion import TwitterPredictionCollector, get_twitter_pundits
+    from services.prediction_extractor import PredictionExtractor
+    import hashlib
+    
+    try:
+        collector = TwitterPredictionCollector()
+        extractor = PredictionExtractor()
+        
+        if not usernames:
+            usernames = get_twitter_pundits()[:10]  # Conservative limit
+        
+        # Collect tweets
+        results = await collector.collect_from_multiple_pundits(usernames, since_hours)
+        await collector.close()
+        
+        processed = 0
+        new_predictions = 0
+        errors = []
+        
+        for username, tweets in results.items():
+            for tweet in tweets:
+                try:
+                    # Check if we already have this tweet
+                    content_hash = hashlib.sha256(tweet.url.encode()).hexdigest()
+                    
+                    existing = await db.execute(
+                        select(Prediction).where(Prediction.content_hash == content_hash)
+                    )
+                    if existing.scalar_one_or_none():
+                        continue  # Skip duplicate
+                    
+                    # Find or create pundit
+                    pundit_result = await db.execute(
+                        select(Pundit).where(Pundit.username == username)
+                    )
+                    pundit = pundit_result.scalar_one_or_none()
+                    
+                    if not pundit:
+                        # Create new pundit from Twitter data
+                        pundit = Pundit(
+                            name=tweet.author_name,
+                            username=username,
+                            bio=f"Twitter: @{username}",
+                            domains=["general"]
+                        )
+                        db.add(pundit)
+                        await db.flush()
+                    
+                    # Extract prediction using AI
+                    extraction = await extractor.extract_from_text(
+                        text=tweet.text,
+                        source_url=tweet.url,
+                        author_name=tweet.author_name
+                    )
+                    
+                    if extraction and extraction.get("has_prediction"):
+                        # Create prediction
+                        from datetime import timedelta
+                        
+                        timeframe = datetime.utcnow() + timedelta(days=extraction.get("timeframe_days", 365))
+                        
+                        prediction = Prediction(
+                            pundit_id=pundit.id,
+                            claim=extraction.get("claim", tweet.text[:500]),
+                            quote=tweet.text,
+                            confidence=extraction.get("confidence", 0.5),
+                            category=extraction.get("category", "general"),
+                            timeframe=timeframe,
+                            source_url=tweet.url,
+                            source_type="twitter",
+                            content_hash=content_hash,
+                            captured_at=tweet.created_at,
+                            status="open"
+                        )
+                        db.add(prediction)
+                        new_predictions += 1
+                    
+                    processed += 1
+                    
+                except Exception as e:
+                    errors.append(f"{username}: {str(e)[:100]}")
+        
+        await db.commit()
+        
+        return {
+            "status": "success",
+            "tweets_processed": processed,
+            "new_predictions": new_predictions,
+            "errors": errors[:10] if errors else []
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e)
+        }
+
+
 @app.post("/api/admin/ai-extract")
 async def ai_extract_predictions(
     feed_key: Optional[str] = None,
