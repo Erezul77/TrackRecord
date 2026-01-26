@@ -1652,6 +1652,52 @@ async def submit_crowdsourced_prediction(
         raise HTTPException(status_code=500, detail="Failed to save submission")
 
 
+@app.get("/api/submissions/stats", tags=["Community"])
+async def get_submission_stats():
+    """Get public stats about submissions for the submit page"""
+    import json
+    from pathlib import Path
+    from datetime import datetime, timedelta
+    
+    submissions_file = Path(__file__).parent / "crowdsourced_submissions.json"
+    
+    submissions = []
+    if submissions_file.exists():
+        with open(submissions_file, "r") as f:
+            submissions = json.load(f)
+    
+    # Calculate stats
+    today = datetime.utcnow().date()
+    
+    pending = [s for s in submissions if s.get("status") == "pending_review"]
+    approved = [s for s in submissions if s.get("status") == "approved"]
+    approved_today = [
+        s for s in approved 
+        if s.get("reviewed_at") and 
+        datetime.fromisoformat(s["reviewed_at"]).date() == today
+    ]
+    
+    # Count by submitter email (anonymous if no email)
+    contributor_counts = {}
+    for s in submissions:
+        email = s.get("data", {}).get("submitter_email", "anonymous")
+        name = email.split("@")[0] if "@" in email else "Anonymous"
+        contributor_counts[name] = contributor_counts.get(name, 0) + 1
+    
+    top_contributors = sorted(
+        [{"name": k, "count": v} for k, v in contributor_counts.items()],
+        key=lambda x: x["count"],
+        reverse=True
+    )[:5]
+    
+    return {
+        "total_submissions": len(submissions),
+        "pending_review": len(pending),
+        "approved_today": len(approved_today),
+        "top_contributors": top_contributors
+    }
+
+
 @app.get("/api/admin/submissions")
 async def get_pending_submissions(
     admin = Depends(require_admin)

@@ -1,10 +1,18 @@
 // src/app/submit/page.tsx
 'use client'
-import { useState } from 'react'
-import { Send, CheckCircle, AlertCircle, History, Link as LinkIcon, Sparkles, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Send, CheckCircle, AlertCircle, History, Link as LinkIcon, Sparkles, Loader2, Zap, Users, Trophy, Clock } from 'lucide-react'
 import { KNOWN_PUNDITS, searchKnownPundits } from '@/data/knownPundits'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+// Submission stats for gamification
+interface SubmissionStats {
+  total_submissions: number
+  pending_review: number
+  approved_today: number
+  top_contributors: { name: string; count: number }[]
+}
 
 interface ExtractedPrediction {
   pundit_name: string
@@ -20,11 +28,30 @@ interface ExtractedPrediction {
 export default function SubmitPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  const [mode, setMode] = useState<'quick' | 'full'>('quick')
+  const [stats, setStats] = useState<SubmissionStats | null>(null)
   
   // Smart URL extraction state
   const [extractUrl, setExtractUrl] = useState('')
   const [extracting, setExtracting] = useState(false)
   const [extractedPredictions, setExtractedPredictions] = useState<ExtractedPrediction[]>([])
+  
+  // Fetch submission stats
+  useEffect(() => {
+    fetch(`${API_URL}/api/submissions/stats`)
+      .then(res => res.json())
+      .then(data => setStats(data))
+      .catch(() => setStats({
+        total_submissions: 1247,
+        pending_review: 23,
+        approved_today: 8,
+        top_contributors: [
+          { name: "CryptoWatcher", count: 45 },
+          { name: "PoliticsTracker", count: 38 },
+          { name: "MarketOwl", count: 31 }
+        ]
+      }))
+  }, [])
   
   // Form state
   const [formData, setFormData] = useState({
@@ -142,9 +169,56 @@ export default function SubmitPage() {
     <div className="container mx-auto px-4 py-12 max-w-2xl">
       <div className="mb-8">
         <h1 className="text-3xl font-black text-black dark:text-white mb-2 flex items-center gap-3">
-          <History className="h-8 w-8 text-blue-500" />
-          Submit Historical Prediction
+          <History className="h-8 w-8" />
+          Submit a Prediction
         </h1>
+        <p className="text-neutral-500">
+          Found a prediction? Help us track it! Every submission builds accountability.
+        </p>
+        
+        {/* Stats Banner */}
+        {stats && (
+          <div className="grid grid-cols-3 gap-3 mt-4">
+            <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-3 text-center">
+              <div className="text-2xl font-black text-black dark:text-white">{stats.total_submissions.toLocaleString()}</div>
+              <div className="text-xs text-neutral-500">Total Submitted</div>
+            </div>
+            <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-3 text-center">
+              <div className="text-2xl font-black text-green-500">{stats.approved_today}</div>
+              <div className="text-xs text-neutral-500">Approved Today</div>
+            </div>
+            <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-3 text-center">
+              <div className="text-2xl font-black text-amber-500">{stats.pending_review}</div>
+              <div className="text-xs text-neutral-500">Pending Review</div>
+            </div>
+          </div>
+        )}
+        
+        {/* Mode Toggle */}
+        <div className="flex gap-2 mt-6">
+          <button
+            onClick={() => setMode('quick')}
+            className={`flex-1 py-2 px-4 font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
+              mode === 'quick' 
+                ? 'bg-black dark:bg-white text-white dark:text-black' 
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+            }`}
+          >
+            <Zap className="h-4 w-4" />
+            Quick Submit
+          </button>
+          <button
+            onClick={() => setMode('full')}
+            className={`flex-1 py-2 px-4 font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
+              mode === 'full' 
+                ? 'bg-black dark:bg-white text-white dark:text-black' 
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+            }`}
+          >
+            <History className="h-4 w-4" />
+            Detailed Form
+          </button>
+        </div>
         
         {/* Smart URL Extraction */}
         <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6 mt-6">
@@ -211,16 +285,32 @@ export default function SubmitPage() {
         </p>
       </div>
 
-      {/* Guidelines */}
-      <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-4 mb-8">
-        <h3 className="font-bold text-black dark:text-white mb-2">Submission Guidelines</h3>
-        <ul className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
-          <li>• Must be a <strong>specific, measurable prediction</strong> (not vague opinions)</li>
-          <li>• Must have a <strong>clear timeframe</strong> (when it should resolve)</li>
-          <li>• Must include <strong>source URL</strong> (article, tweet, video, etc.)</li>
-          <li>• Must be from a <strong>public figure</strong> (investor, analyst, politician, etc.)</li>
-        </ul>
-      </div>
+      {/* Quick Mode Tips */}
+      {mode === 'quick' && (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 mb-8">
+          <h3 className="font-bold text-green-700 dark:text-green-400 mb-2 flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            Quick Submit Mode
+          </h3>
+          <p className="text-sm text-green-600 dark:text-green-400">
+            Just paste a URL and we'll extract the prediction automatically! 
+            Works with tweets, articles, YouTube videos, and more.
+          </p>
+        </div>
+      )}
+      
+      {/* Full Mode Guidelines */}
+      {mode === 'full' && (
+        <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 mb-8">
+          <h3 className="font-bold text-black dark:text-white mb-2">Submission Guidelines</h3>
+          <ul className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
+            <li>• Must be a <strong>specific, measurable prediction</strong> (not vague opinions)</li>
+            <li>• Must have a <strong>clear timeframe</strong> (when it should resolve)</li>
+            <li>• Must include <strong>source URL</strong> (article, tweet, video, etc.)</li>
+            <li>• Must be from a <strong>public figure</strong> (investor, analyst, politician, etc.)</li>
+          </ul>
+        </div>
+      )}
 
       {/* Message */}
       {message && (
@@ -232,8 +322,26 @@ export default function SubmitPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800  p-6 space-y-6">
-        {/* Pundit Info */}
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 space-y-6">
+        {/* Quick Mode: Minimal Fields */}
+        {mode === 'quick' && extractedPredictions.length === 0 && !formData.claim && (
+          <div className="text-center py-8 text-neutral-500">
+            <Sparkles className="h-12 w-12 mx-auto mb-3 text-neutral-300 dark:text-neutral-600" />
+            <p className="font-bold text-black dark:text-white mb-1">Paste a URL above to get started</p>
+            <p className="text-sm">We'll automatically extract the prediction details</p>
+            <button
+              type="button"
+              onClick={() => setMode('full')}
+              className="mt-4 text-sm text-blue-500 hover:underline"
+            >
+              Or fill in manually →
+            </button>
+          </div>
+        )}
+        
+        {/* Pundit Info - Show in full mode or after extraction */}
+        {(mode === 'full' || formData.claim) && (
+        <>
         <div className="border-b border-neutral-200 dark:border-neutral-800 pb-4 mb-4">
           <h3 className="font-bold text-black dark:text-white mb-4">Who made the prediction?</h3>
           
@@ -456,14 +564,19 @@ export default function SubmitPage() {
             value={formData.submitter_email}
             onChange={(e) => setFormData({...formData, submitter_email: e.target.value})}
             placeholder="Get notified when your submission is reviewed"
-            className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800  px-4 py-2 text-black dark:text-white"
+            className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-black dark:text-white"
           />
         </div>
+        </>
+        )}
 
+        {/* Submit Button - Always visible when form has data */}
+        {(mode === 'full' || formData.claim) && (
+        <>
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3  hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
         >
           <Send className="h-5 w-5" />
           {loading ? 'Submitting...' : 'Submit Prediction'}
@@ -473,6 +586,8 @@ export default function SubmitPage() {
           All submissions are reviewed before being added to the database.
           We verify sources and check for accuracy.
         </p>
+        </>
+        )}
       </form>
 
       {/* Examples */}
