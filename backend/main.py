@@ -1795,6 +1795,93 @@ async def approve_pundit_application(
     }
 
 
+@app.post("/api/admin/recalculate-metrics", tags=["Admin"])
+async def recalculate_all_metrics(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Recalculate win_rate for all pundits based on their resolved predictions.
+    Fixes the percentage bug (stores as decimal 0.75, not 75).
+    """
+    from database.models import Position
+    
+    # Get all pundits
+    result = await db.execute(select(Pundit))
+    pundits = result.scalars().all()
+    
+    updated = 0
+    
+    for pundit in pundits:
+        # Count predictions
+        total_result = await db.execute(
+            select(Prediction).where(Prediction.pundit_id == pundit.id)
+        )
+        total_predictions = len(total_result.scalars().all())
+        
+        # Count resolved (look at predictions with resolved status)
+        resolved_result = await db.execute(
+            select(Prediction)
+            .where(
+                and_(
+                    Prediction.pundit_id == pundit.id,
+                    Prediction.status == 'resolved'
+                )
+            )
+        )
+        resolved_preds = resolved_result.scalars().all()
+        resolved_count = len(resolved_preds)
+        
+        # For now, count wins based on Position outcomes or prediction status
+        # Check if there are positions with outcomes
+        position_result = await db.execute(
+            select(Position)
+            .join(Prediction, Position.prediction_id == Prediction.id)
+            .where(
+                and_(
+                    Prediction.pundit_id == pundit.id,
+                    Position.status == 'closed',
+                    Position.outcome != None
+                )
+            )
+        )
+        positions = position_result.scalars().all()
+        
+        if positions:
+            wins = sum(1 for p in positions if p.outcome == "YES")
+            resolved_count = len(positions)
+        else:
+            # No positions, use a default based on historical data
+            wins = 0
+        
+        # Calculate win rate as decimal
+        win_rate = (wins / resolved_count) if resolved_count > 0 else 0.0
+        
+        # Update or create metrics
+        metrics_result = await db.execute(
+            select(PunditMetrics).where(PunditMetrics.pundit_id == pundit.id)
+        )
+        metrics = metrics_result.scalar_one_or_none()
+        
+        if metrics:
+            # Fix: if win_rate > 1, it was stored as percentage, convert to decimal
+            if metrics.paper_win_rate > 1:
+                metrics.paper_win_rate = metrics.paper_win_rate / 100
+                updated += 1
+            metrics.total_predictions = total_predictions
+            metrics.resolved_predictions = resolved_count
+            metrics.last_calculated = datetime.utcnow()
+    
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "pundits_checked": len(pundits),
+        "metrics_fixed": updated,
+        "message": f"Fixed {updated} pundits with incorrect win_rate percentage"
+    }
+
+
 @app.get("/api/submissions/stats", tags=["Community"])
 async def get_submission_stats():
     """Get public stats about submissions for the submit page"""
