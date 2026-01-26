@@ -456,6 +456,67 @@ RSS_FEEDS = {
         "source": "Wall Street Journal",
         "categories": ["markets", "economy", "us"]
     },
+    
+    # ===== ADDITIONAL HIGH-VALUE SOURCES =====
+    "yahoo_finance": {
+        "url": "https://finance.yahoo.com/rss/",
+        "source": "Yahoo Finance",
+        "categories": ["markets", "economy"]
+    },
+    "marketwatch": {
+        "url": "https://feeds.marketwatch.com/marketwatch/topstories/",
+        "source": "MarketWatch",
+        "categories": ["markets"]
+    },
+    "barrons": {
+        "url": "https://www.barrons.com/topics/rss-feeds",
+        "source": "Barron's",
+        "categories": ["markets", "investing"]
+    },
+    "seeking_alpha": {
+        "url": "https://seekingalpha.com/feed.xml",
+        "source": "Seeking Alpha",
+        "categories": ["markets", "investing"]
+    },
+    "motley_fool": {
+        "url": "https://www.fool.com/feeds/index.aspx",
+        "source": "Motley Fool",
+        "categories": ["investing"]
+    },
+    "zerohedge": {
+        "url": "https://feeds.feedburner.com/zerohedge/feed",
+        "source": "ZeroHedge",
+        "categories": ["markets", "economy"]
+    },
+    
+    # ===== PODCASTS & NEWSLETTERS =====
+    "morning_brew": {
+        "url": "https://www.morningbrew.com/feed",
+        "source": "Morning Brew",
+        "categories": ["business", "tech"]
+    },
+    "ben_thompson": {
+        "url": "https://stratechery.com/feed/",
+        "source": "Stratechery",
+        "categories": ["tech", "business"]
+    },
+    
+    # ===== AI & TECH DEEP DIVE =====
+    "ars_technica": {
+        "url": "https://feeds.arstechnica.com/arstechnica/index",
+        "source": "Ars Technica",
+        "categories": ["tech", "science"]
+    },
+    "mit_tech_review": {
+        "url": "https://www.technologyreview.com/feed/",
+        "source": "MIT Technology Review",
+        "categories": ["tech", "ai"]
+    },
+    "the_information": {
+        "url": "https://www.theinformation.com/feed",
+        "source": "The Information",
+        "categories": ["tech", "business"]
+    },
 }
 
 # Known pundits and their variations in article text
@@ -571,6 +632,73 @@ KNOWN_PUNDITS = {
     "piaborrs_morgan": ["Piers Morgan", "Piers"],
     "KattyKay_": ["Katty Kay", "Katty"],
     "ChristineAmanpour": ["Christiane Amanpour", "Amanpour"],
+    
+    # ===== ADDITIONAL FINANCE ANALYSTS =====
+    "chaikinadamya": ["Adam Khoo", "Khoo"],
+    "WallStJesus": ["Wall Street Jesus"],
+    "jimbianco": ["Jim Bianco", "Bianco Research"],
+    "DavidRubenstein": ["David Rubenstein", "Carlyle"],
+    "jpmorgan_jamie": ["Jamie Dimon", "Dimon", "JPMorgan CEO"],
+    "lloydblankfein": ["Lloyd Blankfein", "Blankfein"],
+    "KenGriffin": ["Ken Griffin", "Griffin", "Citadel"],
+    "CarlIcahn": ["Carl Icahn", "Icahn"],
+    "WarrenBuffett": ["Warren Buffett", "Buffett", "Berkshire"],
+    "chaikinadamya": ["Charlie Munger", "Munger"],
+    "DavidEinhorn": ["David Einhorn", "Einhorn", "Greenlight"],
+    "StanleyDruck": ["Stanley Druckenmiller", "Druckenmiller"],
+    
+    # ===== CRYPTO ANALYSTS =====
+    "APompliano": ["Anthony Pompliano", "Pomp", "Pompliano"],
+    "VitalikButerin": ["Vitalik Buterin", "Vitalik"],
+    "caborrkburniske": ["Chris Burniske"],
+    "novaborrgr": ["Nic Carter", "Castle Island"],
+    "woonomic": ["Willy Woo"],
+    "PlanB": ["PlanB", "Stock-to-Flow"],
+    "Ashcrypto": ["Ash Crypto"],
+    "RaoulGMI": ["Raoul Pal", "Real Vision"],
+    
+    # ===== AI & TECH LEADERS =====
+    "sama": ["Sam Altman", "Altman", "OpenAI CEO"],
+    "sataborryaN": ["Satya Nadella", "Nadella", "Microsoft CEO"],
+    "sundaborr_pichai": ["Sundar Pichai", "Pichai", "Google CEO"],
+    "tim_cook": ["Tim Cook", "Apple CEO"],
+    "JensenHuang": ["Jensen Huang", "NVIDIA CEO"],
+    "marcaborrbenioff": ["Marc Benioff", "Benioff", "Salesforce"],
+    "jeffaborrbezos": ["Jeff Bezos", "Bezos", "Amazon founder"],
+    "BillGates": ["Bill Gates", "Gates"],
+    "MarkZuckerberg": ["Mark Zuckerberg", "Zuckerberg", "Meta CEO"],
+    "ylecun": ["Yann LeCun", "LeCun"],
+    "AndrewYNg": ["Andrew Ng", "Ng"],
+    "demaborris": ["Demis Hassabis", "DeepMind"],
+    "daborrio": ["Dario Amodei", "Anthropic"],
+    
+    # ===== SPORTS ANALYSTS - ADDITIONAL =====
+    "ColinCowherd": ["Colin Cowherd", "Cowherd", "The Herd"],
+    "DanLeBatard": ["Dan Le Batard", "Le Batard"],
+    "MichaelWilbon": ["Michael Wilbon", "Wilbon", "PTI"],
+    "TonyKornheiser": ["Tony Kornheiser", "Kornheiser"],
+    "KendrickPerkins": ["Kendrick Perkins", "Perk"],
+    "JJRedick": ["JJ Redick", "Redick"],
+    "CharlesBarkley": ["Charles Barkley", "Barkley", "Chuck"],
+    "ShaquilleONeal": ["Shaquille O'Neal", "Shaq"],
+    "StuartHolden": ["Stuart Holden"],
+    "MenInBlazers": ["Men in Blazers", "Rogersaborr"],
+    
+    # ===== ELECTION/POLLING EXPERTS =====
+    "Nate_Cohn": ["Nate Cohn", "NYT Upshot"],
+    "gelaborrmabornn": ["David Wasserman", "Cook Political"],
+    "RealClearPolitics": ["RealClearPolitics", "RCP"],
+    "LarryJSabato": ["Larry Sabato", "Sabato", "Crystal Ball"],
+    "G_Elliott_Morris": ["G. Elliott Morris", "Elliott Morris"],
+    "ForecasterEnten": ["Harry Enten", "Enten"],
+    
+    # ===== ECONOMISTS =====
+    "MohamedAElErian": ["Mohamed El-Erian", "El-Erian", "Allianz"],
+    "Nouriel": ["Nouriel Roubini", "Roubini", "Dr. Doom"],
+    "jaborrdcowen": ["Tyler Cowen", "Marginal Revolution"],
+    "profaborrstevenkeen": ["Steve Keen"],
+    "jasonfurman": ["Jason Furman", "Furman"],
+    "GlennKelman": ["Glenn Kelman", "Redfin CEO"],
 }
 
 
