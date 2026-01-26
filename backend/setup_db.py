@@ -16,5 +16,58 @@ async def setup_db():
         
     print("Database setup complete!")
 
+async def migrate_add_chain_columns():
+    """Add hash chain columns to predictions table if they don't exist"""
+    print("Checking for hash chain columns...")
+    async with engine.begin() as conn:
+        # Check if chain_hash column exists
+        result = await conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'predictions' AND column_name = 'chain_hash'
+        """))
+        
+        if not result.fetchone():
+            print("Adding chain_hash column...")
+            await conn.execute(text("""
+                ALTER TABLE predictions 
+                ADD COLUMN chain_hash VARCHAR(64) UNIQUE
+            """))
+            
+        # Check if chain_index column exists
+        result = await conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'predictions' AND column_name = 'chain_index'
+        """))
+        
+        if not result.fetchone():
+            print("Adding chain_index column...")
+            await conn.execute(text("""
+                ALTER TABLE predictions 
+                ADD COLUMN chain_index INTEGER
+            """))
+            
+        # Check if prev_chain_hash column exists
+        result = await conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'predictions' AND column_name = 'prev_chain_hash'
+        """))
+        
+        if not result.fetchone():
+            print("Adding prev_chain_hash column...")
+            await conn.execute(text("""
+                ALTER TABLE predictions 
+                ADD COLUMN prev_chain_hash VARCHAR(64)
+            """))
+            
+    print("Hash chain migration complete!")
+
+async def full_setup():
+    """Run full setup including migrations"""
+    await setup_db()
+    await migrate_add_chain_columns()
+
 if __name__ == "__main__":
-    asyncio.run(setup_db())
+    asyncio.run(full_setup())
