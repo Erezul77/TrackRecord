@@ -203,7 +203,7 @@ class AutoAgentPipeline:
         
         return pundit
     
-    async def run_pipeline(self, feed_keys: Optional[List[str]] = None) -> Dict:
+    async def run_pipeline(self, feed_keys: Optional[List[str]] = None, max_articles: int = 50) -> Dict:
         """
         Run the complete pipeline:
         1. Fetch RSS articles
@@ -211,6 +211,10 @@ class AutoAgentPipeline:
         3. Extract predictions using AI
         4. Match to Polymarket
         5. Store in database
+        
+        Args:
+            feed_keys: Optional list of specific feeds to process
+            max_articles: Maximum articles to process per run (default 50)
         """
         stats = {
             "articles_fetched": 0,
@@ -222,7 +226,7 @@ class AutoAgentPipeline:
             "errors": []
         }
         
-        logger.info("Starting auto-agent pipeline...")
+        logger.info(f"Starting auto-agent pipeline (max {max_articles} articles)...")
         
         # Step 1: Fetch RSS articles
         if feed_keys:
@@ -237,7 +241,13 @@ class AutoAgentPipeline:
         
         # Step 2: Filter for prediction-like content
         prediction_articles = self.rss_service.filter_prediction_articles(articles)
-        logger.info(f"Filtered to {len(prediction_articles)} articles with prediction keywords")
+        
+        # Limit to max_articles to prevent long-running jobs
+        if len(prediction_articles) > max_articles:
+            prediction_articles = prediction_articles[:max_articles]
+            logger.info(f"Limiting to {max_articles} articles (from {len(articles)} fetched)")
+        
+        logger.info(f"Processing {len(prediction_articles)} articles with prediction keywords")
         
         # Step 3-5: Process each article
         for article in prediction_articles:

@@ -22,8 +22,11 @@ from apscheduler.triggers.interval import IntervalTrigger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Thread pool for running async tasks
-_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="scheduler_")
+# Thread pool for running async tasks - isolated from main API
+_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="scheduler_")
+
+# Flag to track if we should delay first run
+_first_run_delayed = False
 
 
 def run_async_in_thread(coro):
@@ -65,20 +68,31 @@ class TrackRecordScheduler:
         self._lock = threading.Lock()
     
     def _run_rss_ingestion_sync(self):
-        """Sync wrapper for RSS ingestion - runs in background thread"""
+        """Sync wrapper for RSS ingestion - runs in completely isolated thread"""
+        import time
+        global _first_run_delayed
+        
+        # Add delay on first run to let API fully start
+        if not _first_run_delayed:
+            logger.info("First RSS run - waiting 60 seconds for API to stabilize...")
+            time.sleep(60)
+            _first_run_delayed = True
+        
         async def _run():
+            # Import fresh to avoid module-level issues
             from database.session import async_session
             from services.auto_agent import AutoAgentPipeline
             
-            logger.info("Starting scheduled RSS ingestion (background thread)...")
+            logger.info("Starting scheduled RSS ingestion (isolated thread)...")
             
             try:
+                # Create completely fresh session
                 async with async_session() as session:
                     pipeline = AutoAgentPipeline(session)
-                    # Add timeout to prevent infinite hangs
+                    # Shorter timeout - fail fast
                     results = await asyncio.wait_for(
-                        pipeline.run_pipeline(),
-                        timeout=300  # 5 minute timeout
+                        pipeline.run_pipeline(max_articles=10),  # Limit articles per run
+                        timeout=180  # 3 minute timeout
                     )
                     
                     with self._lock:
@@ -90,7 +104,7 @@ class TrackRecordScheduler:
                     return results
                     
             except asyncio.TimeoutError:
-                logger.error("RSS ingestion timed out after 5 minutes")
+                logger.error("RSS ingestion timed out after 3 minutes")
                 with self._lock:
                     self.run_stats["rss_ingestion"]["errors"] += 1
                 return {"error": "timeout"}
@@ -100,13 +114,19 @@ class TrackRecordScheduler:
                     self.run_stats["rss_ingestion"]["errors"] += 1
                 return {"error": str(e)}
         
-        # Run async code in new event loop
+        # Run async code in completely new event loop
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
             return loop.run_until_complete(_run())
+        except Exception as e:
+            logger.error(f"RSS ingestion thread error: {e}")
+            return {"error": str(e)}
         finally:
-            loop.close()
+            try:
+                loop.close()
+            except:
+                pass
     
     def _run_historical_collection_sync(self, start_year: int = 2020, max_per_pundit: int = 10):
         """Sync wrapper for historical collection - runs in background thread"""
@@ -379,7 +399,7 @@ class TrackRecordScheduler:
     
     def start(
         self,
-        rss_interval_hours: int = 2,  # Run every 2 hours for good volume
+        rss_interval_hours: int = 3,  # Run every 3 hours - balanced for stability
         enable_historical: bool = True,
         enable_auto_resolution: bool = True,
         resolution_interval_hours: int = 4,
