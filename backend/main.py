@@ -1432,6 +1432,126 @@ async def test_add_single_prediction(
         return {"status": "error", "message": str(e)}
 
 
+@app.get("/api/admin/stats", tags=["Admin"])
+async def get_admin_stats(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Get total counts from database."""
+    from sqlalchemy import func
+    
+    pundit_count = await db.execute(select(func.count()).select_from(Pundit))
+    prediction_count = await db.execute(select(func.count()).select_from(Prediction))
+    
+    return {
+        "total_pundits": pundit_count.scalar(),
+        "total_predictions": prediction_count.scalar()
+    }
+
+
+@app.post("/api/admin/populate-batch-4", tags=["Admin"])
+async def populate_batch_4(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Batch 4: More finance and economy pundits with predictions."""
+    try:
+        BATCH4_PUNDITS = [
+            {"name": "Howard Marks", "username": "HowardMarks_OT", "affiliation": "Oaktree Capital", "domains": ["markets"], "net_worth": 2100},
+            {"name": "Bill Gross", "username": "BillGross_PIMCO", "affiliation": "PIMCO Founder", "domains": ["markets"], "net_worth": 1600},
+            {"name": "Jeff Gundlach", "username": "JeffGundlach_DL", "affiliation": "DoubleLine", "domains": ["markets"], "net_worth": 2200},
+            {"name": "Mike Wilson", "username": "MikeWilson_MS", "affiliation": "Morgan Stanley", "domains": ["markets"], "net_worth": 50},
+            {"name": "Marko Kolanovic", "username": "MarkoKolanovic", "affiliation": "JPMorgan", "domains": ["markets"], "net_worth": 30},
+            {"name": "Mohamed El-Erian", "username": "ElErianMohamed", "affiliation": "Allianz", "domains": ["markets", "economy"], "net_worth": 100},
+            {"name": "Janet Yellen", "username": "JanetYellen_UST", "affiliation": "US Treasury", "domains": ["economy", "politics"], "net_worth": 20},
+            {"name": "Jerome Powell", "username": "JeromePowell_Fed", "affiliation": "Federal Reserve", "domains": ["economy"], "net_worth": 55},
+            {"name": "Nouriel Roubini", "username": "NourielRoubini", "affiliation": "RGE Monitor", "domains": ["economy"], "net_worth": 3},
+            {"name": "Meredith Whitney", "username": "MeredithWhitney", "affiliation": "Whitney Advisory", "domains": ["markets"], "net_worth": 20},
+            {"name": "Peter Lynch", "username": "PeterLynch_FM", "affiliation": "Fidelity Legend", "domains": ["markets"], "net_worth": 450},
+            {"name": "Joel Greenblatt", "username": "JoelGreenblatt", "affiliation": "Gotham Capital", "domains": ["markets"], "net_worth": 500},
+        ]
+        
+        BATCH4_PREDICTIONS = [
+            {"pundit": "Howard Marks", "claim": "Credit markets will face stress in 2022", "year": 2022},
+            {"pundit": "Howard Marks", "claim": "Distressed debt opportunities will emerge in 2023", "year": 2023},
+            {"pundit": "Bill Gross", "claim": "Bond market entering secular bear market", "year": 2021},
+            {"pundit": "Jeff Gundlach", "claim": "Fed will cut rates multiple times in 2024", "year": 2024},
+            {"pundit": "Jeff Gundlach", "claim": "10-year yield will exceed 5% in 2023", "year": 2023},
+            {"pundit": "Mike Wilson", "claim": "S&P 500 will fall to 3,000 in 2023", "year": 2023},
+            {"pundit": "Mike Wilson", "claim": "Earnings recession in 2023", "year": 2023},
+            {"pundit": "Marko Kolanovic", "claim": "Stocks will rally in second half of 2022", "year": 2022},
+            {"pundit": "Mohamed El-Erian", "claim": "Inflation spike in 2021 will NOT be transitory", "year": 2021},
+            {"pundit": "Mohamed El-Erian", "claim": "Fed is behind the curve on inflation", "year": 2021},
+            {"pundit": "Janet Yellen", "claim": "Inflation will return to 2% target by 2023", "year": 2021},
+            {"pundit": "Janet Yellen", "claim": "US will not have a debt crisis", "year": 2023},
+            {"pundit": "Jerome Powell", "claim": "Fed will keep rates near zero through 2023", "year": 2020},
+            {"pundit": "Jerome Powell", "claim": "Soft landing is achievable", "year": 2023},
+            {"pundit": "Nouriel Roubini", "claim": "Severe recession in 2023", "year": 2022},
+            {"pundit": "Nouriel Roubini", "claim": "Stagflation will persist through 2024", "year": 2023},
+            {"pundit": "Meredith Whitney", "claim": "Municipal bond crisis will unfold", "year": 2021},
+            {"pundit": "Peter Lynch", "claim": "Buy what you know remains best strategy", "year": 2020},
+            {"pundit": "Joel Greenblatt", "claim": "Value investing will outperform eventually", "year": 2022},
+        ]
+        
+        pundits_added = 0
+        predictions_added = 0
+        
+        for p in BATCH4_PUNDITS:
+            existing = await db.execute(select(Pundit).where(Pundit.username == p["username"]))
+            if not existing.scalar_one_or_none():
+                pundit = Pundit(
+                    id=uuid.uuid4(), name=p["name"], username=p["username"],
+                    affiliation=p.get("affiliation", ""), bio=f"{p['name']} - {p.get('affiliation', '')}",
+                    domains=p.get("domains", ["general"]), verified=True,
+                    net_worth=p.get("net_worth"), net_worth_source="Forbes/Estimates", net_worth_year=2024
+                )
+                db.add(pundit)
+                await db.flush()
+                metrics = PunditMetrics(pundit_id=pundit.id, total_predictions=0, resolved_predictions=0, paper_total_pnl=0, paper_win_rate=0, paper_roi=0)
+                db.add(metrics)
+                pundits_added += 1
+        
+        await db.commit()
+        
+        result = await db.execute(select(Pundit))
+        pundit_map = {p.name: p for p in result.scalars().all()}
+        
+        for pred in BATCH4_PREDICTIONS:
+            if pred["pundit"] not in pundit_map:
+                continue
+            pundit = pundit_map[pred["pundit"]]
+            content_hash = hashlib.sha256(f"{pred['pundit']}:{pred['claim']}".encode()).hexdigest()
+            existing = await db.execute(select(Prediction).where(Prediction.content_hash == content_hash))
+            if existing.scalar_one_or_none():
+                continue
+            year = pred["year"]
+            captured_at = datetime(year, random.randint(1, 12), random.randint(1, 28))
+            timeframe = captured_at + timedelta(days=random.randint(180, 730))
+            prediction = Prediction(
+                id=uuid.uuid4(), pundit_id=pundit.id, claim=pred["claim"],
+                quote=f'"{pred["claim"]}" - {pred["pundit"]}', confidence=random.uniform(0.6, 0.9),
+                category="general", timeframe=timeframe,
+                source_url=f"https://archive.trackrecord.life/{content_hash[:8]}",
+                source_type="historical", content_hash=content_hash, captured_at=captured_at, status="open"
+            )
+            db.add(prediction)
+            predictions_added += 1
+        
+        await db.commit()
+        
+        for pundit in pundit_map.values():
+            preds_result = await db.execute(select(Prediction).where(Prediction.pundit_id == pundit.id))
+            metrics_result = await db.execute(select(PunditMetrics).where(PunditMetrics.pundit_id == pundit.id))
+            metrics = metrics_result.scalar_one_or_none()
+            if metrics:
+                metrics.total_predictions = len(preds_result.scalars().all())
+        await db.commit()
+        
+        return {"status": "success", "pundits_added": pundits_added, "predictions_added": predictions_added}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed: {str(e)}")
+
+
 @app.post("/api/admin/populate-batch-3", tags=["Admin"])
 async def populate_batch_3(
     db: AsyncSession = Depends(get_db),
