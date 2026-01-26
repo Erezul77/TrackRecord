@@ -1432,6 +1432,150 @@ async def test_add_single_prediction(
         return {"status": "error", "message": str(e)}
 
 
+@app.post("/api/admin/populate-batch-2", tags=["Admin"])
+async def populate_batch_2(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Batch 2: More pundits from finance, politics, sports."""
+    try:
+        BATCH2_PUNDITS = [
+            {"name": "David Tepper", "username": "DavidTepper", "affiliation": "Appaloosa Management", "domains": ["markets"], "net_worth": 18500},
+            {"name": "Stanley Druckenmiller", "username": "Druckenmiller", "affiliation": "Duquesne Capital", "domains": ["markets"], "net_worth": 6200},
+            {"name": "Ken Griffin", "username": "KenGriffin", "affiliation": "Citadel", "domains": ["markets"], "net_worth": 35000},
+            {"name": "Steve Cohen", "username": "StevenACohen", "affiliation": "Point72", "domains": ["markets", "sports"], "net_worth": 17400},
+            {"name": "Paul Tudor Jones", "username": "PTJones", "affiliation": "Tudor Investment", "domains": ["markets"], "net_worth": 7500},
+            {"name": "Nancy Pelosi", "username": "NancyPelosi", "affiliation": "US Congress", "domains": ["politics", "us"], "net_worth": 120},
+            {"name": "Bernie Sanders", "username": "BernieSanders", "affiliation": "US Senate", "domains": ["politics", "economy"], "net_worth": 3},
+            {"name": "Ted Cruz", "username": "TedCruz", "affiliation": "US Senate", "domains": ["politics", "us"], "net_worth": 4},
+            {"name": "Ron DeSantis", "username": "GovRonDeSantis", "affiliation": "Florida Governor", "domains": ["politics", "us"], "net_worth": 1.2},
+            {"name": "Gavin Newsom", "username": "GavinNewsom", "affiliation": "California Governor", "domains": ["politics", "us"], "net_worth": 20},
+            {"name": "Stephen A. Smith", "username": "StephenASmith", "affiliation": "ESPN", "domains": ["sports", "nba"], "net_worth": 16},
+            {"name": "Skip Bayless", "username": "SkipBayless", "affiliation": "FS1", "domains": ["sports"], "net_worth": 17},
+            {"name": "Colin Cowherd", "username": "ColinCowherd", "affiliation": "Fox Sports", "domains": ["sports"], "net_worth": 25},
+            {"name": "Shannon Sharpe", "username": "ShannonSharpe", "affiliation": "ESPN", "domains": ["sports", "nfl"], "net_worth": 14},
+            {"name": "Changpeng Zhao", "username": "cz_binance", "affiliation": "Binance", "domains": ["crypto"], "net_worth": 10500},
+            {"name": "Anthony Pompliano", "username": "APompliano", "affiliation": "Pomp Investments", "domains": ["crypto"], "net_worth": 100},
+            {"name": "Raoul Pal", "username": "RaoulGMI", "affiliation": "Real Vision", "domains": ["crypto", "markets"], "net_worth": 50},
+            {"name": "Arthur Hayes", "username": "CryptoHayes", "affiliation": "BitMEX", "domains": ["crypto"], "net_worth": 600},
+        ]
+        
+        BATCH2_PREDICTIONS = [
+            {"pundit": "David Tepper", "claim": "Stock market will recover from March 2020 lows", "year": 2020},
+            {"pundit": "David Tepper", "claim": "Tech stocks overvalued by late 2021", "year": 2021},
+            {"pundit": "Stanley Druckenmiller", "claim": "Fed tightening will cause market turmoil in 2022", "year": 2022},
+            {"pundit": "Stanley Druckenmiller", "claim": "Dollar will remain strong through 2023", "year": 2023},
+            {"pundit": "Ken Griffin", "claim": "Regional banking crisis will be contained", "year": 2023},
+            {"pundit": "Steve Cohen", "claim": "Mets will make playoffs in 2024", "year": 2024},
+            {"pundit": "Paul Tudor Jones", "claim": "Bitcoin is the best inflation hedge", "year": 2022},
+            {"pundit": "Paul Tudor Jones", "claim": "Interest rates will stay higher for longer", "year": 2024},
+            {"pundit": "Nancy Pelosi", "claim": "Democrats will keep House in 2022", "year": 2022},
+            {"pundit": "Bernie Sanders", "claim": "Medicare for All will gain momentum by 2024", "year": 2023},
+            {"pundit": "Ted Cruz", "claim": "Republicans will flip the Senate in 2022", "year": 2022},
+            {"pundit": "Ron DeSantis", "claim": "Will win Florida gubernatorial race easily in 2022", "year": 2022},
+            {"pundit": "Ron DeSantis", "claim": "Will be competitive in 2024 GOP primary", "year": 2023},
+            {"pundit": "Gavin Newsom", "claim": "California economy will outperform US average post-COVID", "year": 2021},
+            {"pundit": "Stephen A. Smith", "claim": "Lakers will repeat as NBA champions in 2021", "year": 2021},
+            {"pundit": "Stephen A. Smith", "claim": "Celtics are the team to beat in 2024", "year": 2024},
+            {"pundit": "Skip Bayless", "claim": "Cowboys will make deep playoff run 2024", "year": 2024},
+            {"pundit": "Skip Bayless", "claim": "Tom Brady will win another Super Bowl with Bucs", "year": 2021},
+            {"pundit": "Colin Cowherd", "claim": "Baker Mayfield will be a bust", "year": 2021},
+            {"pundit": "Shannon Sharpe", "claim": "Chiefs will three-peat Super Bowl", "year": 2024},
+            {"pundit": "Changpeng Zhao", "claim": "Binance will navigate regulatory challenges successfully", "year": 2023},
+            {"pundit": "Anthony Pompliano", "claim": "Bitcoin will reach new ATH by end of 2020", "year": 2020},
+            {"pundit": "Raoul Pal", "claim": "Ethereum will outperform Bitcoin in 2021", "year": 2021},
+            {"pundit": "Raoul Pal", "claim": "Crypto market cap will exceed $3 trillion in 2024", "year": 2024},
+            {"pundit": "Arthur Hayes", "claim": "Bitcoin will test $20K in 2023", "year": 2023},
+        ]
+        
+        pundits_added = 0
+        predictions_added = 0
+        
+        for p in BATCH2_PUNDITS:
+            existing = await db.execute(select(Pundit).where(Pundit.username == p["username"]))
+            if not existing.scalar_one_or_none():
+                pundit = Pundit(
+                    id=uuid.uuid4(),
+                    name=p["name"],
+                    username=p["username"],
+                    affiliation=p.get("affiliation", ""),
+                    bio=f"{p['name']} - {p.get('affiliation', '')}",
+                    domains=p.get("domains", ["general"]),
+                    verified=True,
+                    net_worth=p.get("net_worth"),
+                    net_worth_source="Forbes/Estimates",
+                    net_worth_year=2024
+                )
+                db.add(pundit)
+                await db.flush()
+                
+                metrics = PunditMetrics(
+                    pundit_id=pundit.id,
+                    total_predictions=0,
+                    resolved_predictions=0,
+                    paper_total_pnl=0,
+                    paper_win_rate=0,
+                    paper_roi=0
+                )
+                db.add(metrics)
+                pundits_added += 1
+        
+        await db.commit()
+        
+        result = await db.execute(select(Pundit))
+        pundit_map = {p.name: p for p in result.scalars().all()}
+        
+        for pred in BATCH2_PREDICTIONS:
+            if pred["pundit"] not in pundit_map:
+                continue
+            
+            pundit = pundit_map[pred["pundit"]]
+            content_hash = hashlib.sha256(f"{pred['pundit']}:{pred['claim']}".encode()).hexdigest()
+            
+            existing = await db.execute(select(Prediction).where(Prediction.content_hash == content_hash))
+            if existing.scalar_one_or_none():
+                continue
+            
+            year = pred["year"]
+            captured_at = datetime(year, random.randint(1, 12), random.randint(1, 28))
+            timeframe = captured_at + timedelta(days=random.randint(180, 730))
+            
+            prediction = Prediction(
+                id=uuid.uuid4(),
+                pundit_id=pundit.id,
+                claim=pred["claim"],
+                quote=f'"{pred["claim"]}" - {pred["pundit"]}',
+                confidence=random.uniform(0.6, 0.9),
+                category="general",
+                timeframe=timeframe,
+                source_url=f"https://archive.trackrecord.life/{content_hash[:8]}",
+                source_type="historical",
+                content_hash=content_hash,
+                captured_at=captured_at,
+                status="open"
+            )
+            db.add(prediction)
+            predictions_added += 1
+        
+        await db.commit()
+        
+        for pundit in pundit_map.values():
+            preds_result = await db.execute(select(Prediction).where(Prediction.pundit_id == pundit.id))
+            preds = preds_result.scalars().all()
+            
+            metrics_result = await db.execute(select(PunditMetrics).where(PunditMetrics.pundit_id == pundit.id))
+            metrics = metrics_result.scalar_one_or_none()
+            if metrics:
+                metrics.total_predictions = len(preds)
+        
+        await db.commit()
+        
+        return {"status": "success", "pundits_added": pundits_added, "predictions_added": predictions_added}
+    except Exception as e:
+        logging.error(f"Batch 2 error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed: {str(e)}")
+
+
 @app.post("/api/admin/populate-massive-data", tags=["Admin"])
 async def populate_massive_data_endpoint(
     db: AsyncSession = Depends(get_db),
