@@ -383,7 +383,7 @@ class TrackRecordScheduler:
         enable_historical: bool = True,
         enable_auto_resolution: bool = True,
         resolution_interval_hours: int = 4,
-        enable_twitter: bool = True,
+        enable_twitter: bool = False,  # Disabled by default - requires paid Twitter API
         twitter_interval_hours: int = 6
     ):
         """Start the scheduler (runs in background thread - non-blocking)"""
