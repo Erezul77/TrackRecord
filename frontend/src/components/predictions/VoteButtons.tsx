@@ -98,8 +98,8 @@ export function VoteButtons({ predictionId }: VoteButtonsProps) {
         disabled={loading}
         className={`p-1.5 rounded-lg transition-all ${
           userVote === 'up'
-            ? 'bg-emerald-100 text-emerald-600'
-            : 'hover:bg-emerald-50 text-slate-400 hover:text-emerald-600'
+            ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+            : 'hover:bg-green-50 dark:hover:bg-green-900/20 text-neutral-400 hover:text-green-600 dark:hover:text-green-400'
         } disabled:opacity-50`}
         title={userId ? 'Upvote' : 'Register to vote'}
       >
@@ -107,9 +107,9 @@ export function VoteButtons({ predictionId }: VoteButtonsProps) {
       </button>
       
       <span className={`min-w-[2rem] text-center text-sm font-bold ${
-        score > 0 ? 'text-emerald-600' :
-        score < 0 ? 'text-rose-600' :
-        'text-slate-400'
+        score > 0 ? 'text-green-500' :
+        score < 0 ? 'text-red-500' :
+        'text-neutral-400'
       }`}>
         {score > 0 ? `+${score}` : score}
       </span>
@@ -119,8 +119,8 @@ export function VoteButtons({ predictionId }: VoteButtonsProps) {
         disabled={loading}
         className={`p-1.5 rounded-lg transition-all ${
           userVote === 'down'
-            ? 'bg-rose-100 text-rose-600'
-            : 'hover:bg-rose-50 text-slate-400 hover:text-rose-600'
+            ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+            : 'hover:bg-red-50 dark:hover:bg-red-900/20 text-neutral-400 hover:text-red-600 dark:hover:text-red-400'
         } disabled:opacity-50`}
         title={userId ? 'Downvote' : 'Register to vote'}
       >

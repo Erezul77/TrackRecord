@@ -13,12 +13,12 @@ interface Props {
 function getStatusDisplay(status: string, outcome?: string | null) {
   if (status === 'resolved' && outcome) {
     if (outcome === 'YES') {
-      return { color: 'bg-emerald-500 text-white', label: 'CORRECT', icon: CheckCircle }
+      return { color: 'bg-green-500 text-white', label: 'CORRECT', icon: CheckCircle }
     } else {
-      return { color: 'bg-rose-500 text-white', label: 'WRONG', icon: XCircle }
+      return { color: 'bg-red-500 text-white', label: 'WRONG', icon: XCircle }
     }
   }
-  return { color: 'bg-blue-600 text-white', label: 'OPEN', icon: Clock }
+  return { color: 'bg-black dark:bg-white text-white dark:text-black', label: 'OPEN', icon: Clock }
 }
 
 export function PredictionCardWithVotes({ prediction: pred }: Props) {
@@ -29,9 +29,9 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
 
   return (
     <div className={cn(
-      "bg-white border rounded-xl overflow-hidden hover:shadow-md transition-shadow",
-      isResolved && isCorrect && "ring-2 ring-emerald-200",
-      isResolved && !isCorrect && "ring-2 ring-rose-200"
+      "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden hover:shadow-md transition-shadow",
+      isResolved && isCorrect && "ring-2 ring-green-200 dark:ring-green-900",
+      isResolved && !isCorrect && "ring-2 ring-red-200 dark:ring-red-900"
     )}>
       {/* Status Banner */}
       <div className={cn("px-4 py-2 flex items-center justify-between", statusDisplay.color)}>
@@ -44,7 +44,7 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
             <span className={cn(
               "flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full",
               pred.tr_index.tier === 'gold' ? 'bg-yellow-400/90 text-yellow-900' :
-              pred.tr_index.tier === 'silver' ? 'bg-slate-300/90 text-slate-800' :
+              pred.tr_index.tier === 'silver' ? 'bg-neutral-300/90 text-neutral-800' :
               'bg-orange-300/90 text-orange-900'
             )}>
               <Sparkles className="h-3 w-3" />
@@ -57,36 +57,36 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
       
       <div className="p-4">
         {/* Pundit Header */}
-        <Link href={`/pundits/${pred.pundit.id}`} className="flex items-center gap-3 mb-3">
-          <div className="h-8 w-8 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center flex-shrink-0">
+        <Link href={`/pundits/${pred.pundit.id}`} className="flex items-center gap-3 mb-3 group">
+          <div className="h-8 w-8 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden flex items-center justify-center flex-shrink-0">
             {pred.pundit.avatar_url ? (
-              <img src={pred.pundit.avatar_url} alt={pred.pundit.name} className="h-full w-full object-cover" />
+              <img src={pred.pundit.avatar_url} alt={pred.pundit.name} className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all" />
             ) : (
-              <User className="h-4 w-4 text-slate-400" />
+              <User className="h-4 w-4 text-neutral-400" />
             )}
           </div>
           <div className="min-w-0">
-            <p className="font-bold text-slate-900 text-sm truncate">{pred.pundit.name}</p>
-            <p className="text-xs text-slate-500">@{pred.pundit.username}</p>
+            <p className="font-bold text-black dark:text-white text-sm truncate">{pred.pundit.name}</p>
+            <p className="text-xs text-neutral-500">@{pred.pundit.username}</p>
           </div>
         </Link>
 
         {/* Claim */}
-        <p className="font-bold text-slate-900 mb-3 line-clamp-2">{pred.claim}</p>
+        <p className="font-bold text-black dark:text-white mb-3 line-clamp-2">{pred.claim}</p>
         
         {/* Quote */}
-        <div className="bg-slate-50 rounded-lg p-3 mb-3 border-l-4 border-slate-300 italic text-sm text-slate-600 line-clamp-2">
+        <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-3 mb-3 border-l-4 border-neutral-300 dark:border-neutral-600 italic text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
           "{pred.quote}"
         </div>
 
         {/* Footer with Voting */}
-        <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="flex items-center justify-between text-xs text-neutral-400">
           <div className="flex items-center gap-3">
             <span>{pred.captured_at ? formatDate(pred.captured_at) : 'Unknown date'}</span>
             <VoteButtons predictionId={pred.id} />
           </div>
           {pred.source_url && pred.source_url !== 'https://example.com/test' && (
-            <a href={pred.source_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline font-bold">
+            <a href={pred.source_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:underline font-bold">
               Source <ExternalLink className="h-3 w-3" />
             </a>
           )}

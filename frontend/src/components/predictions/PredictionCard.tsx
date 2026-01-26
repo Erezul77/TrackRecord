@@ -18,13 +18,13 @@ interface PredictionCardProps {
 // Get outcome display - NO CONFIDENCE, a prediction is 100% owned
 function getOutcomeDisplay(status: string, outcome?: string) {
   if (status === 'resolved' && outcome === 'YES') {
-    return { label: 'CORRECT', color: 'bg-emerald-500 text-white', icon: CheckCircle }
+    return { label: 'CORRECT', color: 'bg-green-500 text-white', icon: CheckCircle }
   }
   if (status === 'resolved' && outcome === 'NO') {
-    return { label: 'WRONG', color: 'bg-rose-500 text-white', icon: XCircle }
+    return { label: 'WRONG', color: 'bg-red-500 text-white', icon: XCircle }
   }
   if (status === 'matched') {
-    return { label: 'OPEN', color: 'bg-blue-600 text-white', icon: Clock }
+    return { label: 'OPEN', color: 'bg-black dark:bg-white text-white dark:text-black', icon: Clock }
   }
   return { label: 'PENDING', color: 'bg-amber-500 text-white', icon: Clock }
 }
@@ -35,9 +35,9 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
 
   return (
     <div className={cn(
-      "bg-white border rounded-xl overflow-hidden transition-all",
-      prediction.outcome === 'YES' && "border-emerald-300 ring-2 ring-emerald-100",
-      prediction.outcome === 'NO' && "border-rose-300 ring-2 ring-rose-100"
+      "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden transition-all",
+      prediction.outcome === 'YES' && "border-green-300 dark:border-green-700 ring-2 ring-green-100 dark:ring-green-900/30",
+      prediction.outcome === 'NO' && "border-red-300 dark:border-red-700 ring-2 ring-red-100 dark:ring-red-900/30"
     )}>
       {/* Outcome Banner */}
       <div className={cn("px-4 py-2 flex items-center justify-between", outcomeDisplay.color)}>
@@ -52,18 +52,18 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
 
       <div className="p-4">
         {/* Claim */}
-        <h4 className="text-base font-bold text-slate-900 mb-3 leading-snug">
+        <h4 className="text-base font-bold text-black dark:text-white mb-3 leading-snug">
           {prediction.claim}
         </h4>
 
         {/* Quote - the exact words they said */}
-        <div className="bg-slate-50 rounded-lg p-3 mb-3 border-l-4 border-slate-300 italic text-sm text-slate-600">
-          <Quote className="h-3 w-3 text-slate-400 inline mr-1" />
+        <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-3 mb-3 border-l-4 border-neutral-300 dark:border-neutral-600 italic text-sm text-neutral-600 dark:text-neutral-400">
+          <Quote className="h-3 w-3 text-neutral-400 inline mr-1" />
           "{prediction.quote}"
         </div>
 
         {/* Deadline */}
-        <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="flex items-center gap-2 text-xs text-neutral-500">
           <Calendar className="h-3 w-3" />
           <span>Resolves: {formatDate(prediction.timeframe)}</span>
         </div>
@@ -71,12 +71,12 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
       
       {/* Footer - Source Link */}
       {prediction.source_url && prediction.source_url !== 'https://example.com/test' && (
-        <div className="px-4 py-2 bg-slate-50 border-t">
+        <div className="px-4 py-2 bg-neutral-50 dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700">
           <a 
             href={prediction.source_url} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+            className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white flex items-center gap-1"
           >
             View Source <ExternalLink className="h-3 w-3" />
           </a>

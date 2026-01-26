@@ -141,18 +141,18 @@ export default function SubmitPage() {
   return (
     <div className="container mx-auto px-4 py-12 max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-slate-900 mb-2 flex items-center gap-3">
-          <History className="h-8 w-8 text-blue-600" />
+        <h1 className="text-3xl font-black text-black dark:text-white mb-2 flex items-center gap-3">
+          <History className="h-8 w-8 text-blue-500" />
           Submit Historical Prediction
         </h1>
         
         {/* Smart URL Extraction */}
-        <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6 mt-6">
+        <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 mt-6">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="h-5 w-5 text-purple-600" />
-            <h2 className="font-bold text-purple-900">Smart Extract from URL</h2>
+            <Sparkles className="h-5 w-5 text-blue-500" />
+            <h2 className="font-bold text-black dark:text-white">Smart Extract from URL</h2>
           </div>
-          <p className="text-sm text-purple-700 mb-4">
+          <p className="text-sm text-neutral-500 mb-4">
             Paste a link to an article or video - we'll automatically extract the prediction details!
           </p>
           
@@ -162,12 +162,12 @@ export default function SubmitPage() {
               value={extractUrl}
               onChange={(e) => setExtractUrl(e.target.value)}
               placeholder="https://www.example.com/article..."
-              className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="flex-1 px-4 py-2 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white text-black dark:text-white"
             />
             <button
               onClick={handleExtract}
               disabled={extracting || !extractUrl.trim()}
-              className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-2 bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-bold hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {extracting ? (
                 <>
@@ -186,35 +186,35 @@ export default function SubmitPage() {
           {/* Extracted Predictions */}
           {extractedPredictions.length > 0 && (
             <div className="mt-4 space-y-2">
-              <p className="text-sm font-bold text-purple-800">Found predictions (click to use):</p>
+              <p className="text-sm font-bold text-black dark:text-white">Found predictions (click to use):</p>
               {extractedPredictions.map((pred, idx) => (
                 <button
                   key={idx}
                   onClick={() => fillFromExtracted(pred)}
-                  className="w-full text-left p-3 bg-white border border-purple-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-colors"
+                  className="w-full text-left p-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:border-black dark:hover:border-white transition-colors"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-slate-900">{pred.pundit_name}</span>
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                    <span className="font-bold text-black dark:text-white">{pred.pundit_name}</span>
+                    <span className="text-xs bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 px-2 py-0.5 rounded-full">
                       {pred.category}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-600 line-clamp-2">{pred.claim}</p>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">{pred.claim}</p>
                 </button>
               ))}
             </div>
           )}
         </div>
-        <p className="text-slate-500">
+        <p className="text-neutral-500 mt-4">
           Help us build the most comprehensive pundit accountability database. 
           Submit predictions from any public figure with a verifiable source.
         </p>
       </div>
 
       {/* Guidelines */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8">
-        <h3 className="font-bold text-blue-900 mb-2">Submission Guidelines</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
+      <div className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 mb-8">
+        <h3 className="font-bold text-black dark:text-white mb-2">Submission Guidelines</h3>
+        <ul className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
           <li>• Must be a <strong>specific, measurable prediction</strong> (not vague opinions)</li>
           <li>• Must have a <strong>clear timeframe</strong> (when it should resolve)</li>
           <li>• Must include <strong>source URL</strong> (article, tweet, video, etc.)</li>
@@ -225,21 +225,21 @@ export default function SubmitPage() {
       {/* Message */}
       {message && (
         <div className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
-          message.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+          message.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
         }`}>
           {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
           {message.text}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white border rounded-xl p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 space-y-6">
         {/* Pundit Info */}
-        <div className="border-b pb-4 mb-4">
-          <h3 className="font-bold text-slate-900 mb-4">Who made the prediction?</h3>
+        <div className="border-b border-neutral-200 dark:border-neutral-800 pb-4 mb-4">
+          <h3 className="font-bold text-black dark:text-white mb-4">Who made the prediction?</h3>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="relative">
-              <label className="block text-sm font-bold text-slate-700 mb-2">Pundit Name *</label>
+              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Pundit Name *</label>
               <input
                 type="text"
                 value={formData.pundit_name}
@@ -249,13 +249,13 @@ export default function SubmitPage() {
                 }}
                 onFocus={() => setShowSuggestions(true)}
                 placeholder="e.g., Jim Cramer"
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
                 required
               />
               
               {/* Autocomplete */}
               {showSuggestions && formData.pundit_name.length >= 2 && suggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg max-h-40 overflow-y-auto">
                   {suggestions.map(s => (
                     <button
                       key={s.username}
@@ -268,10 +268,10 @@ export default function SubmitPage() {
                         })
                         setShowSuggestions(false)
                       }}
-                      className="w-full px-4 py-2 text-left hover:bg-blue-50 text-sm"
+                      className="w-full px-4 py-2 text-left hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm"
                     >
-                      <span className="font-bold">{s.name}</span>
-                      <span className="text-slate-500 ml-2">@{s.username}</span>
+                      <span className="font-bold text-black dark:text-white">{s.name}</span>
+                      <span className="text-neutral-500 ml-2">@{s.username}</span>
                     </button>
                   ))}
                 </div>
@@ -279,49 +279,49 @@ export default function SubmitPage() {
             </div>
             
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Twitter/X Username</label>
+              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Twitter/X Username</label>
               <input
                 type="text"
                 value={formData.pundit_username}
                 onChange={(e) => setFormData({...formData, pundit_username: e.target.value})}
                 placeholder="e.g., jimcramer (optional)"
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
               />
             </div>
           </div>
         </div>
 
         {/* Prediction Details */}
-        <div className="border-b pb-4 mb-4">
-          <h3 className="font-bold text-slate-900 mb-4">What did they predict?</h3>
+        <div className="border-b border-neutral-200 dark:border-neutral-800 pb-4 mb-4">
+          <h3 className="font-bold text-black dark:text-white mb-4">What did they predict?</h3>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Prediction Claim *</label>
+              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Prediction Claim *</label>
               <input
                 type="text"
                 value={formData.claim}
                 onChange={(e) => setFormData({...formData, claim: e.target.value})}
                 placeholder="e.g., Bitcoin will reach $100,000 by end of 2024"
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
                 required
               />
-              <p className="text-xs text-slate-400 mt-1">Be specific: include target price/event and deadline</p>
+              <p className="text-xs text-neutral-400 mt-1">Be specific: include target price/event and deadline</p>
             </div>
             
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Original Quote *</label>
+              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Original Quote *</label>
               <textarea
                 value={formData.quote}
                 onChange={(e) => setFormData({...formData, quote: e.target.value})}
                 placeholder="Paste the exact words they said..."
-                className="w-full border rounded-lg px-4 py-2 text-slate-900 h-24"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white h-24"
                 required
               />
             </div>
             
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">
+              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">
                 <LinkIcon className="h-4 w-4 inline mr-1" />
                 Source URL *
               </label>
@@ -330,48 +330,48 @@ export default function SubmitPage() {
                 value={formData.source_url}
                 onChange={(e) => setFormData({...formData, source_url: e.target.value})}
                 placeholder="https://twitter.com/... or https://youtube.com/..."
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
                 required
               />
-              <p className="text-xs text-slate-400 mt-1">Tweet, article, video, podcast - any verifiable source</p>
+              <p className="text-xs text-neutral-400 mt-1">Tweet, article, video, podcast - any verifiable source</p>
             </div>
           </div>
         </div>
 
         {/* Dates & Outcome */}
-        <div className="border-b pb-4 mb-4">
-          <h3 className="font-bold text-slate-900 mb-4">When and how did it resolve?</h3>
+        <div className="border-b border-neutral-200 dark:border-neutral-800 pb-4 mb-4">
+          <h3 className="font-bold text-black dark:text-white mb-4">When and how did it resolve?</h3>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Date Prediction Made *</label>
+              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Date Prediction Made *</label>
               <input
                 type="date"
                 value={formData.prediction_date}
                 onChange={(e) => setFormData({...formData, prediction_date: e.target.value})}
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
                 required
               />
             </div>
             
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Resolution Deadline</label>
+              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Resolution Deadline</label>
               <input
                 type="date"
                 value={formData.resolution_date}
                 onChange={(e) => setFormData({...formData, resolution_date: e.target.value})}
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
               />
             </div>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Outcome</label>
+              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Outcome</label>
               <select
                 value={formData.outcome}
                 onChange={(e) => setFormData({...formData, outcome: e.target.value})}
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
               >
                 <option value="unknown">Unknown / Still Open</option>
                 <option value="right">Correct (Pundit was RIGHT)</option>
@@ -380,11 +380,11 @@ export default function SubmitPage() {
             </div>
             
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Category</label>
+              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Category</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
               >
                 <optgroup label="Topics">
                   <option value="markets">Markets / Stocks</option>
@@ -437,57 +437,57 @@ export default function SubmitPage() {
           </div>
           
           <div className="mt-4">
-            <label className="block text-sm font-bold text-slate-700 mb-2">Outcome Notes</label>
+            <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Outcome Notes</label>
             <input
               type="text"
               value={formData.outcome_notes}
               onChange={(e) => setFormData({...formData, outcome_notes: e.target.value})}
               placeholder="e.g., Bitcoin reached $73k but not $100k target"
-              className="w-full border rounded-lg px-4 py-2 text-slate-900"
+              className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
             />
           </div>
         </div>
 
         {/* Contact (optional) */}
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">Your Email (optional)</label>
+          <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Your Email (optional)</label>
           <input
             type="email"
             value={formData.submitter_email}
             onChange={(e) => setFormData({...formData, submitter_email: e.target.value})}
             placeholder="Get notified when your submission is reviewed"
-            className="w-full border rounded-lg px-4 py-2 text-slate-900"
+            className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
         >
           <Send className="h-5 w-5" />
           {loading ? 'Submitting...' : 'Submit Prediction'}
         </button>
         
-        <p className="text-xs text-slate-400 text-center">
+        <p className="text-xs text-neutral-400 text-center">
           All submissions are reviewed before being added to the database.
           We verify sources and check for accuracy.
         </p>
       </form>
 
       {/* Examples */}
-      <div className="mt-8 bg-slate-50 border rounded-xl p-6">
-        <h3 className="font-bold text-slate-900 mb-4">Example Good Submissions</h3>
+      <div className="mt-8 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
+        <h3 className="font-bold text-black dark:text-white mb-4">Example Good Submissions</h3>
         <div className="space-y-4 text-sm">
-          <div className="bg-white border rounded-lg p-3">
-            <p className="font-bold text-emerald-600">✓ Good Prediction</p>
-            <p className="text-slate-700">"Bitcoin will reach $100,000 by December 31, 2024"</p>
-            <p className="text-slate-500">Clear target + clear deadline = measurable</p>
+          <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-3">
+            <p className="font-bold text-green-500">✓ Good Prediction</p>
+            <p className="text-neutral-700 dark:text-neutral-300">"Bitcoin will reach $100,000 by December 31, 2024"</p>
+            <p className="text-neutral-500">Clear target + clear deadline = measurable</p>
           </div>
-          <div className="bg-white border rounded-lg p-3">
-            <p className="font-bold text-rose-600">✗ Bad Prediction</p>
-            <p className="text-slate-700">"Bitcoin is going to the moon"</p>
-            <p className="text-slate-500">No target + no deadline = unmeasurable</p>
+          <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-3">
+            <p className="font-bold text-red-500">✗ Bad Prediction</p>
+            <p className="text-neutral-700 dark:text-neutral-300">"Bitcoin is going to the moon"</p>
+            <p className="text-neutral-500">No target + no deadline = unmeasurable</p>
           </div>
         </div>
       </div>

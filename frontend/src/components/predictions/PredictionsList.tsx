@@ -57,14 +57,14 @@ export function PredictionsList() {
       {/* Category Filters */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-sm font-bold text-slate-500 flex items-center gap-2">
+          <span className="text-sm font-bold text-neutral-500 flex items-center gap-2">
             <Filter className="h-4 w-4" />
             Filter by:
           </span>
           <button
             onClick={() => setShowRegions(!showRegions)}
             className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
-              showRegions ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              showRegions ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
             }`}
           >
             {showRegions ? '← Topics' : 'Regions →'}
@@ -78,8 +78,8 @@ export function PredictionsList() {
               onClick={() => setCategory(cat)}
               className={`text-sm font-bold px-3 py-1.5 rounded-lg transition-colors ${
                 cat === category
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-white text-slate-600 border hover:bg-slate-50'
+                  ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+                  : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800'
               }`}
             >
               {cat}
@@ -90,7 +90,7 @@ export function PredictionsList() {
 
       {/* Sort Controls */}
       <div className="flex flex-wrap items-center gap-3 mb-8">
-        <span className="text-sm font-bold text-slate-500 flex items-center gap-2">
+        <span className="text-sm font-bold text-neutral-500 flex items-center gap-2">
           <ArrowUpDown className="h-4 w-4" />
           Sort by:
         </span>
@@ -103,8 +103,8 @@ export function PredictionsList() {
                 onClick={() => setSort(option.value)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   sort === option.value
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white border text-slate-600 hover:bg-slate-50'
+                    ? 'bg-black dark:bg-white text-white dark:text-black'
+                    : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
                 }`}
                 title={option.description}
               >
@@ -119,7 +119,7 @@ export function PredictionsList() {
       {/* Predictions Grid */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="animate-spin h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full" />
+          <div className="animate-spin h-10 w-10 border-4 border-black dark:border-white border-t-transparent rounded-full" />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -128,10 +128,10 @@ export function PredictionsList() {
               <PredictionCardWithVotes key={pred.id} prediction={pred} />
             ))
           ) : (
-            <div className="col-span-full bg-white border rounded-xl p-12 sm:p-20 text-center">
-              <Clock className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-400 font-bold text-xl">No predictions found.</p>
-              <p className="text-slate-400 mt-2">Check back later as our AI processes more content.</p>
+            <div className="col-span-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-12 sm:p-20 text-center">
+              <Clock className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-4" />
+              <p className="text-neutral-400 font-bold text-xl">No predictions found.</p>
+              <p className="text-neutral-400 mt-2">Check back later as our AI processes more content.</p>
             </div>
           )}
         </div>

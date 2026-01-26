@@ -227,10 +227,10 @@ export default function CompetePage() {
       {/* Header */}
       <div className="text-center mb-12">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <Trophy className="h-10 w-10 text-yellow-500" />
-          <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Prediction Competition</h1>
+          <Trophy className="h-10 w-10 text-amber-500" />
+          <h1 className="text-4xl font-black text-black dark:text-white tracking-tighter">Prediction Competition</h1>
         </div>
-        <p className="text-slate-500 text-lg max-w-xl mx-auto">
+        <p className="text-neutral-500 text-lg max-w-xl mx-auto">
           Think you can beat the pundits? Make predictions, track your accuracy, and climb the leaderboard!
         </p>
       </div>
@@ -243,8 +243,8 @@ export default function CompetePage() {
             className={cn(
               "flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-colors",
               activeTab === 'dashboard' 
-                ? "bg-blue-600 text-white" 
-                : "bg-white border text-slate-600 hover:bg-slate-50"
+                ? "bg-black dark:bg-white text-white dark:text-black" 
+                : "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
             )}
           >
             <User className="h-4 w-4" />
@@ -256,8 +256,8 @@ export default function CompetePage() {
           className={cn(
             "flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-colors",
             activeTab === 'leaderboard' 
-              ? "bg-blue-600 text-white" 
-              : "bg-white border text-slate-600 hover:bg-slate-50"
+              ? "bg-black dark:bg-white text-white dark:text-black" 
+              : "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
           )}
         >
           <Trophy className="h-4 w-4" />
@@ -269,8 +269,8 @@ export default function CompetePage() {
             className={cn(
               "flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-colors",
               activeTab === 'auth' 
-                ? "bg-blue-600 text-white" 
-                : "bg-white border text-slate-600 hover:bg-slate-50"
+                ? "bg-black dark:bg-white text-white dark:text-black" 
+                : "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
             )}
           >
             <LogIn className="h-4 w-4" />
@@ -280,7 +280,7 @@ export default function CompetePage() {
         {user && (
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold bg-white border text-slate-600 hover:bg-slate-50"
+            className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
           >
             Logout
           </button>
@@ -291,7 +291,7 @@ export default function CompetePage() {
       {message && (
         <div className={cn(
           "max-w-xl mx-auto mb-6 p-4 rounded-lg flex items-center gap-2",
-          message.type === 'success' ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
+          message.type === 'success' ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400" : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400"
         )}>
           {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
           {message.text}
@@ -301,13 +301,13 @@ export default function CompetePage() {
       {/* Auth Tab */}
       {activeTab === 'auth' && !user && (
         <div className="max-w-md mx-auto">
-          <div className="bg-white border rounded-xl p-6">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
             <div className="flex gap-2 mb-6">
               <button
                 onClick={() => setAuthMode('login')}
                 className={cn(
                   "flex-1 py-2 rounded-lg font-bold text-sm",
-                  authMode === 'login' ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
+                  authMode === 'login' ? "bg-black dark:bg-white text-white dark:text-black" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
                 )}
               >
                 <LogIn className="h-4 w-4 inline mr-2" />
@@ -317,7 +317,7 @@ export default function CompetePage() {
                 onClick={() => setAuthMode('register')}
                 className={cn(
                   "flex-1 py-2 rounded-lg font-bold text-sm",
-                  authMode === 'register' ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
+                  authMode === 'register' ? "bg-black dark:bg-white text-white dark:text-black" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
                 )}
               >
                 <UserPlus className="h-4 w-4 inline mr-2" />
@@ -329,51 +329,51 @@ export default function CompetePage() {
               {authMode === 'register' && (
                 <>
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1">Username</label>
+                    <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-1">Username</label>
                     <input
                       type="text"
                       value={authForm.username}
                       onChange={(e) => setAuthForm({...authForm, username: e.target.value})}
-                      className="w-full border rounded-lg px-4 py-2"
+                      className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1">Display Name</label>
+                    <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-1">Display Name</label>
                     <input
                       type="text"
                       value={authForm.display_name}
                       onChange={(e) => setAuthForm({...authForm, display_name: e.target.value})}
-                      className="w-full border rounded-lg px-4 py-2"
+                      className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
                       placeholder="How you'll appear on leaderboard"
                     />
                   </div>
                 </>
               )}
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Email</label>
+                <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-1">Email</label>
                 <input
                   type="email"
                   value={authForm.email}
                   onChange={(e) => setAuthForm({...authForm, email: e.target.value})}
-                  className="w-full border rounded-lg px-4 py-2"
+                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Password</label>
+                <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-1">Password</label>
                 <input
                   type="password"
                   value={authForm.password}
                   onChange={(e) => setAuthForm({...authForm, password: e.target.value})}
-                  className="w-full border rounded-lg px-4 py-2"
+                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
                   required
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 transition-colors"
               >
                 {loading ? 'Please wait...' : (authMode === 'login' ? 'Login' : 'Create Account')}
               </button>
@@ -387,52 +387,52 @@ export default function CompetePage() {
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Stats Cards */}
-            <div className="bg-white border rounded-xl p-6 text-center">
-              <Target className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <div className="text-3xl font-black text-slate-900">{user.stats.total_predictions}</div>
-              <div className="text-sm text-slate-500">Total Predictions</div>
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 text-center">
+              <Target className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+              <div className="text-3xl font-black text-black dark:text-white">{user.stats.total_predictions}</div>
+              <div className="text-sm text-neutral-500">Total Predictions</div>
             </div>
-            <div className="bg-white border rounded-xl p-6 text-center">
-              <TrendingUp className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-              <div className="text-3xl font-black text-emerald-600">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 text-center">
+              <TrendingUp className="h-8 w-8 text-green-500 mx-auto mb-2" />
+              <div className="text-3xl font-black text-green-500">
                 {(user.stats.win_rate * 100).toFixed(1)}%
               </div>
-              <div className="text-sm text-slate-500">Win Rate</div>
+              <div className="text-sm text-neutral-500">Win Rate</div>
             </div>
-            <div className="bg-white border rounded-xl p-6 text-center">
-              <Trophy className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-              <div className="text-3xl font-black text-slate-900">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 text-center">
+              <Trophy className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+              <div className="text-3xl font-black text-black dark:text-white">
                 {user.stats.correct}W - {user.stats.wrong}L
               </div>
-              <div className="text-sm text-slate-500">Record</div>
+              <div className="text-sm text-neutral-500">Record</div>
             </div>
           </div>
 
           {/* Create Prediction */}
-          <div className="bg-white border rounded-xl p-6 mb-8">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <Send className="h-5 w-5 text-blue-600" />
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 mb-8">
+            <h3 className="font-bold text-black dark:text-white mb-4 flex items-center gap-2">
+              <Send className="h-5 w-5 text-blue-500" />
               Make a Prediction
             </h3>
             <form onSubmit={handleCreatePrediction} className="space-y-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Your Prediction *</label>
+                <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-1">Your Prediction *</label>
                 <textarea
                   value={predictionForm.claim}
                   onChange={(e) => setPredictionForm({...predictionForm, claim: e.target.value})}
                   placeholder="e.g., Bitcoin will reach $150,000 by the end of this timeframe"
-                  className="w-full border rounded-lg px-4 py-2 h-20"
+                  className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 h-20 text-black dark:text-white"
                   required
                 />
-                <p className="text-xs text-slate-400 mt-1">Be specific! Include targets and make it measurable.</p>
+                <p className="text-xs text-neutral-400 mt-1">Be specific! Include targets and make it measurable.</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">Category</label>
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-1">Category</label>
                   <select
                     value={predictionForm.category}
                     onChange={(e) => setPredictionForm({...predictionForm, category: e.target.value})}
-                    className="w-full border rounded-lg px-4 py-2"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
                   >
                     <optgroup label="Topics">
                       <option value="markets">Markets</option>
@@ -466,11 +466,11 @@ export default function CompetePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">Resolves In</label>
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-1">Resolves In</label>
                   <select
                     value={predictionForm.timeframe_days}
                     onChange={(e) => setPredictionForm({...predictionForm, timeframe_days: parseInt(e.target.value)})}
-                    className="w-full border rounded-lg px-4 py-2"
+                    className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 rounded-lg px-4 py-2 text-black dark:text-white"
                   >
                     <option value={7}>1 Week</option>
                     <option value={14}>2 Weeks</option>
@@ -484,7 +484,7 @@ export default function CompetePage() {
               <button
                 type="submit"
                 disabled={loading || !predictionForm.claim}
-                className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 transition-colors"
               >
                 Submit Prediction
               </button>
@@ -493,27 +493,27 @@ export default function CompetePage() {
 
           {/* My Predictions */}
           <div>
-            <h3 className="font-bold text-slate-900 mb-4">My Predictions</h3>
+            <h3 className="font-bold text-black dark:text-white mb-4">My Predictions</h3>
             {predictions.length > 0 ? (
               <div className="space-y-3">
                 {predictions.map(pred => (
                   <div key={pred.id} className={cn(
-                    "bg-white border rounded-xl p-4",
-                    pred.outcome === 'YES' && "border-emerald-300 bg-emerald-50",
-                    pred.outcome === 'NO' && "border-rose-300 bg-rose-50"
+                    "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-4",
+                    pred.outcome === 'YES' && "border-green-400 dark:border-green-700 bg-green-50 dark:bg-green-900/20",
+                    pred.outcome === 'NO' && "border-red-400 dark:border-red-700 bg-red-50 dark:bg-red-900/20"
                   )}>
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <p className="font-bold text-slate-900">{pred.claim}</p>
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="font-bold text-black dark:text-white">{pred.claim}</p>
+                        <p className="text-xs text-neutral-500 mt-1">
                           {pred.category} • Resolves {formatDate(pred.timeframe)}
                         </p>
                       </div>
                       <div className={cn(
                         "px-3 py-1 rounded-full text-xs font-bold",
-                        pred.outcome === 'YES' && "bg-emerald-500 text-white",
-                        pred.outcome === 'NO' && "bg-rose-500 text-white",
-                        !pred.outcome && "bg-blue-100 text-blue-700"
+                        pred.outcome === 'YES' && "bg-green-500 text-white",
+                        pred.outcome === 'NO' && "bg-red-500 text-white",
+                        !pred.outcome && "bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
                       )}>
                         {pred.outcome === 'YES' ? 'CORRECT' : pred.outcome === 'NO' ? 'WRONG' : 'OPEN'}
                       </div>
@@ -522,8 +522,8 @@ export default function CompetePage() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white border rounded-xl p-12 text-center text-slate-400">
-                <Clock className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-12 text-center text-neutral-400">
+                <Clock className="h-12 w-12 mx-auto mb-4 text-neutral-300 dark:text-neutral-600" />
                 <p className="font-bold">No predictions yet</p>
                 <p className="text-sm">Make your first prediction above!</p>
               </div>
@@ -535,43 +535,43 @@ export default function CompetePage() {
       {/* Leaderboard Tab */}
       {activeTab === 'leaderboard' && (
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white border rounded-xl overflow-hidden">
-            <div className="bg-slate-900 text-white p-4">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden">
+            <div className="bg-black dark:bg-white text-white dark:text-black p-4">
               <h3 className="font-bold flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-yellow-400" />
+                <Trophy className="h-5 w-5 text-amber-400 dark:text-amber-500" />
                 Community Leaderboard
               </h3>
-              <p className="text-xs text-slate-400 mt-1">Minimum 3 resolved predictions to rank</p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-600 mt-1">Minimum 3 resolved predictions to rank</p>
             </div>
             
             {leaderboard.length > 0 ? (
-              <div className="divide-y">
+              <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
                 {leaderboard.map((u, i) => (
-                  <div key={u.id} className="flex items-center gap-4 p-4 hover:bg-slate-50">
+                  <div key={u.id} className="flex items-center gap-4 p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
                     <div className={cn(
                       "text-2xl font-black w-10 text-center",
-                      i === 0 && "text-yellow-500",
-                      i === 1 && "text-slate-400",
-                      i === 2 && "text-amber-600",
-                      i > 2 && "text-slate-300"
+                      i === 0 && "text-amber-500",
+                      i === 1 && "text-neutral-400",
+                      i === 2 && "text-orange-600",
+                      i > 2 && "text-neutral-300 dark:text-neutral-600"
                     )}>
                       {u.rank}
                     </div>
                     <div className="flex-1">
-                      <p className="font-bold text-slate-900">{u.display_name || u.username}</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="font-bold text-black dark:text-white">{u.display_name || u.username}</p>
+                      <p className="text-xs text-neutral-500">
                         {u.correct}W - {u.wrong}L • {u.total_predictions} predictions
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-xl font-black text-emerald-600">
+                      <div className="text-xl font-black text-green-500">
                         {(u.win_rate * 100).toFixed(1)}%
                       </div>
                       <div className="flex gap-0.5 justify-end">
                         {[1,2,3,4,5].map(s => (
                           <Star key={s} className={cn(
                             "h-3 w-3",
-                            s <= Math.ceil(u.win_rate * 5) ? "text-yellow-400 fill-yellow-400" : "text-slate-200"
+                            s <= Math.ceil(u.win_rate * 5) ? "text-amber-400 fill-amber-400" : "text-neutral-200 dark:text-neutral-700"
                           )} />
                         ))}
                       </div>
@@ -580,8 +580,8 @@ export default function CompetePage() {
                 ))}
               </div>
             ) : (
-              <div className="p-12 text-center text-slate-400">
-                <Trophy className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+              <div className="p-12 text-center text-neutral-400">
+                <Trophy className="h-12 w-12 mx-auto mb-4 text-neutral-300 dark:text-neutral-600" />
                 <p className="font-bold">No ranked users yet</p>
                 <p className="text-sm">Be the first to make 3 predictions!</p>
               </div>
@@ -592,7 +592,7 @@ export default function CompetePage() {
             <div className="mt-6 text-center">
               <button
                 onClick={() => setActiveTab('auth')}
-                className="bg-blue-600 text-white font-bold px-8 py-3 rounded-lg hover:bg-blue-700"
+                className="bg-black dark:bg-white text-white dark:text-black font-bold px-8 py-3 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
               >
                 Join the Competition
               </button>
