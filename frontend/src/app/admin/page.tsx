@@ -298,17 +298,17 @@ export default function AdminPage() {
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl">
-      <h1 className="text-3xl font-black text-slate-900 mb-2">Admin Panel</h1>
-      <p className="text-slate-500 mb-8">Add predictions and manage data sources</p>
+      <h1 className="text-3xl font-black text-black dark:text-white mb-2">Admin Panel</h1>
+      <p className="text-neutral-500 mb-8">Add predictions and manage data sources</p>
       
       {/* Tabs */}
       <div className="flex flex-wrap gap-2 mb-8">
         <button
           onClick={() => setActiveTab('manual')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 font-bold text-sm transition-colors ${
             activeTab === 'manual' 
-              ? 'bg-blue-600 text-white' 
-              : 'bg-white border text-slate-600 hover:bg-slate-50'
+              ? 'bg-black dark:bg-white text-white dark:text-black' 
+              : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-black dark:hover:border-white'
           }`}
         >
           <Plus className="h-4 w-4" />
@@ -316,10 +316,10 @@ export default function AdminPage() {
         </button>
         <button
           onClick={() => setActiveTab('pundit')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 font-bold text-sm transition-colors ${
             activeTab === 'pundit' 
-              ? 'bg-blue-600 text-white' 
-              : 'bg-white border text-slate-600 hover:bg-slate-50'
+              ? 'bg-black dark:bg-white text-white dark:text-black' 
+              : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-black dark:hover:border-white'
           }`}
         >
           <UserPlus className="h-4 w-4" />
@@ -327,10 +327,10 @@ export default function AdminPage() {
         </button>
         <button
           onClick={() => setActiveTab('rss')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 font-bold text-sm transition-colors ${
             activeTab === 'rss' 
-              ? 'bg-blue-600 text-white' 
-              : 'bg-white border text-slate-600 hover:bg-slate-50'
+              ? 'bg-black dark:bg-white text-white dark:text-black' 
+              : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-black dark:hover:border-white'
           }`}
         >
           <Rss className="h-4 w-4" />
@@ -341,10 +341,10 @@ export default function AdminPage() {
             setActiveTab('verify')
             loadPendingPredictions()
           }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 font-bold text-sm transition-colors ${
             activeTab === 'verify' 
-              ? 'bg-emerald-600 text-white' 
-              : 'bg-white border text-slate-600 hover:bg-slate-50'
+              ? 'bg-green-600 text-white' 
+              : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-black dark:hover:border-white'
           }`}
         >
           <ClipboardCheck className="h-4 w-4" />
@@ -355,10 +355,10 @@ export default function AdminPage() {
             setActiveTab('bot')
             loadBotStatus()
           }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 font-bold text-sm transition-colors ${
             activeTab === 'bot' 
-              ? 'bg-purple-600 text-white' 
-              : 'bg-white border text-slate-600 hover:bg-slate-50'
+              ? 'bg-black dark:bg-white text-white dark:text-black' 
+              : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-black dark:hover:border-white'
           }`}
         >
           <Bot className="h-4 w-4" />
@@ -368,8 +368,8 @@ export default function AdminPage() {
 
       {/* Message */}
       {message && (
-        <div className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
-          message.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+        <div className={`mb-6 p-4 flex items-center gap-2 ${
+          message.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
         }`}>
           {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
           {message.text}
@@ -378,11 +378,11 @@ export default function AdminPage() {
 
       {/* Manual Entry Tab */}
       {activeTab === 'manual' && (
-        <form onSubmit={handleManualSubmit} className="bg-white border rounded-xl p-6 space-y-6">
+        <form onSubmit={handleManualSubmit} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 space-y-6">
           <div className="relative" ref={dropdownRef}>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Pundit</label>
+            <label className="block text-sm font-bold text-black dark:text-white mb-2">Pundit</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
               <input
                 type="text"
                 value={selectedPundit ? `${selectedPundit.name} (@${selectedPundit.username})` : punditSearch}
@@ -394,14 +394,14 @@ export default function AdminPage() {
                 }}
                 onFocus={() => setShowPunditDropdown(true)}
                 placeholder="Search pundit by name..."
-                className="w-full border rounded-lg pl-10 pr-4 py-2 text-slate-900"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 pl-10 pr-4 py-2 text-black dark:text-white"
                 required={!selectedPundit}
               />
             </div>
             
             {/* Dropdown */}
             {showPunditDropdown && punditSearch && !selectedPundit && (
-              <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-lg max-h-48 overflow-y-auto">
                 {filteredPundits.length > 0 ? (
                   filteredPundits.map(p => (
                     <button
@@ -413,14 +413,14 @@ export default function AdminPage() {
                         setPunditSearch('')
                         setShowPunditDropdown(false)
                       }}
-                      className="w-full px-4 py-2 text-left hover:bg-blue-50 flex items-center gap-2"
+                      className="w-full px-4 py-2 text-left hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2"
                     >
-                      <span className="font-bold text-slate-900">{p.name}</span>
-                      <span className="text-slate-500 text-sm">@{p.username}</span>
+                      <span className="font-bold text-black dark:text-white">{p.name}</span>
+                      <span className="text-neutral-500 text-sm">@{p.username}</span>
                     </button>
                   ))
                 ) : (
-                  <div className="px-4 py-2 text-slate-500 text-sm">
+                  <div className="px-4 py-2 text-neutral-500 text-sm">
                     No pundits found. Add one in the "Add Pundit" tab.
                   </div>
                 )}
@@ -435,7 +435,7 @@ export default function AdminPage() {
                   setPunditSearch('')
                   setFormData({...formData, pundit_username: ''})
                 }}
-                className="absolute right-3 top-9 text-xs text-slate-400 hover:text-rose-500"
+                className="absolute right-3 top-9 text-xs text-neutral-400 hover:text-red-500"
               >
                 Clear
               </button>
@@ -443,47 +443,47 @@ export default function AdminPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Claim (extracted prediction)</label>
+            <label className="block text-sm font-bold text-black dark:text-white mb-2">Claim (extracted prediction)</label>
             <input
               type="text"
               value={formData.claim}
               onChange={(e) => setFormData({...formData, claim: e.target.value})}
               placeholder="e.g., Bitcoin will reach $150,000 by end of 2026"
-              className="w-full border rounded-lg px-4 py-2 text-slate-900"
+              className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-black dark:text-white"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Original Quote</label>
+            <label className="block text-sm font-bold text-black dark:text-white mb-2">Original Quote</label>
             <textarea
               value={formData.quote}
               onChange={(e) => setFormData({...formData, quote: e.target.value})}
               placeholder="Paste the exact quote from the source..."
-              className="w-full border rounded-lg px-4 py-2 text-slate-900 h-24"
+              className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-black dark:text-white h-24"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Source URL</label>
+            <label className="block text-sm font-bold text-black dark:text-white mb-2">Source URL</label>
             <input
               type="url"
               value={formData.source_url}
               onChange={(e) => setFormData({...formData, source_url: e.target.value})}
               placeholder="https://..."
-              className="w-full border rounded-lg px-4 py-2 text-slate-900"
+              className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-black dark:text-white"
               required
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Category</label>
+              <label className="block text-sm font-bold text-black dark:text-white mb-2">Category</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-black dark:text-white"
               >
                 <optgroup label="Topics">
                   <option value="politics">Politics</option>
@@ -553,30 +553,30 @@ export default function AdminPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Timeframe (days until resolution)</label>
+              <label className="block text-sm font-bold text-black dark:text-white mb-2">Timeframe (days until resolution)</label>
               <input
                 type="number"
                 value={formData.timeframe_days}
                 onChange={(e) => setFormData({...formData, timeframe_days: parseInt(e.target.value)})}
-                className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-black dark:text-white"
                 min={1}
                 max={1825}
               />
-              <p className="text-xs text-slate-400 mt-1">Max 5 years (1825 days). Shorter predictions score higher.</p>
+              <p className="text-xs text-neutral-400 mt-1">Max 5 years (1825 days). Shorter predictions score higher.</p>
             </div>
           </div>
           
           {/* TR Prediction Index Scoring */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+          <div className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="h-5 w-5 text-blue-600" />
-              <h3 className="font-bold text-slate-900">TR Prediction Index</h3>
+              <Sparkles className="h-5 w-5 text-black dark:text-white" />
+              <h3 className="font-bold text-black dark:text-white">TR Prediction Index</h3>
               {trPreview && (
                 <span className={`ml-auto text-sm font-bold px-3 py-1 rounded-full ${
-                  trPreview.tier === 'gold' ? 'bg-yellow-100 text-yellow-700' :
-                  trPreview.tier === 'silver' ? 'bg-slate-200 text-slate-700' :
-                  trPreview.tier === 'bronze' ? 'bg-orange-100 text-orange-700' :
-                  'bg-rose-100 text-rose-700'
+                  trPreview.tier === 'gold' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
+                  trPreview.tier === 'silver' ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300' :
+                  trPreview.tier === 'bronze' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400' :
+                  'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                 }`}>
                   {trPreview.passed ? `${trPreview.total.toFixed(0)}/100 ${trPreview.tier.toUpperCase()}` : 'REJECTED'}
                 </span>
@@ -586,9 +586,9 @@ export default function AdminPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Specificity */}
               <div>
-                <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
+                <label className="flex justify-between text-sm font-bold text-black dark:text-white mb-2">
                   <span>Specificity</span>
-                  <span className="text-blue-600">{formData.tr_specificity}/5</span>
+                  <span className="text-neutral-600 dark:text-neutral-400">{formData.tr_specificity}/5</span>
                 </label>
                 <input
                   type="range"
@@ -596,9 +596,9 @@ export default function AdminPage() {
                   max={5}
                   value={formData.tr_specificity}
                   onChange={(e) => setFormData({...formData, tr_specificity: parseInt(e.target.value)})}
-                  className="w-full accent-blue-600"
+                  className="w-full accent-black dark:accent-white"
                 />
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-neutral-500 mt-1">
                   {formData.tr_specificity <= 2 ? '⚠️ Too vague - needs concrete numbers/dates' : 
                    formData.tr_specificity === 3 ? '✓ Has measurable outcome' : 
                    '✓✓ Very specific with clear targets'}
@@ -607,9 +607,9 @@ export default function AdminPage() {
               
               {/* Verifiability */}
               <div>
-                <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
+                <label className="flex justify-between text-sm font-bold text-black dark:text-white mb-2">
                   <span>Verifiability</span>
-                  <span className="text-blue-600">{formData.tr_verifiability}/5</span>
+                  <span className="text-neutral-600 dark:text-neutral-400">{formData.tr_verifiability}/5</span>
                 </label>
                 <input
                   type="range"
@@ -617,9 +617,9 @@ export default function AdminPage() {
                   max={5}
                   value={formData.tr_verifiability}
                   onChange={(e) => setFormData({...formData, tr_verifiability: parseInt(e.target.value)})}
-                  className="w-full accent-blue-600"
+                  className="w-full accent-black dark:accent-white"
                 />
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-neutral-500 mt-1">
                   {formData.tr_verifiability <= 2 ? '⚠️ Hard to verify objectively' : 
                    formData.tr_verifiability === 3 ? '✓ Can be verified with public data' : 
                    '✓✓ Easily verified, clear criteria'}
@@ -628,9 +628,9 @@ export default function AdminPage() {
               
               {/* Boldness */}
               <div>
-                <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
+                <label className="flex justify-between text-sm font-bold text-black dark:text-white mb-2">
                   <span>Boldness</span>
-                  <span className="text-blue-600">{formData.tr_boldness}/5</span>
+                  <span className="text-neutral-600 dark:text-neutral-400">{formData.tr_boldness}/5</span>
                 </label>
                 <input
                   type="range"
@@ -638,9 +638,9 @@ export default function AdminPage() {
                   max={5}
                   value={formData.tr_boldness}
                   onChange={(e) => setFormData({...formData, tr_boldness: parseInt(e.target.value)})}
-                  className="w-full accent-blue-600"
+                  className="w-full accent-black dark:accent-white"
                 />
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-neutral-500 mt-1">
                   {formData.tr_boldness === 1 ? 'Consensus view' : 
                    formData.tr_boldness <= 3 ? 'Somewhat contrarian' : 
                    '🔥 Very contrarian, against consensus'}
@@ -649,9 +649,9 @@ export default function AdminPage() {
               
               {/* Stakes */}
               <div>
-                <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
+                <label className="flex justify-between text-sm font-bold text-black dark:text-white mb-2">
                   <span>Stakes/Impact</span>
-                  <span className="text-blue-600">{formData.tr_stakes}/5</span>
+                  <span className="text-neutral-600 dark:text-neutral-400">{formData.tr_stakes}/5</span>
                 </label>
                 <input
                   type="range"
@@ -659,9 +659,9 @@ export default function AdminPage() {
                   max={5}
                   value={formData.tr_stakes}
                   onChange={(e) => setFormData({...formData, tr_stakes: parseInt(e.target.value)})}
-                  className="w-full accent-blue-600"
+                  className="w-full accent-black dark:accent-white"
                 />
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-neutral-500 mt-1">
                   {formData.tr_stakes <= 2 ? 'Minor impact' : 
                    formData.tr_stakes <= 3 ? 'Moderate impact' : 
                    '💥 Major market/world impact'}
@@ -691,14 +691,14 @@ export default function AdminPage() {
                   console.error('Failed to calculate TR Index:', err)
                 }
               }}
-              className="mt-4 w-full bg-white border border-blue-300 text-blue-600 font-bold py-2 rounded-lg hover:bg-blue-50 transition-colors"
+              className="mt-4 w-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 text-black dark:text-white font-bold py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
               Preview Score
             </button>
             
             {trPreview && !trPreview.passed && (
-              <div className="mt-3 p-3 bg-rose-50 border border-rose-200 rounded-lg">
-                <p className="text-sm text-rose-700 font-medium">
+              <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                <p className="text-sm text-red-700 dark:text-red-400 font-medium">
                   ❌ {trPreview.rejection_reason}
                 </p>
               </div>
@@ -708,7 +708,7 @@ export default function AdminPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50"
           >
             {loading ? 'Adding...' : 'Add Prediction'}
           </button>
@@ -747,20 +747,20 @@ export default function AdminPage() {
           }
           
           setLoading(false)
-        }} className="bg-white border rounded-xl p-6 space-y-6">
+        }} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 space-y-6">
           
           {/* Known pundits database hint */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-blue-600 flex-shrink-0" />
-            <p className="text-sm text-blue-700">
+          <div className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-3 flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-black dark:text-white flex-shrink-0" />
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">
               <strong>{KNOWN_PUNDITS.length} known pundits</strong> in database. Start typing to auto-fill details!
             </p>
           </div>
           
           <div className="relative" ref={knownPunditRef}>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Full Name *</label>
+            <label className="block text-sm font-bold text-black dark:text-white mb-2">Full Name *</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
               <input
                 type="text"
                 value={newPundit.name || punditNameSearch}
@@ -772,16 +772,16 @@ export default function AdminPage() {
                 }}
                 onFocus={() => setShowKnownPundits(true)}
                 placeholder="Start typing... e.g., Elon, Cathie, Saylor"
-                className="w-full border rounded-lg pl-10 pr-4 py-2 text-slate-900"
+                className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 pl-10 pr-4 py-2 text-black dark:text-white"
                 required
               />
             </div>
             
             {/* Known pundit suggestions dropdown */}
             {showKnownPundits && punditNameSearch.length >= 2 && knownPunditSuggestions.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-64 overflow-y-auto">
-                <div className="px-3 py-2 bg-slate-50 border-b">
-                  <p className="text-xs text-slate-500 font-medium">Click to auto-fill all fields</p>
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-lg max-h-64 overflow-y-auto">
+                <div className="px-3 py-2 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700">
+                  <p className="text-xs text-neutral-500 font-medium">Click to auto-fill all fields</p>
                 </div>
                 {knownPunditSuggestions.map(kp => (
                   <button
@@ -798,18 +798,18 @@ export default function AdminPage() {
                       setPunditNameSearch('')
                       setShowKnownPundits(false)
                     }}
-                    className="w-full px-4 py-3 text-left hover:bg-blue-50 border-b last:border-b-0"
+                    className="w-full px-4 py-3 text-left hover:bg-neutral-100 dark:hover:bg-neutral-700 border-b border-neutral-200 dark:border-neutral-700 last:border-b-0"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="font-bold text-slate-900">{kp.name}</span>
-                        <span className="text-slate-500 text-sm ml-2">@{kp.username}</span>
+                        <span className="font-bold text-black dark:text-white">{kp.name}</span>
+                        <span className="text-neutral-500 text-sm ml-2">@{kp.username}</span>
                       </div>
-                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-black dark:bg-white text-white dark:text-black px-2 py-0.5 rounded-full">
                         {kp.domains[0]}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">{kp.affiliation}</p>
+                    <p className="text-xs text-neutral-500 mt-1">{kp.affiliation}</p>
                   </button>
                 ))}
               </div>
@@ -817,64 +817,64 @@ export default function AdminPage() {
           </div>
           
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Twitter/X Username *</label>
+            <label className="block text-sm font-bold text-black dark:text-white mb-2">Twitter/X Username *</label>
             <input
               type="text"
               value={newPundit.username}
               onChange={(e) => setNewPundit({...newPundit, username: e.target.value})}
               placeholder="e.g., elonmusk (without @)"
-              className="w-full border rounded-lg px-4 py-2 text-slate-900"
+              className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-black dark:text-white"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Affiliation</label>
+            <label className="block text-sm font-bold text-black dark:text-white mb-2">Affiliation</label>
             <input
               type="text"
               value={newPundit.affiliation}
               onChange={(e) => setNewPundit({...newPundit, affiliation: e.target.value})}
               placeholder="e.g., Berkshire Hathaway CEO"
-              className="w-full border rounded-lg px-4 py-2 text-slate-900"
+              className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-black dark:text-white"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Bio</label>
+            <label className="block text-sm font-bold text-black dark:text-white mb-2">Bio</label>
             <textarea
               value={newPundit.bio}
               onChange={(e) => setNewPundit({...newPundit, bio: e.target.value})}
               placeholder="Brief description of who they are and what they're known for..."
-              className="w-full border rounded-lg px-4 py-2 text-slate-900 h-20"
+              className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-black dark:text-white h-20"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Domains (comma-separated)</label>
+            <label className="block text-sm font-bold text-black dark:text-white mb-2">Domains (comma-separated)</label>
             <input
               type="text"
               value={newPundit.domains}
               onChange={(e) => setNewPundit({...newPundit, domains: e.target.value})}
               placeholder="e.g., markets, economy, crypto"
-              className="w-full border rounded-lg px-4 py-2 text-slate-900"
+              className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-black dark:text-white"
             />
-            <p className="text-xs text-slate-400 mt-1">Topics: politics, economy, markets, sports, tech, religion, etc. | Regions: us, uk, eu, israel, japan, china, india, russia, brazil, latam, mena, etc.</p>
+            <p className="text-xs text-neutral-400 mt-1">Topics: politics, economy, markets, sports, tech, religion, etc. | Regions: us, uk, eu, israel, japan, china, india, russia, brazil, latam, mena, etc.</p>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50"
           >
             {loading ? 'Adding...' : 'Add Pundit'}
           </button>
           
           {/* Current pundits list */}
-          <div className="pt-4 border-t">
-            <p className="text-sm font-bold text-slate-700 mb-2">Currently Tracked ({pundits.length})</p>
+          <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
+            <p className="text-sm font-bold text-black dark:text-white mb-2">Currently Tracked ({pundits.length})</p>
             <div className="flex flex-wrap gap-2">
               {pundits.map(p => (
-                <span key={p.id} className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium">
+                <span key={p.id} className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full font-medium">
                   {p.name}
                 </span>
               ))}
@@ -882,9 +882,9 @@ export default function AdminPage() {
           </div>
           
           {/* Not yet tracked pundits */}
-          <div className="pt-4 border-t">
-            <p className="text-sm font-bold text-slate-700 mb-2">Suggested Pundits to Track ({KNOWN_PUNDITS.length - pundits.length} available)</p>
-            <p className="text-xs text-slate-500 mb-3">Click any name to auto-fill the form:</p>
+          <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
+            <p className="text-sm font-bold text-black dark:text-white mb-2">Suggested Pundits to Track ({KNOWN_PUNDITS.length - pundits.length} available)</p>
+            <p className="text-xs text-neutral-500 mb-3">Click any name to auto-fill the form:</p>
             <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
               {KNOWN_PUNDITS
                 .filter(kp => !trackedUsernames.includes(kp.username.toLowerCase()))
@@ -902,13 +902,13 @@ export default function AdminPage() {
                         domains: kp.domains.join(', ')
                       })
                     }}
-                    className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full hover:bg-blue-100 hover:text-blue-700 transition-colors"
+                    className="text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 px-2 py-1 rounded-full hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
                   >
                     {kp.name}
                   </button>
                 ))}
               {KNOWN_PUNDITS.filter(kp => !trackedUsernames.includes(kp.username.toLowerCase())).length > 30 && (
-                <span className="text-xs text-slate-400 px-2 py-1">
+                <span className="text-xs text-neutral-400 px-2 py-1">
                   +{KNOWN_PUNDITS.filter(kp => !trackedUsernames.includes(kp.username.toLowerCase())).length - 30} more...
                 </span>
               )}
@@ -923,7 +923,7 @@ export default function AdminPage() {
           <button
             onClick={fetchRSSArticles}
             disabled={rssLoading}
-            className="flex items-center gap-2 bg-blue-600 text-white font-bold px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 bg-black dark:bg-white text-white dark:text-black font-bold px-6 py-3 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`h-4 w-4 ${rssLoading ? 'animate-spin' : ''}`} />
             {rssLoading ? 'Fetching...' : 'Fetch Latest Articles'}
@@ -931,19 +931,19 @@ export default function AdminPage() {
 
           {rssArticles.length > 0 && (
             <div className="space-y-4">
-              <p className="text-sm text-slate-500">{rssArticles.length} articles with prediction keywords</p>
+              <p className="text-sm text-neutral-500">{rssArticles.length} articles with prediction keywords</p>
               
               {rssArticles.map((article, i) => (
-                <div key={i} className="bg-white border rounded-xl p-4">
+                <div key={i} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">{article.source}</p>
-                      <h3 className="font-bold text-slate-900 mb-2">{article.title}</h3>
-                      <p className="text-sm text-slate-500 line-clamp-2">{article.summary}</p>
+                      <p className="text-xs font-bold text-black dark:text-white uppercase tracking-wider mb-1">{article.source}</p>
+                      <h3 className="font-bold text-black dark:text-white mb-2">{article.title}</h3>
+                      <p className="text-sm text-neutral-500 line-clamp-2">{article.summary}</p>
                       {article.pundits_mentioned.length > 0 && (
                         <div className="mt-2 flex gap-1">
                           {article.pundits_mentioned.map(p => (
-                            <span key={p} className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-bold">
+                            <span key={p} className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full font-bold">
                               @{p}
                             </span>
                           ))}
@@ -954,7 +954,7 @@ export default function AdminPage() {
                       href={article.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-bold text-blue-600 hover:underline whitespace-nowrap"
+                      className="text-sm font-bold text-black dark:text-white hover:underline whitespace-nowrap"
                     >
                       View →
                     </a>
@@ -965,9 +965,9 @@ export default function AdminPage() {
           )}
 
           {rssArticles.length === 0 && !rssLoading && (
-            <div className="bg-white border rounded-xl p-12 text-center">
-              <Rss className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500">Click "Fetch Latest Articles" to pull from news feeds</p>
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-12 text-center">
+              <Rss className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-4" />
+              <p className="text-neutral-500">Click "Fetch Latest Articles" to pull from news feeds</p>
             </div>
           )}
         </div>
@@ -978,13 +978,13 @@ export default function AdminPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Pending Verification</h2>
-              <p className="text-sm text-slate-500">Manually verify predictions that can't be auto-resolved via Polymarket</p>
+              <h2 className="text-xl font-bold text-black dark:text-white">Pending Verification</h2>
+              <p className="text-sm text-neutral-500">Manually verify predictions that can't be auto-resolved via Polymarket</p>
             </div>
             <button
               onClick={loadPendingPredictions}
               disabled={verifyLoading}
-              className="flex items-center gap-2 bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 bg-black dark:bg-white text-white dark:text-black font-bold px-4 py-2 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`h-4 w-4 ${verifyLoading ? 'animate-spin' : ''}`} />
               Refresh
@@ -993,25 +993,25 @@ export default function AdminPage() {
 
           {verifyLoading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin h-8 w-8 border-4 border-emerald-600 border-t-transparent rounded-full" />
+              <div className="animate-spin h-8 w-8 border-4 border-black dark:border-white border-t-transparent rounded-full" />
             </div>
           ) : pendingPredictions.length > 0 ? (
             <div className="space-y-4">
               {pendingPredictions.map(pred => (
-                <div key={pred.id} className="bg-white border rounded-xl overflow-hidden">
+                <div key={pred.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden">
                   {/* Header */}
-                  <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between">
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">
+                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
                         {pred.category}
                       </span>
-                      <span className="text-xs text-amber-600">•</span>
-                      <span className="text-xs text-amber-600">
+                      <span className="text-xs text-amber-600 dark:text-amber-500">•</span>
+                      <span className="text-xs text-amber-600 dark:text-amber-500">
                         Resolves: {pred.timeframe ? new Date(pred.timeframe).toLocaleDateString() : 'TBD'}
                       </span>
                     </div>
                     {pred.tr_index_score && (
-                      <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-bold bg-black dark:bg-white text-white dark:text-black px-2 py-0.5 rounded-full">
                         TR: {pred.tr_index_score.toFixed(0)}
                       </span>
                     )}
@@ -1020,13 +1020,13 @@ export default function AdminPage() {
                   {/* Content */}
                   <div className="p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="font-bold text-slate-900">{pred.pundit_name}</span>
-                      <span className="text-sm text-slate-500">@{pred.pundit_username}</span>
+                      <span className="font-bold text-black dark:text-white">{pred.pundit_name}</span>
+                      <span className="text-sm text-neutral-500">@{pred.pundit_username}</span>
                     </div>
                     
-                    <p className="font-bold text-slate-900 mb-2">{pred.claim}</p>
+                    <p className="font-bold text-black dark:text-white mb-2">{pred.claim}</p>
                     
-                    <div className="bg-slate-50 rounded-lg p-3 mb-3 border-l-4 border-slate-300 italic text-sm text-slate-600">
+                    <div className="bg-neutral-50 dark:bg-neutral-800 p-3 mb-3 border-l-4 border-neutral-300 dark:border-neutral-600 italic text-sm text-neutral-600 dark:text-neutral-400">
                       "{pred.quote}"
                     </div>
                     
@@ -1035,7 +1035,7 @@ export default function AdminPage() {
                         href={pred.source_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:underline"
+                        className="text-sm text-black dark:text-white hover:underline"
                       >
                         View Source →
                       </a>
@@ -1044,14 +1044,14 @@ export default function AdminPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => resolvePrediction(pred.id, 'correct')}
-                          className="flex items-center gap-1 bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                          className="flex items-center gap-1 bg-green-600 text-white font-bold px-4 py-2 hover:bg-green-700 transition-colors"
                         >
                           <Check className="h-4 w-4" />
                           CORRECT
                         </button>
                         <button
                           onClick={() => resolvePrediction(pred.id, 'wrong')}
-                          className="flex items-center gap-1 bg-rose-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors"
+                          className="flex items-center gap-1 bg-red-600 text-white font-bold px-4 py-2 hover:bg-red-700 transition-colors"
                         >
                           <X className="h-4 w-4" />
                           WRONG
@@ -1063,10 +1063,10 @@ export default function AdminPage() {
               ))}
             </div>
           ) : (
-            <div className="bg-white border rounded-xl p-12 text-center">
-              <ClipboardCheck className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
-              <p className="text-slate-500 font-bold">No predictions pending verification</p>
-              <p className="text-sm text-slate-400 mt-1">All predictions are either resolved or awaiting their deadline</p>
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-12 text-center">
+              <ClipboardCheck className="h-12 w-12 text-green-300 dark:text-green-600 mx-auto mb-4" />
+              <p className="text-neutral-500 font-bold">No predictions pending verification</p>
+              <p className="text-sm text-neutral-400 mt-1">All predictions are either resolved or awaiting their deadline</p>
             </div>
           )}
         </div>
@@ -1076,20 +1076,20 @@ export default function AdminPage() {
       {activeTab === 'bot' && (
         <div className="space-y-6">
           {/* Scheduler Status Card */}
-          <div className="bg-white border rounded-xl p-6">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <Bot className="h-5 w-5 text-purple-600" />
+                <h2 className="text-xl font-bold text-black dark:text-white flex items-center gap-2">
+                  <Bot className="h-5 w-5" />
                   Data Collection Bot
                 </h2>
-                <p className="text-sm text-slate-500">Automatically collects predictions from news sources</p>
+                <p className="text-sm text-neutral-500">Automatically collects predictions from news sources</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={loadBotStatus}
                   disabled={botLoading}
-                  className="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                  className="p-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                 >
                   <RefreshCw className={`h-4 w-4 ${botLoading ? 'animate-spin' : ''}`} />
                 </button>
@@ -1097,7 +1097,7 @@ export default function AdminPage() {
                   <button
                     onClick={stopBot}
                     disabled={botLoading}
-                    className="flex items-center gap-2 bg-rose-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-rose-700 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 bg-red-600 text-white font-bold px-4 py-2 hover:bg-red-700 transition-colors disabled:opacity-50"
                   >
                     <Square className="h-4 w-4" />
                     Stop Bot
@@ -1106,7 +1106,7 @@ export default function AdminPage() {
                   <button
                     onClick={startBot}
                     disabled={botLoading}
-                    className="flex items-center gap-2 bg-emerald-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 bg-green-600 text-white font-bold px-4 py-2 hover:bg-green-700 transition-colors disabled:opacity-50"
                   >
                     <Play className="h-4 w-4" />
                     Start Bot
@@ -1117,32 +1117,32 @@ export default function AdminPage() {
             
             {/* Status Display */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className={`p-4 rounded-lg ${botStatus?.is_running ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50 border border-slate-200'}`}>
+              <div className={`p-4 ${botStatus?.is_running ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700'}`}>
                 <div className="flex items-center gap-2 mb-1">
-                  <div className={`h-3 w-3 rounded-full ${botStatus?.is_running ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-                  <span className="text-sm font-bold text-slate-700">Status</span>
+                  <div className={`h-3 w-3 rounded-full ${botStatus?.is_running ? 'bg-green-500 animate-pulse' : 'bg-neutral-400'}`} />
+                  <span className="text-sm font-bold text-black dark:text-white">Status</span>
                 </div>
-                <span className={`text-lg font-black ${botStatus?.is_running ? 'text-emerald-600' : 'text-slate-500'}`}>
+                <span className={`text-lg font-black ${botStatus?.is_running ? 'text-green-600 dark:text-green-400' : 'text-neutral-500'}`}>
                   {botStatus?.is_running ? 'Running' : 'Stopped'}
                 </span>
               </div>
               
-              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
-                <span className="text-sm font-bold text-slate-700 block mb-1">RSS Ingestion</span>
-                <span className="text-lg font-black text-blue-600">
+              <div className="p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+                <span className="text-sm font-bold text-black dark:text-white block mb-1">RSS Ingestion</span>
+                <span className="text-lg font-black text-black dark:text-white">
                   {botStatus?.stats?.rss_ingestion?.predictions || 0} predictions
                 </span>
-                <span className="text-xs text-slate-500 block">
+                <span className="text-xs text-neutral-500 block">
                   {botStatus?.stats?.rss_ingestion?.runs || 0} runs
                 </span>
               </div>
               
-              <div className="p-4 rounded-lg bg-purple-50 border border-purple-200">
-                <span className="text-sm font-bold text-slate-700 block mb-1">Historical Collection</span>
-                <span className="text-lg font-black text-purple-600">
+              <div className="p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+                <span className="text-sm font-bold text-black dark:text-white block mb-1">Historical Collection</span>
+                <span className="text-lg font-black text-black dark:text-white">
                   {botStatus?.stats?.historical_collection?.articles || 0} articles
                 </span>
-                <span className="text-xs text-slate-500 block">
+                <span className="text-xs text-neutral-500 block">
                   {botStatus?.stats?.historical_collection?.predictions || 0} predictions
                 </span>
               </div>
@@ -1150,13 +1150,13 @@ export default function AdminPage() {
             
             {/* Scheduled Jobs */}
             {botStatus?.jobs && botStatus.jobs.length > 0 && (
-              <div className="border-t pt-4">
-                <h3 className="text-sm font-bold text-slate-700 mb-2">Scheduled Jobs</h3>
+              <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4">
+                <h3 className="text-sm font-bold text-black dark:text-white mb-2">Scheduled Jobs</h3>
                 <div className="space-y-2">
                   {botStatus.jobs.map(job => (
-                    <div key={job.id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
-                      <span className="text-sm font-medium text-slate-700">{job.name}</span>
-                      <span className="text-xs text-slate-500">
+                    <div key={job.id} className="flex items-center justify-between bg-neutral-50 dark:bg-neutral-800 px-3 py-2">
+                      <span className="text-sm font-medium text-black dark:text-white">{job.name}</span>
+                      <span className="text-xs text-neutral-500">
                         Next: {job.next_run ? new Date(job.next_run).toLocaleString() : 'Not scheduled'}
                       </span>
                     </div>
@@ -1167,21 +1167,21 @@ export default function AdminPage() {
           </div>
           
           {/* Manual Actions */}
-          <div className="bg-white border rounded-xl p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6">
+            <h3 className="text-lg font-bold text-black dark:text-white mb-4 flex items-center gap-2">
               <Zap className="h-5 w-5 text-amber-500" />
               Manual Actions
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Run Auto-Agent Now */}
-              <div className="border rounded-lg p-4">
-                <h4 className="font-bold text-slate-900 mb-1">Run RSS Scan Now</h4>
-                <p className="text-sm text-slate-500 mb-3">Fetch latest articles from RSS feeds and extract predictions</p>
+              <div className="border border-neutral-200 dark:border-neutral-700 p-4">
+                <h4 className="font-bold text-black dark:text-white mb-1">Run RSS Scan Now</h4>
+                <p className="text-sm text-neutral-500 mb-3">Fetch latest articles from RSS feeds and extract predictions</p>
                 <button
                   onClick={runAutoAgent}
                   disabled={botLoading}
-                  className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 bg-black dark:bg-white text-white dark:text-black font-bold px-4 py-2 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50"
                 >
                   <Rss className="h-4 w-4" />
                   {botLoading ? 'Running...' : 'Scan RSS Now'}
@@ -1189,14 +1189,14 @@ export default function AdminPage() {
               </div>
               
               {/* Run Historical Collection */}
-              <div className="border rounded-lg p-4">
-                <h4 className="font-bold text-slate-900 mb-1">Historical Collection</h4>
-                <p className="text-sm text-slate-500 mb-3">Collect predictions from 2020-present (takes a few minutes)</p>
+              <div className="border border-neutral-200 dark:border-neutral-700 p-4">
+                <h4 className="font-bold text-black dark:text-white mb-1">Historical Collection</h4>
+                <p className="text-sm text-neutral-500 mb-3">Collect predictions from 2020-present (takes a few minutes)</p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => runHistoricalCollection(2023)}
                     disabled={historicalLoading}
-                    className="flex-1 flex items-center justify-center gap-2 bg-purple-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 bg-neutral-700 text-white font-bold px-4 py-2 hover:bg-neutral-600 transition-colors disabled:opacity-50"
                   >
                     <History className="h-4 w-4" />
                     {historicalLoading ? 'Collecting...' : '2023+'}
@@ -1204,7 +1204,7 @@ export default function AdminPage() {
                   <button
                     onClick={() => runHistoricalCollection(2020)}
                     disabled={historicalLoading}
-                    className="flex-1 flex items-center justify-center gap-2 bg-purple-800 text-white font-bold px-4 py-2 rounded-lg hover:bg-purple-900 transition-colors disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 bg-black dark:bg-white text-white dark:text-black font-bold px-4 py-2 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors disabled:opacity-50"
                   >
                     <History className="h-4 w-4" />
                     {historicalLoading ? 'Collecting...' : '2020+'}
@@ -1215,20 +1215,20 @@ export default function AdminPage() {
             
             {/* Historical Results */}
             {historicalResults && (
-              <div className={`mt-4 p-4 rounded-lg ${historicalResults.status === 'completed' ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 border border-amber-200'}`}>
-                <h4 className="font-bold text-slate-900 mb-2">Collection Results</h4>
+              <div className={`mt-4 p-4 ${historicalResults.status === 'completed' ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'}`}>
+                <h4 className="font-bold text-black dark:text-white mb-2">Collection Results</h4>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <span className="text-2xl font-black text-slate-900">{historicalResults.articles_collected}</span>
-                    <span className="text-xs text-slate-500 block">Articles</span>
+                    <span className="text-2xl font-black text-black dark:text-white">{historicalResults.articles_collected}</span>
+                    <span className="text-xs text-neutral-500 block">Articles</span>
                   </div>
                   <div>
-                    <span className="text-2xl font-black text-emerald-600">{historicalResults.predictions_extracted}</span>
-                    <span className="text-xs text-slate-500 block">Predictions</span>
+                    <span className="text-2xl font-black text-green-600 dark:text-green-400">{historicalResults.predictions_extracted}</span>
+                    <span className="text-xs text-neutral-500 block">Predictions</span>
                   </div>
                   <div>
-                    <span className="text-2xl font-black text-rose-600">{historicalResults.errors?.length || 0}</span>
-                    <span className="text-xs text-slate-500 block">Errors</span>
+                    <span className="text-2xl font-black text-red-600 dark:text-red-400">{historicalResults.errors?.length || 0}</span>
+                    <span className="text-xs text-neutral-500 block">Errors</span>
                   </div>
                 </div>
               </div>
@@ -1236,9 +1236,9 @@ export default function AdminPage() {
           </div>
           
           {/* Info Box */}
-          <div className="bg-purple-50 border border-purple-200 rounded-xl p-6">
-            <h3 className="font-bold text-purple-900 mb-2">How the Bot Works</h3>
-            <ul className="text-sm text-purple-800 space-y-1">
+          <div className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-6">
+            <h3 className="font-bold text-black dark:text-white mb-2">How the Bot Works</h3>
+            <ul className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
               <li>• <strong>RSS Scan</strong>: Runs every 6 hours, fetches latest news articles</li>
               <li>• <strong>AI Extraction</strong>: Uses Claude AI to identify predictions from known pundits</li>
               <li>• <strong>Historical Collection</strong>: Searches GDELT and Google News archives for past predictions</li>
