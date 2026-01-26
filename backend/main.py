@@ -980,7 +980,7 @@ async def get_twitter_status(admin = Depends(require_admin)):
     if not bearer_token:
         return {
             "configured": False,
-            "error": "TWITTER_BEARER_TOKEN not set. Twitter requires Basic plan ($100/month)."
+            "error": "X_BEARER_TOKEN not set. X (Twitter) API requires Basic plan ($100/month)."
         }
     
     try:
@@ -1006,7 +1006,7 @@ async def get_twitter_status(admin = Depends(require_admin)):
                     "configured": True,
                     "status": "error",
                     "http_status": response.status_code,
-                    "error": "Twitter API error. Requires Basic plan ($100/month) for read access."
+                    "error": "X API error. Requires Basic plan ($100/month) for read access."
                 }
             
     except Exception as e:

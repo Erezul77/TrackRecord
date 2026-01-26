@@ -6,7 +6,7 @@ Runs automated tasks in separate threads to avoid blocking the API:
 - RSS feed ingestion
 - Prediction extraction
 - Auto-resolution of predictions
-- Twitter collection
+- X (Twitter) collection
 """
 import os
 import asyncio
@@ -383,7 +383,7 @@ class TrackRecordScheduler:
         enable_historical: bool = True,
         enable_auto_resolution: bool = True,
         resolution_interval_hours: int = 4,
-        enable_twitter: bool = False,  # Disabled by default - requires paid Twitter API
+        enable_twitter: bool = False,  # Disabled by default - requires paid X (Twitter) API
         twitter_interval_hours: int = 6
     ):
         """Start the scheduler (runs in background thread - non-blocking)"""
