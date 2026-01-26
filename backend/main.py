@@ -2343,6 +2343,219 @@ async def login_user(
         }
     }
 
+
+# ============================================
+# OAuth2 Social Login (Google & Meta)
+# ============================================
+
+@app.get("/api/auth/google/url", tags=["Community"])
+async def get_google_auth_url():
+    """Get Google OAuth authorization URL"""
+    import secrets
+    from services.oauth import get_google_oauth
+    
+    google = get_google_oauth()
+    if not google.client_id:
+        raise HTTPException(status_code=503, detail="Google OAuth not configured")
+    
+    state = secrets.token_urlsafe(32)
+    auth_url = google.get_auth_url(state)
+    
+    return {"auth_url": auth_url, "state": state}
+
+
+@app.get("/api/auth/facebook/url", tags=["Community"])
+async def get_facebook_auth_url():
+    """Get Facebook/Meta OAuth authorization URL"""
+    import secrets
+    from services.oauth import get_facebook_oauth
+    
+    facebook = get_facebook_oauth()
+    if not facebook.app_id:
+        raise HTTPException(status_code=503, detail="Facebook OAuth not configured")
+    
+    state = secrets.token_urlsafe(32)
+    auth_url = facebook.get_auth_url(state)
+    
+    return {"auth_url": auth_url, "state": state}
+
+
+@app.post("/api/auth/google/callback", tags=["Community"])
+async def google_oauth_callback(
+    code: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Handle Google OAuth callback - exchange code for user info and login/register"""
+    from services.oauth import get_google_oauth
+    
+    google = get_google_oauth()
+    
+    # Exchange code for tokens
+    tokens = await google.exchange_code(code)
+    if not tokens:
+        raise HTTPException(status_code=400, detail="Failed to exchange authorization code")
+    
+    # Get user info
+    user_info = await google.get_user_info(tokens["access_token"])
+    if not user_info:
+        raise HTTPException(status_code=400, detail="Failed to get user information")
+    
+    # Check if user exists by email
+    result = await db.execute(
+        select(CommunityUser).where(CommunityUser.email == user_info.email)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        # Create new user
+        username = user_info.email.split("@")[0] + "_g"
+        # Ensure unique username
+        base_username = username
+        counter = 1
+        while True:
+            result = await db.execute(
+                select(CommunityUser).where(CommunityUser.username == username)
+            )
+            if not result.scalar_one_or_none():
+                break
+            username = f"{base_username}{counter}"
+            counter += 1
+        
+        user = CommunityUser(
+            id=uuid.uuid4(),
+            username=username,
+            email=user_info.email,
+            password_hash="oauth_google_" + user_info.provider_id,  # No password for OAuth users
+            display_name=user_info.name,
+            avatar_url=user_info.picture_url,
+            created_at=datetime.utcnow()
+        )
+        db.add(user)
+    
+    # Update last login
+    user.last_login = datetime.utcnow()
+    if user_info.picture_url and not user.avatar_url:
+        user.avatar_url = user_info.picture_url
+    
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "user_id": str(user.id),
+        "username": user.username,
+        "display_name": user.display_name,
+        "avatar_url": user.avatar_url,
+        "provider": "google",
+        "stats": {
+            "total_predictions": user.total_predictions,
+            "correct": user.correct_predictions,
+            "wrong": user.wrong_predictions,
+            "win_rate": user.win_rate
+        }
+    }
+
+
+@app.post("/api/auth/facebook/callback", tags=["Community"])
+async def facebook_oauth_callback(
+    code: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Handle Facebook/Meta OAuth callback - exchange code for user info and login/register"""
+    from services.oauth import get_facebook_oauth
+    
+    facebook = get_facebook_oauth()
+    
+    # Exchange code for tokens
+    tokens = await facebook.exchange_code(code)
+    if not tokens:
+        raise HTTPException(status_code=400, detail="Failed to exchange authorization code")
+    
+    # Get user info
+    user_info = await facebook.get_user_info(tokens["access_token"])
+    if not user_info:
+        raise HTTPException(status_code=400, detail="Failed to get user information")
+    
+    # Check if user exists by email
+    result = await db.execute(
+        select(CommunityUser).where(CommunityUser.email == user_info.email)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        # Create new user
+        username = user_info.name.lower().replace(" ", "_") + "_fb"
+        # Ensure unique username
+        base_username = username
+        counter = 1
+        while True:
+            result = await db.execute(
+                select(CommunityUser).where(CommunityUser.username == username)
+            )
+            if not result.scalar_one_or_none():
+                break
+            username = f"{base_username}{counter}"
+            counter += 1
+        
+        user = CommunityUser(
+            id=uuid.uuid4(),
+            username=username,
+            email=user_info.email,
+            password_hash="oauth_facebook_" + user_info.provider_id,  # No password for OAuth users
+            display_name=user_info.name,
+            avatar_url=user_info.picture_url,
+            created_at=datetime.utcnow()
+        )
+        db.add(user)
+    
+    # Update last login
+    user.last_login = datetime.utcnow()
+    if user_info.picture_url and not user.avatar_url:
+        user.avatar_url = user_info.picture_url
+    
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "user_id": str(user.id),
+        "username": user.username,
+        "display_name": user.display_name,
+        "avatar_url": user.avatar_url,
+        "provider": "facebook",
+        "stats": {
+            "total_predictions": user.total_predictions,
+            "correct": user.correct_predictions,
+            "wrong": user.wrong_predictions,
+            "win_rate": user.win_rate
+        }
+    }
+
+
+@app.get("/api/auth/providers", tags=["Community"])
+async def get_available_auth_providers():
+    """Get list of available OAuth providers"""
+    import os
+    
+    providers = []
+    
+    if os.getenv("GOOGLE_CLIENT_ID"):
+        providers.append({
+            "id": "google",
+            "name": "Google",
+            "enabled": True
+        })
+    
+    if os.getenv("FACEBOOK_APP_ID"):
+        providers.append({
+            "id": "facebook", 
+            "name": "Facebook",
+            "enabled": True
+        })
+    
+    return {
+        "providers": providers,
+        "email_enabled": True  # Always allow email registration
+    }
+
 @app.get("/api/community/user/{user_id}")
 async def get_community_user(
     user_id: uuid.UUID,
