@@ -1381,6 +1381,57 @@ async def run_auto_resolution_endpoint(
     }
 
 
+@app.post("/api/admin/ai-resolve", tags=["Admin"])
+async def ai_resolve_predictions(
+    limit: int = Query(20, ge=1, le=50, description="Max predictions to process"),
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Use AI (Claude) to intelligently resolve predictions.
+    
+    The AI will:
+    1. Analyze each prediction claim
+    2. Determine what actually happened based on its knowledge
+    3. Resolve as YES (correct) or NO (wrong) with confidence score
+    
+    Only resolves predictions where AI is confident (>70%).
+    """
+    from services.auto_resolver import get_resolver
+    
+    resolver = get_resolver()
+    results = await resolver.ai_resolve_batch(db, limit=limit)
+    
+    return {
+        "status": "complete",
+        "processed": results.get("processed", 0),
+        "resolved_yes": results.get("resolved_yes", 0),
+        "resolved_no": results.get("resolved_no", 0),
+        "skipped": results.get("skipped", 0),
+        "errors": results.get("errors", 0),
+        "details": results.get("details", [])
+    }
+
+
+@app.post("/api/admin/ai-resolve/{prediction_id}", tags=["Admin"])
+async def ai_resolve_single_prediction(
+    prediction_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Use AI to resolve a single prediction.
+    
+    Returns the AI's evaluation with reasoning.
+    """
+    from services.auto_resolver import get_resolver
+    
+    resolver = get_resolver()
+    result = await resolver.ai_resolve_prediction(db, str(prediction_id))
+    
+    return result
+
+
 @app.post("/api/admin/test-add-prediction", tags=["Admin"])
 async def test_add_single_prediction(
     db: AsyncSession = Depends(get_db),

@@ -334,6 +334,243 @@ class AutoResolver:
             "notes": resolution_notes
         }
     
+    async def ai_resolve_prediction(
+        self,
+        db: AsyncSession,
+        prediction_id: str
+    ) -> Dict:
+        """
+        Use AI (Claude) to evaluate a prediction and determine if it was correct.
+        
+        The AI will analyze:
+        1. The prediction claim
+        2. When it was made
+        3. What actually happened (based on knowledge cutoff)
+        
+        Returns: {"success": bool, "outcome": "YES/NO", "reasoning": str}
+        """
+        import os
+        import httpx
+        from uuid import UUID
+        
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            return {"success": False, "error": "Anthropic API key not configured"}
+        
+        # Get the prediction
+        result = await db.execute(
+            select(Prediction)
+            .where(Prediction.id == UUID(prediction_id))
+            .options(selectinload(Prediction.pundit))
+        )
+        pred = result.scalar_one_or_none()
+        
+        if not pred:
+            return {"success": False, "error": "Prediction not found"}
+        
+        if pred.status == "resolved":
+            return {"success": False, "error": "Prediction already resolved"}
+        
+        # Build the prompt
+        pundit_name = pred.pundit.name if pred.pundit else "Unknown"
+        claim = pred.claim
+        made_at = pred.captured_at.strftime("%B %Y") if pred.captured_at else "Unknown date"
+        timeframe = pred.timeframe.strftime("%B %Y") if pred.timeframe else "Unknown"
+        
+        prompt = f"""You are evaluating whether a prediction was CORRECT or WRONG based on what actually happened.
+
+PREDICTION DETAILS:
+- Made by: {pundit_name}
+- Claim: "{claim}"
+- Made around: {made_at}
+- Timeframe/Deadline: {timeframe}
+
+TASK: Based on your knowledge, determine if this prediction turned out to be CORRECT (YES) or WRONG (NO).
+
+IMPORTANT RULES:
+1. If the prediction clearly came true → answer YES
+2. If the prediction clearly did NOT come true → answer NO
+3. If the timeframe hasn't passed yet (it's still in the future) → answer PENDING
+4. If you genuinely cannot determine the outcome → answer UNKNOWN
+
+Respond in this EXACT JSON format:
+{{"outcome": "YES/NO/PENDING/UNKNOWN", "confidence": 0.0-1.0, "reasoning": "Brief explanation of why"}}
+
+Only output the JSON, nothing else."""
+
+        try:
+            async with httpx.AsyncClient(timeout=30) as client:
+                response = await client.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": api_key,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json"
+                    },
+                    json={
+                        "model": "claude-3-haiku-20240307",
+                        "max_tokens": 500,
+                        "messages": [{"role": "user", "content": prompt}]
+                    }
+                )
+                
+                if response.status_code != 200:
+                    return {"success": False, "error": f"API error: {response.status_code}"}
+                
+                data = response.json()
+                ai_response = data["content"][0]["text"].strip()
+                
+                # Parse JSON response
+                import json
+                try:
+                    result_data = json.loads(ai_response)
+                except:
+                    # Try to extract JSON from response
+                    import re
+                    json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+                    if json_match:
+                        result_data = json.loads(json_match.group())
+                    else:
+                        return {"success": False, "error": "Could not parse AI response", "raw": ai_response}
+                
+                outcome = result_data.get("outcome", "UNKNOWN").upper()
+                confidence = result_data.get("confidence", 0.5)
+                reasoning = result_data.get("reasoning", "")
+                
+                # Only auto-resolve if confident and definitive
+                if outcome in ["YES", "NO"] and confidence >= 0.7:
+                    # Resolve the prediction
+                    pred.status = "resolved"
+                    pred.flagged = False
+                    pred.flag_reason = None
+                    
+                    # Create or update position for tracking
+                    from database.models import Position, Match
+                    import uuid as uuid_module
+                    
+                    # Check if position exists
+                    pos_result = await db.execute(
+                        select(Position).where(Position.prediction_id == pred.id)
+                    )
+                    position = pos_result.scalar_one_or_none()
+                    
+                    if not position:
+                        # Create a virtual position for tracking
+                        position = Position(
+                            id=uuid_module.uuid4(),
+                            prediction_id=pred.id,
+                            pundit_id=pred.pundit_id,
+                            match_id=None,
+                            market_id="ai_resolved",
+                            market_question=pred.claim[:200],
+                            entry_price=0.5,  # Assume 50% odds
+                            entry_timestamp=pred.captured_at,
+                            position_size=100,
+                            shares=100,
+                            status="closed",
+                            outcome=outcome,
+                            exit_price=1.0 if outcome == "YES" else 0.0,
+                            exit_timestamp=datetime.utcnow(),
+                            realized_pnl=50 if outcome == "YES" else -50
+                        )
+                        db.add(position)
+                    else:
+                        position.status = "closed"
+                        position.outcome = outcome
+                        position.exit_timestamp = datetime.utcnow()
+                        position.realized_pnl = 50 if outcome == "YES" else -50
+                    
+                    await db.commit()
+                    
+                    # Update pundit metrics
+                    await self._update_pundit_metrics(db)
+                    await db.commit()
+                    
+                    return {
+                        "success": True,
+                        "prediction_id": prediction_id,
+                        "outcome": outcome,
+                        "confidence": confidence,
+                        "reasoning": reasoning,
+                        "action": "resolved"
+                    }
+                else:
+                    return {
+                        "success": True,
+                        "prediction_id": prediction_id,
+                        "outcome": outcome,
+                        "confidence": confidence,
+                        "reasoning": reasoning,
+                        "action": "not_resolved",
+                        "reason": "Low confidence or indeterminate outcome"
+                    }
+                    
+        except Exception as e:
+            logger.error(f"AI resolution error: {e}")
+            return {"success": False, "error": str(e)}
+    
+    async def ai_resolve_batch(
+        self,
+        db: AsyncSession,
+        limit: int = 20
+    ) -> Dict:
+        """
+        Use AI to resolve multiple open predictions.
+        
+        Returns summary of resolutions.
+        """
+        results = {
+            "processed": 0,
+            "resolved_yes": 0,
+            "resolved_no": 0,
+            "skipped": 0,
+            "errors": 0,
+            "details": []
+        }
+        
+        # Get open predictions with past timeframes (candidates for resolution)
+        now = datetime.utcnow()
+        query = (
+            select(Prediction)
+            .where(
+                and_(
+                    Prediction.timeframe < now,
+                    Prediction.status.in_(['pending_match', 'matched', 'open'])
+                )
+            )
+            .limit(limit)
+        )
+        
+        result = await db.execute(query)
+        predictions = result.scalars().all()
+        
+        logger.info(f"AI resolving {len(predictions)} predictions...")
+        
+        for pred in predictions:
+            try:
+                res = await self.ai_resolve_prediction(db, str(pred.id))
+                results["processed"] += 1
+                
+                if res.get("success") and res.get("action") == "resolved":
+                    if res.get("outcome") == "YES":
+                        results["resolved_yes"] += 1
+                    else:
+                        results["resolved_no"] += 1
+                    results["details"].append({
+                        "prediction_id": str(pred.id),
+                        "claim": pred.claim[:100],
+                        "outcome": res.get("outcome"),
+                        "reasoning": res.get("reasoning", "")[:200]
+                    })
+                else:
+                    results["skipped"] += 1
+                    
+            except Exception as e:
+                results["errors"] += 1
+                logger.error(f"Error AI resolving {pred.id}: {e}")
+        
+        return results
+    
     async def close(self):
         await self.polymarket.close()
 
