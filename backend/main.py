@@ -1381,6 +1381,57 @@ async def run_auto_resolution_endpoint(
     }
 
 
+@app.post("/api/admin/test-add-prediction", tags=["Admin"])
+async def test_add_single_prediction(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Test adding a single prediction to debug issues."""
+    try:
+        # Find Jensen Huang
+        result = await db.execute(select(Pundit).where(Pundit.name == "Jensen Huang"))
+        pundit = result.scalar_one_or_none()
+        
+        if not pundit:
+            return {"status": "error", "message": "Jensen Huang not found"}
+        
+        # Create a test prediction
+        test_claim = f"Test prediction at {datetime.now().isoformat()}"
+        content_hash = hashlib.sha256(test_claim.encode()).hexdigest()
+        
+        prediction = Prediction(
+            id=uuid.uuid4(),
+            pundit_id=pundit.id,
+            claim=test_claim,
+            quote=f'"{test_claim}" - Jensen Huang',
+            confidence=0.8,
+            category="tech",
+            timeframe=datetime.now() + timedelta(days=365),
+            source_url=f"https://test.trackrecord.life/{content_hash[:8]}",
+            source_type="historical",
+            content_hash=content_hash,
+            captured_at=datetime.now(),
+            status="open",
+            outcome=None
+        )
+        db.add(prediction)
+        await db.commit()
+        
+        # Update metrics
+        metrics_result = await db.execute(select(PunditMetrics).where(PunditMetrics.pundit_id == pundit.id))
+        metrics = metrics_result.scalar_one_or_none()
+        if metrics:
+            metrics.total_predictions += 1
+            await db.commit()
+        
+        return {"status": "success", "prediction_id": str(prediction.id), "pundit": pundit.name}
+    except Exception as e:
+        logging.error(f"Test add prediction error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {"status": "error", "message": str(e)}
+
+
 @app.post("/api/admin/populate-massive-data", tags=["Admin"])
 async def populate_massive_data_endpoint(
     db: AsyncSession = Depends(get_db),
@@ -1390,10 +1441,9 @@ async def populate_massive_data_endpoint(
     Populate database with massive historical data.
     Adds 200+ pundits and 100+ predictions from 2020-2025.
     """
-    # Uses imports from top of file: random, hashlib, uuid, timedelta
-    
-    # Quick inline data for immediate population
-    NEW_PUNDITS = [
+    try:
+        # Quick inline data for immediate population
+        NEW_PUNDITS = [
         {"name": "Jensen Huang", "username": "JensenHuang", "affiliation": "NVIDIA", "domains": ["tech", "ai"], "net_worth": 77000},
         {"name": "Sam Altman", "username": "Sama", "affiliation": "OpenAI", "domains": ["tech", "ai"], "net_worth": 1000},
         {"name": "Satya Nadella", "username": "SatyaNadella", "affiliation": "Microsoft", "domains": ["tech", "ai"], "net_worth": 1000},
@@ -1546,13 +1596,18 @@ async def populate_massive_data_endpoint(
             metrics.paper_win_rate = correct / resolved if resolved > 0 else 0.0
             metrics.paper_total_pnl = correct * 100 - (resolved - correct) * 100
     
-    await db.commit()
-    
-    return {
-        "status": "success",
-        "pundits_added": pundits_added,
-        "predictions_added": predictions_added
-    }
+        await db.commit()
+        
+        return {
+            "status": "success",
+            "pundits_added": pundits_added,
+            "predictions_added": predictions_added
+        }
+    except Exception as e:
+        logging.error(f"Populate massive data error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Population failed: {str(e)}")
 
 
 @app.post("/api/admin/predictions/{prediction_id}/resolve-manual", tags=["Admin"])
