@@ -10,6 +10,12 @@ import { cn } from '@/lib/utils'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+// Generate UI Avatars URL - consistent with other pages
+function getAvatarUrl(name: string): string {
+  const encoded = encodeURIComponent(name)
+  return `https://ui-avatars.com/api/?name=${encoded}&background=000&color=fff&bold=true&size=128`
+}
+
 interface PendingPrediction {
   id: string
   pundit_id: string
@@ -144,23 +150,23 @@ export default function ResolutionCenterPage() {
     <div className="container mx-auto px-4 py-12 max-w-5xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-slate-900 mb-2 flex items-center gap-3">
-          <Gavel className="h-8 w-8 text-emerald-600" />
+        <h1 className="text-3xl font-black text-black dark:text-white mb-2 flex items-center gap-3">
+          <Gavel className="h-8 w-8" />
           Resolution Center
         </h1>
-        <p className="text-slate-500">
+        <p className="text-neutral-500">
           Review predictions past their deadline and mark them as CORRECT or WRONG.
-          <span className="font-bold text-rose-600 ml-1">Resolutions are FINAL.</span>
+          <span className="font-bold text-red-600 dark:text-red-400 ml-1">Resolutions are FINAL.</span>
         </p>
       </div>
 
       {/* Rules Banner */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 mb-8">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+          <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
           <div>
-            <h3 className="font-bold text-amber-800 mb-1">Resolution Rules</h3>
-            <ul className="text-sm text-amber-700 space-y-1">
+            <h3 className="font-bold text-amber-800 dark:text-amber-300 mb-1">Resolution Rules</h3>
+            <ul className="text-sm text-amber-700 dark:text-amber-400 space-y-1">
               <li>• <strong>Binary only:</strong> CORRECT or WRONG - no partial credit</li>
               <li>• <strong>Evidence required:</strong> Must provide URL proof of outcome</li>
               <li>• <strong>Final decision:</strong> Once resolved, it cannot be changed</li>
@@ -173,8 +179,8 @@ export default function ResolutionCenterPage() {
       {/* Message */}
       {message && (
         <div className={cn(
-          "mb-6 p-4 rounded-lg flex items-center gap-2",
-          message.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+          "mb-6 p-4 flex items-center gap-2",
+          message.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
         )}>
           {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
           {message.text}
@@ -189,10 +195,10 @@ export default function ResolutionCenterPage() {
             loadPendingPredictions()
           }}
           className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors",
+            "flex items-center gap-2 px-4 py-2 font-bold text-sm transition-colors",
             activeTab === 'pending'
-              ? 'bg-emerald-600 text-white'
-              : 'bg-white border text-slate-600 hover:bg-slate-50'
+              ? 'bg-black dark:bg-white text-white dark:text-black'
+              : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-black dark:hover:border-white'
           )}
         >
           <Clock className="h-4 w-4" />
@@ -204,10 +210,10 @@ export default function ResolutionCenterPage() {
             loadHistory()
           }}
           className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors",
+            "flex items-center gap-2 px-4 py-2 font-bold text-sm transition-colors",
             activeTab === 'history'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white border text-slate-600 hover:bg-slate-50'
+              ? 'bg-black dark:bg-white text-white dark:text-black'
+              : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-black dark:hover:border-white'
           )}
         >
           <History className="h-4 w-4" />
@@ -220,36 +226,36 @@ export default function ResolutionCenterPage() {
         <div className="space-y-4">
           {loading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin h-8 w-8 border-4 border-emerald-600 border-t-transparent rounded-full" />
+              <div className="animate-spin h-8 w-8 border-4 border-black dark:border-white border-t-transparent rounded-full" />
             </div>
           ) : predictions.length > 0 ? (
             predictions.map(pred => (
-              <div key={pred.id} className="bg-white border rounded-xl overflow-hidden">
+              <div key={pred.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden">
                 {/* Header */}
                 <div className={cn(
-                  "px-4 py-2 flex items-center justify-between",
-                  pred.days_overdue > 30 ? "bg-rose-100 border-b border-rose-200" :
-                  pred.days_overdue > 7 ? "bg-amber-100 border-b border-amber-200" :
-                  "bg-blue-100 border-b border-blue-200"
+                  "px-4 py-2 flex items-center justify-between border-b",
+                  pred.days_overdue > 30 ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800" :
+                  pred.days_overdue > 7 ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800" :
+                  "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700"
                 )}>
                   <div className="flex items-center gap-3">
                     <span className={cn(
-                      "text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded",
-                      pred.days_overdue > 30 ? "bg-rose-200 text-rose-800" :
-                      pred.days_overdue > 7 ? "bg-amber-200 text-amber-800" :
-                      "bg-blue-200 text-blue-800"
+                      "text-xs font-black uppercase tracking-wider px-2 py-0.5",
+                      pred.days_overdue > 30 ? "bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200" :
+                      pred.days_overdue > 7 ? "bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200" :
+                      "bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200"
                     )}>
                       {pred.days_overdue} days overdue
                     </span>
-                    <span className="text-xs font-bold text-slate-600 uppercase">{pred.category}</span>
+                    <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase">{pred.category}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {pred.tr_index_score && (
-                      <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-bold bg-black dark:bg-white text-white dark:text-black px-2 py-0.5 rounded-full">
                         TR: {pred.tr_index_score.toFixed(0)}
                       </span>
                     )}
-                    <span className="text-xs text-slate-500 flex items-center gap-1">
+                    <span className="text-xs text-neutral-500 flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
                       Deadline: {formatDate(pred.timeframe)}
                     </span>
@@ -260,37 +266,37 @@ export default function ResolutionCenterPage() {
                 <div className="p-4">
                   {/* Pundit */}
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="h-10 w-10 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
-                      {pred.pundit_avatar ? (
-                        <img src={pred.pundit_avatar} alt={pred.pundit_name} className="h-full w-full object-cover" />
-                      ) : (
-                        <User className="h-5 w-5 text-slate-400" />
-                      )}
+                    <div className="h-10 w-10 rounded-full border-2 border-neutral-200 dark:border-neutral-700 overflow-hidden bg-black flex items-center justify-center">
+                      <img 
+                        src={getAvatarUrl(pred.pundit_name)} 
+                        alt={pred.pundit_name} 
+                        className="h-full w-full object-cover" 
+                      />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900">{pred.pundit_name}</p>
-                      <p className="text-sm text-slate-500">@{pred.pundit_username}</p>
+                      <p className="font-bold text-black dark:text-white">{pred.pundit_name}</p>
+                      <p className="text-sm text-neutral-500">@{pred.pundit_username}</p>
                     </div>
                   </div>
 
                   {/* Claim */}
-                  <p className="font-bold text-lg text-slate-900 mb-3">{pred.claim}</p>
+                  <p className="font-bold text-lg text-black dark:text-white mb-3">{pred.claim}</p>
 
                   {/* Quote */}
-                  <div className="bg-slate-50 rounded-lg p-3 mb-4 border-l-4 border-slate-300 italic text-sm text-slate-600">
+                  <div className="bg-neutral-50 dark:bg-neutral-800 p-3 mb-4 border-l-4 border-neutral-300 dark:border-neutral-600 italic text-sm text-neutral-600 dark:text-neutral-400">
                     "{pred.quote}"
                   </div>
 
                   {/* Community Opinion */}
-                  <div className="flex items-center gap-4 mb-4 p-3 bg-slate-50 rounded-lg">
-                    <span className="text-sm font-bold text-slate-600">Community thinks:</span>
+                  <div className="flex items-center gap-4 mb-4 p-3 bg-neutral-50 dark:bg-neutral-800">
+                    <span className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Community thinks:</span>
                     <div className="flex items-center gap-2">
-                      <ThumbsUp className="h-4 w-4 text-emerald-600" />
-                      <span className="text-sm font-bold text-emerald-600">{pred.community_votes.upvotes}</span>
+                      <ThumbsUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      <span className="text-sm font-bold text-green-600 dark:text-green-400">{pred.community_votes.upvotes}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <ThumbsDown className="h-4 w-4 text-rose-600" />
-                      <span className="text-sm font-bold text-rose-600">{pred.community_votes.downvotes}</span>
+                      <ThumbsDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      <span className="text-sm font-bold text-red-600 dark:text-red-400">{pred.community_votes.downvotes}</span>
                     </div>
                   </div>
 
@@ -300,7 +306,7 @@ export default function ResolutionCenterPage() {
                       href={pred.source_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                      className="text-sm text-black dark:text-white hover:underline flex items-center gap-1"
                     >
                       <ExternalLink className="h-3 w-3" />
                       View Original Source
@@ -309,9 +315,9 @@ export default function ResolutionCenterPage() {
 
                   {/* Resolution Form */}
                   {resolutionForm.predictionId === pred.id ? (
-                    <div className="border-t pt-4 space-y-4">
+                    <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4 space-y-4">
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                        <label className="block text-sm font-bold text-black dark:text-white mb-2">
                           <LinkIcon className="h-4 w-4 inline mr-1" />
                           Evidence URL (REQUIRED)
                         </label>
@@ -320,20 +326,20 @@ export default function ResolutionCenterPage() {
                           value={resolutionForm.evidenceUrl}
                           onChange={(e) => setResolutionForm({...resolutionForm, evidenceUrl: e.target.value})}
                           placeholder="https://... (link proving the outcome)"
-                          className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                          className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-black dark:text-white"
                           required
                         />
-                        <p className="text-xs text-slate-400 mt-1">Link to article, data, or source that proves the outcome</p>
+                        <p className="text-xs text-neutral-400 mt-1">Link to article, data, or source that proves the outcome</p>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Notes (optional)</label>
+                        <label className="block text-sm font-bold text-black dark:text-white mb-2">Notes (optional)</label>
                         <input
                           type="text"
                           value={resolutionForm.notes}
                           onChange={(e) => setResolutionForm({...resolutionForm, notes: e.target.value})}
                           placeholder="Brief explanation..."
-                          className="w-full border rounded-lg px-4 py-2 text-slate-900"
+                          className="w-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-black dark:text-white"
                         />
                       </div>
 
@@ -341,7 +347,7 @@ export default function ResolutionCenterPage() {
                         <button
                           onClick={() => resolvePrediction('correct')}
                           disabled={resolving === pred.id}
-                          className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                          className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-3 hover:bg-green-700 transition-colors disabled:opacity-50"
                         >
                           <CheckCircle className="h-5 w-5" />
                           CORRECT
@@ -349,7 +355,7 @@ export default function ResolutionCenterPage() {
                         <button
                           onClick={() => resolvePrediction('wrong')}
                           disabled={resolving === pred.id}
-                          className="flex-1 flex items-center justify-center gap-2 bg-rose-600 text-white font-bold py-3 rounded-lg hover:bg-rose-700 transition-colors disabled:opacity-50"
+                          className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 hover:bg-red-700 transition-colors disabled:opacity-50"
                         >
                           <XCircle className="h-5 w-5" />
                           WRONG
@@ -358,7 +364,7 @@ export default function ResolutionCenterPage() {
 
                       <button
                         onClick={() => setResolutionForm({ predictionId: null, evidenceUrl: '', notes: '' })}
-                        className="w-full text-sm text-slate-500 hover:text-slate-700"
+                        className="w-full text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
                       >
                         Cancel
                       </button>
@@ -366,7 +372,7 @@ export default function ResolutionCenterPage() {
                   ) : (
                     <button
                       onClick={() => openResolutionForm(pred.id)}
-                      className="w-full bg-slate-900 text-white font-bold py-3 rounded-lg hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+                      className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
                     >
                       <Gavel className="h-4 w-4" />
                       Resolve This Prediction
@@ -376,10 +382,10 @@ export default function ResolutionCenterPage() {
               </div>
             ))
           ) : (
-            <div className="bg-white border rounded-xl p-12 text-center">
-              <CheckCircle className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
-              <p className="text-slate-500 font-bold text-lg">All caught up!</p>
-              <p className="text-sm text-slate-400 mt-1">No predictions are past their deadline</p>
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-12 text-center">
+              <CheckCircle className="h-12 w-12 text-green-300 dark:text-green-600 mx-auto mb-4" />
+              <p className="text-neutral-500 font-bold text-lg">All caught up!</p>
+              <p className="text-sm text-neutral-400 mt-1">No predictions are past their deadline</p>
             </div>
           )}
         </div>
@@ -390,16 +396,16 @@ export default function ResolutionCenterPage() {
         <div className="space-y-3">
           {history.length > 0 ? (
             history.map(res => (
-              <div key={res.id} className="bg-white border rounded-lg p-4 flex items-center justify-between">
+              <div key={res.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-slate-900 truncate">{res.claim}</p>
-                  <p className="text-sm text-slate-500">{res.pundit_name} • {res.category}</p>
+                  <p className="font-bold text-black dark:text-white truncate">{res.claim}</p>
+                  <p className="text-sm text-neutral-500">{res.pundit_name} • {res.category}</p>
                 </div>
                 <div className="flex items-center gap-3 ml-4">
-                  <span className="text-xs text-slate-400">{res.timeframe ? formatDate(res.timeframe) : ''}</span>
+                  <span className="text-xs text-neutral-400">{res.timeframe ? formatDate(res.timeframe) : ''}</span>
                   <span className={cn(
                     "text-xs font-black px-3 py-1 rounded-full",
-                    res.outcome === 'YES' ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                    res.outcome === 'YES' ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                   )}>
                     {res.outcome_label}
                   </span>
@@ -407,9 +413,9 @@ export default function ResolutionCenterPage() {
               </div>
             ))
           ) : (
-            <div className="bg-white border rounded-xl p-12 text-center">
-              <History className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500 font-bold">No resolutions yet</p>
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-12 text-center">
+              <History className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-4" />
+              <p className="text-neutral-500 font-bold">No resolutions yet</p>
             </div>
           )}
         </div>
