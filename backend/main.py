@@ -984,25 +984,30 @@ async def get_twitter_status(admin = Depends(require_admin)):
         }
     
     try:
-        from services.twitter_ingestion import TwitterService
-        twitter = TwitterService(bearer_token)
+        import httpx
         
-        # Test with a simple user lookup
-        user = await twitter.get_user_by_username("twitter")
-        await twitter.close()
-        
-        if user:
-            return {
-                "configured": True,
-                "status": "working",
-                "test_user": user.get("username")
-            }
-        else:
-            return {
-                "configured": True,
-                "status": "error",
-                "error": "API call failed - check token permissions"
-            }
+        # Direct API test for debugging
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.get(
+                "https://api.twitter.com/2/users/by/username/twitter",
+                headers={"Authorization": f"Bearer {bearer_token}"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return {
+                    "configured": True,
+                    "status": "working",
+                    "test_user": data.get("data", {}).get("username"),
+                    "api_tier": "Basic or higher"
+                }
+            else:
+                return {
+                    "configured": True,
+                    "status": "error",
+                    "http_status": response.status_code,
+                    "error": response.text[:500]  # First 500 chars of error
+                }
             
     except Exception as e:
         return {
