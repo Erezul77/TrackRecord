@@ -179,25 +179,43 @@ class TrackRecordScheduler:
         """Sync wrapper for auto-resolution - runs in background thread"""
         async def _run():
             from database.session import async_session
-            from services.auto_resolver import run_auto_resolution
+            from services.auto_resolver import run_auto_resolution, get_resolver
             
             logger.info("Starting auto-resolution cycle (background thread)...")
             
             try:
                 async with async_session() as session:
+                    # Step 1: Run standard auto-resolution (market + timeframe based)
                     results = await asyncio.wait_for(
                         run_auto_resolution(session),
                         timeout=120  # 2 minute timeout
                     )
                     
+                    standard_resolved = results.get("market_resolved", 0) + results.get("expired_auto_resolved", 0)
+                    
+                    # Step 2: Run AI resolution on remaining expired predictions
+                    ai_resolved = 0
+                    try:
+                        resolver = get_resolver()
+                        ai_results = await asyncio.wait_for(
+                            resolver.ai_resolve_batch(session, limit=20),  # Resolve up to 20 per cycle
+                            timeout=180  # 3 minute timeout for AI
+                        )
+                        ai_resolved = ai_results.get("resolved_yes", 0) + ai_results.get("resolved_no", 0)
+                        logger.info(f"AI resolution complete: {ai_resolved} resolved")
+                    except asyncio.TimeoutError:
+                        logger.warning("AI resolution timed out - will retry next cycle")
+                    except Exception as e:
+                        logger.error(f"AI resolution error: {e}")
+                    
                     with self._lock:
                         self.last_run_times["auto_resolution"] = datetime.now()
                         self.run_stats["auto_resolution"]["runs"] += 1
-                        self.run_stats["auto_resolution"]["resolved"] += results.get("market_resolved", 0)
-                        self.run_stats["auto_resolution"]["flagged"] += results.get("timeframe_expired", 0)
+                        self.run_stats["auto_resolution"]["resolved"] += standard_resolved + ai_resolved
+                        self.run_stats["auto_resolution"]["flagged"] += results.get("flagged_for_review", 0)
                     
-                    logger.info(f"Auto-resolution complete: {results.get('market_resolved', 0)} resolved")
-                    return results
+                    logger.info(f"Auto-resolution complete: {standard_resolved} standard + {ai_resolved} AI resolved")
+                    return {**results, "ai_resolved": ai_resolved}
                     
             except asyncio.TimeoutError:
                 logger.error("Auto-resolution timed out after 2 minutes")
