@@ -379,7 +379,7 @@ class TrackRecordScheduler:
     
     def start(
         self,
-        rss_interval_hours: int = 6,
+        rss_interval_hours: int = 2,  # Run every 2 hours for good volume
         enable_historical: bool = True,
         enable_auto_resolution: bool = True,
         resolution_interval_hours: int = 4,
