@@ -66,8 +66,17 @@ async def migrate_add_chain_columns():
 
 async def full_setup():
     """Run full setup including migrations"""
-    await setup_db()
-    await migrate_add_chain_columns()
+    try:
+        await setup_db()
+    except Exception as e:
+        print(f"Warning: setup_db failed: {e}")
+    
+    try:
+        await migrate_add_chain_columns()
+    except Exception as e:
+        print(f"Warning: migration failed: {e}")
+    
+    print("Setup complete (with possible warnings above)")
 
 if __name__ == "__main__":
     asyncio.run(full_setup())
