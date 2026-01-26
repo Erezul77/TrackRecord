@@ -64,16 +64,40 @@ export default function CompetePage() {
     timeframe_days: 30
   })
 
-  // Load from localStorage on mount
-  useEffect(() => {
+  // Function to load user from localStorage
+  const loadUserFromStorage = () => {
     const savedUser = localStorage.getItem('community_user')
     if (savedUser) {
-      const userData = JSON.parse(savedUser)
-      setUser(userData)
-      setActiveTab('dashboard')
-      loadUserPredictions(userData.user_id)
+      try {
+        const userData = JSON.parse(savedUser)
+        setUser(userData)
+        setActiveTab('dashboard')
+        loadUserPredictions(userData.user_id)
+      } catch {
+        setUser(null)
+        setActiveTab('auth')
+      }
+    } else {
+      setUser(null)
+      setPredictions([])
+      setActiveTab('auth')
     }
+  }
+
+  // Load from localStorage on mount and listen for auth changes
+  useEffect(() => {
+    loadUserFromStorage()
     loadLeaderboard()
+
+    // Listen for auth changes from other components
+    const handleAuthChange = () => {
+      loadUserFromStorage()
+    }
+
+    window.addEventListener('auth-change', handleAuthChange)
+    return () => {
+      window.removeEventListener('auth-change', handleAuthChange)
+    }
   }, [])
 
   const loadUserPredictions = async (userId: string) => {
@@ -128,6 +152,8 @@ export default function CompetePage() {
           setAuthMode('login')
         } else {
           localStorage.setItem('community_user', JSON.stringify(data))
+          // Notify other components about auth change
+          window.dispatchEvent(new Event('auth-change'))
           setUser(data)
           setActiveTab('dashboard')
           loadUserPredictions(data.user_id)
@@ -180,6 +206,8 @@ export default function CompetePage() {
 
   const handleLogout = () => {
     localStorage.removeItem('community_user')
+    // Notify other components about auth change
+    window.dispatchEvent(new Event('auth-change'))
     setUser(null)
     setPredictions([])
     setActiveTab('auth')

@@ -8,23 +8,52 @@ export function AuthButton() {
   const [user, setUser] = useState<{ user_id: string; display_name: string } | null>(null)
   const [showDropdown, setShowDropdown] = useState(false)
 
-  useEffect(() => {
-    // Check localStorage for user
+  // Function to load user from localStorage
+  const loadUser = () => {
     const stored = localStorage.getItem('community_user')
     if (stored) {
       try {
         setUser(JSON.parse(stored))
       } catch {
         localStorage.removeItem('community_user')
+        setUser(null)
       }
+    } else {
+      setUser(null)
+    }
+  }
+
+  useEffect(() => {
+    // Initial load
+    loadUser()
+
+    // Listen for storage changes (from other tabs)
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'community_user') {
+        loadUser()
+      }
+    }
+
+    // Listen for custom auth event (from same tab)
+    const handleAuthChange = () => {
+      loadUser()
+    }
+
+    window.addEventListener('storage', handleStorage)
+    window.addEventListener('auth-change', handleAuthChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('auth-change', handleAuthChange)
     }
   }, [])
 
   const handleLogout = () => {
     localStorage.removeItem('community_user')
+    // Notify other components about auth change
+    window.dispatchEvent(new Event('auth-change'))
     setUser(null)
     setShowDropdown(false)
-    window.location.reload()
   }
 
   if (user) {
