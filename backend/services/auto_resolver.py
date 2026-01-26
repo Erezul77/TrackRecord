@@ -266,7 +266,7 @@ class AutoResolver:
                 resolved_count = len(resolved_positions)
                 wins = sum(1 for p in resolved_positions if p.outcome == "YES")
                 total_pnl = sum(p.realized_pnl or 0 for p in resolved_positions)
-                win_rate = (wins / resolved_count * 100) if resolved_count > 0 else 0
+                win_rate = (wins / resolved_count) if resolved_count > 0 else 0  # Store as decimal (0.75 = 75%)
                 
                 # Update or create metrics
                 metrics_result = await db.execute(
