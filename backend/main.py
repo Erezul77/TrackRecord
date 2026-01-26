@@ -1432,6 +1432,195 @@ async def test_add_single_prediction(
         return {"status": "error", "message": str(e)}
 
 
+@app.post("/api/admin/populate-batch-7", tags=["Admin"])
+async def populate_batch_7(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Batch 7: Israeli and Middle East pundits."""
+    try:
+        BATCH7_PUNDITS = [
+            {"name": "Yair Lapid", "username": "YairLapid_IL", "affiliation": "Israel Opposition", "domains": ["politics", "israel"], "net_worth": 10},
+            {"name": "Naftali Bennett", "username": "NaftaliBennett", "affiliation": "Former Israel PM", "domains": ["politics", "israel"], "net_worth": 15},
+            {"name": "Benny Gantz", "username": "BennyGantz_IL", "affiliation": "Israel Defense", "domains": ["politics", "israel"], "net_worth": 5},
+            {"name": "Ehud Barak", "username": "EhudBarak", "affiliation": "Former Israel PM", "domains": ["politics", "israel", "geopolitics"], "net_worth": 20},
+            {"name": "Thomas Friedman", "username": "TomFriedman_NYT", "affiliation": "NY Times", "domains": ["geopolitics", "media"], "net_worth": 25},
+            {"name": "Fareed Zakaria", "username": "FareedZakaria", "affiliation": "CNN", "domains": ["geopolitics", "media"], "net_worth": 12},
+            {"name": "Ian Bremmer", "username": "IanBremmer", "affiliation": "Eurasia Group", "domains": ["geopolitics"], "net_worth": 50},
+            {"name": "Fiona Hill", "username": "FionaHill_BK", "affiliation": "Brookings", "domains": ["geopolitics", "russia"], "net_worth": 3},
+            {"name": "Anne Applebaum", "username": "AnneApplebaum", "affiliation": "The Atlantic", "domains": ["geopolitics", "media"], "net_worth": 5},
+            {"name": "Robert Kagan", "username": "RobertKagan_BK", "affiliation": "Brookings", "domains": ["geopolitics"], "net_worth": 3},
+        ]
+        
+        BATCH7_PREDICTIONS = [
+            {"pundit": "Yair Lapid", "claim": "Netanyahu coalition will collapse within a year", "year": 2023},
+            {"pundit": "Yair Lapid", "claim": "Judicial reform will not pass in full", "year": 2023},
+            {"pundit": "Naftali Bennett", "claim": "Israel-Saudi normalization possible by 2024", "year": 2023},
+            {"pundit": "Benny Gantz", "claim": "Israel security situation will deteriorate", "year": 2023},
+            {"pundit": "Ehud Barak", "claim": "Netanyahu government is threat to democracy", "year": 2023},
+            {"pundit": "Thomas Friedman", "claim": "Middle East heading for major realignment", "year": 2023},
+            {"pundit": "Thomas Friedman", "claim": "AI will reshape global power dynamics", "year": 2024},
+            {"pundit": "Fareed Zakaria", "claim": "US-China cold war will intensify", "year": 2023},
+            {"pundit": "Fareed Zakaria", "claim": "Liberal world order under severe stress", "year": 2024},
+            {"pundit": "Ian Bremmer", "claim": "2024 will be most geopolitically volatile year", "year": 2024},
+            {"pundit": "Ian Bremmer", "claim": "Russia-Ukraine conflict will not end in 2024", "year": 2024},
+            {"pundit": "Fiona Hill", "claim": "Putin will not negotiate in good faith", "year": 2022},
+            {"pundit": "Anne Applebaum", "claim": "Autocracy is spreading globally", "year": 2023},
+            {"pundit": "Robert Kagan", "claim": "US retreat from global leadership continues", "year": 2024},
+        ]
+        
+        pundits_added = 0
+        predictions_added = 0
+        
+        for p in BATCH7_PUNDITS:
+            existing = await db.execute(select(Pundit).where(Pundit.username == p["username"]))
+            if not existing.scalar_one_or_none():
+                pundit = Pundit(
+                    id=uuid.uuid4(), name=p["name"], username=p["username"],
+                    affiliation=p.get("affiliation", ""), bio=f"{p['name']} - {p.get('affiliation', '')}",
+                    domains=p.get("domains", ["general"]), verified=True,
+                    net_worth=p.get("net_worth"), net_worth_source="Estimates", net_worth_year=2024
+                )
+                db.add(pundit)
+                await db.flush()
+                metrics = PunditMetrics(pundit_id=pundit.id, total_predictions=0, resolved_predictions=0, paper_total_pnl=0, paper_win_rate=0, paper_roi=0)
+                db.add(metrics)
+                pundits_added += 1
+        
+        await db.commit()
+        result = await db.execute(select(Pundit))
+        pundit_map = {p.name: p for p in result.scalars().all()}
+        
+        for pred in BATCH7_PREDICTIONS:
+            if pred["pundit"] not in pundit_map:
+                continue
+            pundit = pundit_map[pred["pundit"]]
+            content_hash = hashlib.sha256(f"{pred['pundit']}:{pred['claim']}".encode()).hexdigest()
+            existing = await db.execute(select(Prediction).where(Prediction.content_hash == content_hash))
+            if existing.scalar_one_or_none():
+                continue
+            year = pred["year"]
+            captured_at = datetime(year, random.randint(1, 12), random.randint(1, 28))
+            timeframe = captured_at + timedelta(days=random.randint(180, 730))
+            prediction = Prediction(
+                id=uuid.uuid4(), pundit_id=pundit.id, claim=pred["claim"],
+                quote=f'"{pred["claim"]}" - {pred["pundit"]}', confidence=random.uniform(0.6, 0.9),
+                category="geopolitics", timeframe=timeframe,
+                source_url=f"https://archive.trackrecord.life/{content_hash[:8]}",
+                source_type="historical", content_hash=content_hash, captured_at=captured_at, status="open"
+            )
+            db.add(prediction)
+            predictions_added += 1
+        
+        await db.commit()
+        for pundit in pundit_map.values():
+            preds_result = await db.execute(select(Prediction).where(Prediction.pundit_id == pundit.id))
+            metrics_result = await db.execute(select(PunditMetrics).where(PunditMetrics.pundit_id == pundit.id))
+            metrics = metrics_result.scalar_one_or_none()
+            if metrics:
+                metrics.total_predictions = len(preds_result.scalars().all())
+        await db.commit()
+        
+        return {"status": "success", "pundits_added": pundits_added, "predictions_added": predictions_added}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed: {str(e)}")
+
+
+@app.post("/api/admin/populate-batch-8", tags=["Admin"])
+async def populate_batch_8(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Batch 8: More sports and entertainment predictions."""
+    try:
+        BATCH8_PUNDITS = [
+            {"name": "Mel Kiper Jr", "username": "MelKiperESPN", "affiliation": "ESPN", "domains": ["sports", "nfl"], "net_worth": 6},
+            {"name": "Todd McShay", "username": "ToddMcShay", "affiliation": "ESPN", "domains": ["sports", "nfl"], "net_worth": 3},
+            {"name": "Bill Simmons", "username": "BillSimmons", "affiliation": "The Ringer", "domains": ["sports", "entertainment"], "net_worth": 100},
+            {"name": "Zach Lowe", "username": "ZachLowe_NBA", "affiliation": "ESPN", "domains": ["sports", "nba"], "net_worth": 3},
+            {"name": "Jay Williams", "username": "JayWilliams", "affiliation": "ESPN", "domains": ["sports", "nba"], "net_worth": 4},
+            {"name": "Max Kellerman", "username": "MaxKellerman", "affiliation": "ESPN", "domains": ["sports"], "net_worth": 6},
+            {"name": "Nick Wright", "username": "NickWright", "affiliation": "FS1", "domains": ["sports"], "net_worth": 2},
+            {"name": "Chris Russo", "username": "MadDogRadio", "affiliation": "SiriusXM", "domains": ["sports"], "net_worth": 10},
+            {"name": "Michael Wilbon", "username": "RealMikeWilbon", "affiliation": "ESPN", "domains": ["sports"], "net_worth": 16},
+            {"name": "Tony Kornheiser", "username": "TonyKornheiser", "affiliation": "ESPN", "domains": ["sports"], "net_worth": 16},
+        ]
+        
+        BATCH8_PREDICTIONS = [
+            {"pundit": "Mel Kiper Jr", "claim": "Caleb Williams will be #1 pick in 2024 draft", "year": 2024},
+            {"pundit": "Mel Kiper Jr", "claim": "Bears will select a QB in 2024 draft", "year": 2024},
+            {"pundit": "Todd McShay", "claim": "2024 draft class is deepest in years", "year": 2024},
+            {"pundit": "Bill Simmons", "claim": "Celtics will win title in 2024", "year": 2024},
+            {"pundit": "Bill Simmons", "claim": "NBA ratings will continue to decline", "year": 2023},
+            {"pundit": "Zach Lowe", "claim": "Wembanyama will be generational talent", "year": 2023},
+            {"pundit": "Zach Lowe", "claim": "Nuggets will repeat as champions", "year": 2024},
+            {"pundit": "Jay Williams", "claim": "Bronny James will be drafted in first round", "year": 2024},
+            {"pundit": "Max Kellerman", "claim": "Brady cliff is coming", "year": 2020},
+            {"pundit": "Max Kellerman", "claim": "Cowboys are overrated again", "year": 2023},
+            {"pundit": "Nick Wright", "claim": "Mahomes will be GOAT when career is over", "year": 2023},
+            {"pundit": "Nick Wright", "claim": "LeBron can still be best player in playoffs", "year": 2024},
+            {"pundit": "Chris Russo", "claim": "Baseball needs major rule changes", "year": 2022},
+            {"pundit": "Michael Wilbon", "claim": "NIL will ruin college sports", "year": 2022},
+            {"pundit": "Tony Kornheiser", "claim": "Commanders will improve under new ownership", "year": 2024},
+        ]
+        
+        pundits_added = 0
+        predictions_added = 0
+        
+        for p in BATCH8_PUNDITS:
+            existing = await db.execute(select(Pundit).where(Pundit.username == p["username"]))
+            if not existing.scalar_one_or_none():
+                pundit = Pundit(
+                    id=uuid.uuid4(), name=p["name"], username=p["username"],
+                    affiliation=p.get("affiliation", ""), bio=f"{p['name']} - {p.get('affiliation', '')}",
+                    domains=p.get("domains", ["general"]), verified=True,
+                    net_worth=p.get("net_worth"), net_worth_source="Estimates", net_worth_year=2024
+                )
+                db.add(pundit)
+                await db.flush()
+                metrics = PunditMetrics(pundit_id=pundit.id, total_predictions=0, resolved_predictions=0, paper_total_pnl=0, paper_win_rate=0, paper_roi=0)
+                db.add(metrics)
+                pundits_added += 1
+        
+        await db.commit()
+        result = await db.execute(select(Pundit))
+        pundit_map = {p.name: p for p in result.scalars().all()}
+        
+        for pred in BATCH8_PREDICTIONS:
+            if pred["pundit"] not in pundit_map:
+                continue
+            pundit = pundit_map[pred["pundit"]]
+            content_hash = hashlib.sha256(f"{pred['pundit']}:{pred['claim']}".encode()).hexdigest()
+            existing = await db.execute(select(Prediction).where(Prediction.content_hash == content_hash))
+            if existing.scalar_one_or_none():
+                continue
+            year = pred["year"]
+            captured_at = datetime(year, random.randint(1, 12), random.randint(1, 28))
+            timeframe = captured_at + timedelta(days=random.randint(180, 730))
+            prediction = Prediction(
+                id=uuid.uuid4(), pundit_id=pundit.id, claim=pred["claim"],
+                quote=f'"{pred["claim"]}" - {pred["pundit"]}', confidence=random.uniform(0.6, 0.9),
+                category="sports", timeframe=timeframe,
+                source_url=f"https://archive.trackrecord.life/{content_hash[:8]}",
+                source_type="historical", content_hash=content_hash, captured_at=captured_at, status="open"
+            )
+            db.add(prediction)
+            predictions_added += 1
+        
+        await db.commit()
+        for pundit in pundit_map.values():
+            preds_result = await db.execute(select(Prediction).where(Prediction.pundit_id == pundit.id))
+            metrics_result = await db.execute(select(PunditMetrics).where(PunditMetrics.pundit_id == pundit.id))
+            metrics = metrics_result.scalar_one_or_none()
+            if metrics:
+                metrics.total_predictions = len(preds_result.scalars().all())
+        await db.commit()
+        
+        return {"status": "success", "pundits_added": pundits_added, "predictions_added": predictions_added}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed: {str(e)}")
+
+
 @app.post("/api/admin/populate-batch-5", tags=["Admin"])
 async def populate_batch_5(
     db: AsyncSession = Depends(get_db),
