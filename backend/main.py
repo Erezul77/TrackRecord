@@ -1380,6 +1380,41 @@ async def run_auto_resolution_endpoint(
     }
 
 
+@app.post("/api/admin/populate-massive-data", tags=["Admin"])
+async def populate_massive_data_endpoint(
+    admin = Depends(require_admin)
+):
+    """
+    Populate database with massive historical data.
+    Adds 200+ pundits and 1000+ predictions from 2020-2025.
+    """
+    import asyncio
+    from concurrent.futures import ThreadPoolExecutor
+    
+    def run_population():
+        import asyncio
+        from populate_massive_data import populate_massive_data
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(populate_massive_data())
+            return {"status": "success"}
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+        finally:
+            loop.close()
+    
+    # Run in background thread to not block
+    executor = ThreadPoolExecutor(max_workers=1)
+    executor.submit(run_population)
+    
+    return {
+        "status": "started",
+        "message": "Massive data population started in background. Check /api/leaderboard in a few minutes."
+    }
+
+
 @app.post("/api/admin/predictions/{prediction_id}/resolve-manual", tags=["Admin"])
 async def resolve_prediction_manual(
     prediction_id: uuid.UUID,
