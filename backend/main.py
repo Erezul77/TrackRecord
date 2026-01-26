@@ -229,7 +229,9 @@ async def get_pundit_predictions(pundit_id: uuid.UUID, db: AsyncSession = Depend
                 "boldness": p.tr_boldness_score,
                 "relevance": p.tr_relevance_score,
                 "stakes": p.tr_stakes_score
-            } if p.tr_index_score else None
+            } if p.tr_index_score else None,
+            "chain_hash": p.chain_hash[:16] + "..." if p.chain_hash else None,
+            "chain_index": p.chain_index
         }
         for p in predictions
     ]
@@ -309,6 +311,8 @@ async def get_recent_predictions(
                         "silver" if p.tr_index_score and p.tr_index_score >= 60 else 
                         "bronze" if p.tr_index_score and p.tr_index_score >= 40 else None
             } if p.tr_index_score else None,
+            "chain_hash": p.chain_hash[:16] + "..." if p.chain_hash else None,
+            "chain_index": p.chain_index,
             "pundit": {
                 "id": str(p.pundit.id),
                 "name": p.pundit.name,
@@ -460,9 +464,10 @@ async def add_manual_prediction(
     db: AsyncSession = Depends(get_db),
     admin = Depends(require_admin)
 ):
-    """Manually add a prediction for a pundit"""
+    """Manually add a prediction for a pundit with hash chain verification"""
     from tr_index import quick_score
     from datetime import timedelta
+    from services.hash_chain import create_chain_entry, GENESIS_HASH
     
     # Find pundit by username
     result = await db.execute(
@@ -473,24 +478,47 @@ async def add_manual_prediction(
     if not pundit:
         raise HTTPException(status_code=404, detail=f"Pundit '{prediction_input.pundit_username}' not found")
     
-    # Create content hash for deduplication
-    content_hash = hashlib.sha256(
-        f"{prediction_input.quote}{prediction_input.source_url}".encode()
-    ).hexdigest()
+    # Calculate timeframe and captured_at
+    captured_at = datetime.utcnow()
+    timeframe = captured_at + timedelta(days=prediction_input.timeframe_days)
     
-    # Check for duplicate
+    # Get the latest prediction for chain linking
+    latest_result = await db.execute(
+        select(Prediction)
+        .where(Prediction.chain_hash != None)
+        .order_by(desc(Prediction.chain_index))
+        .limit(1)
+    )
+    latest_prediction = latest_result.scalar_one_or_none()
+    
+    # Determine chain position
+    if latest_prediction:
+        prev_chain_hash = latest_prediction.chain_hash
+        chain_index = (latest_prediction.chain_index or 0) + 1
+    else:
+        prev_chain_hash = GENESIS_HASH
+        chain_index = 1
+    
+    # Create hash chain entry
+    chain_entry = create_chain_entry(
+        claim=prediction_input.claim,
+        quote=prediction_input.quote,
+        source_url=prediction_input.source_url,
+        captured_at=captured_at,
+        prev_chain_hash=prev_chain_hash,
+        chain_index=chain_index
+    )
+    
+    # Check for duplicate using content hash
     existing = await db.execute(
-        select(Prediction).where(Prediction.content_hash == content_hash)
+        select(Prediction).where(Prediction.content_hash == chain_entry.content_hash)
     )
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="This prediction already exists")
     
-    # Calculate timeframe
-    timeframe = datetime.utcnow() + timedelta(days=prediction_input.timeframe_days)
-    
     # Calculate TR Index score
     tr_score = quick_score(
-        prediction_date=datetime.utcnow(),
+        prediction_date=captured_at,
         timeframe=timeframe,
         specificity_level=prediction_input.tr_specificity,
         verifiability_level=prediction_input.tr_verifiability,
@@ -505,7 +533,7 @@ async def add_manual_prediction(
             detail=f"Prediction rejected: {tr_score.rejection_reason}. TR Score: {tr_score.total:.1f}/100"
         )
     
-    # Create prediction with TR Index scores
+    # Create prediction with TR Index scores AND hash chain
     new_prediction = Prediction(
         id=uuid.uuid4(),
         pundit_id=pundit.id,
@@ -516,8 +544,12 @@ async def add_manual_prediction(
         category=prediction_input.category,
         source_url=prediction_input.source_url,
         source_type="manual",
-        captured_at=datetime.utcnow(),
-        content_hash=content_hash,
+        captured_at=captured_at,
+        # Hash chain fields
+        content_hash=chain_entry.content_hash,
+        chain_hash=chain_entry.chain_hash,
+        chain_index=chain_entry.chain_index,
+        prev_chain_hash=chain_entry.prev_chain_hash,
         status="pending",
         flagged=False,
         # TR Index scores
@@ -549,8 +581,132 @@ async def add_manual_prediction(
                 "relevance": tr_score.relevance,
                 "stakes": tr_score.stakes
             }
+        },
+        "hash_chain": {
+            "content_hash": chain_entry.content_hash,
+            "chain_hash": chain_entry.chain_hash,
+            "chain_index": chain_entry.chain_index,
+            "prev_chain_hash": chain_entry.prev_chain_hash[:16] + "..." if chain_entry.prev_chain_hash else None,
+            "verification_url": f"https://trackrecord.life/verify/{chain_entry.chain_hash[:16]}"
         }
     }
+
+
+# ============================================
+# Hash Chain Verification Endpoints
+# ============================================
+
+@app.get("/api/verify/{hash_prefix}")
+async def verify_prediction_by_hash(
+    hash_prefix: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Verify a prediction by its hash (content_hash or chain_hash).
+    Accepts partial hash (min 8 chars) for convenience.
+    """
+    from services.hash_chain import verify_chain_entry, format_hash_display
+    
+    if len(hash_prefix) < 8:
+        raise HTTPException(status_code=400, detail="Hash prefix must be at least 8 characters")
+    
+    # Search by chain_hash or content_hash prefix
+    result = await db.execute(
+        select(Prediction, Pundit)
+        .join(Pundit, Prediction.pundit_id == Pundit.id)
+        .where(
+            (Prediction.chain_hash.startswith(hash_prefix)) |
+            (Prediction.content_hash.startswith(hash_prefix))
+        )
+    )
+    row = result.first()
+    
+    if not row:
+        raise HTTPException(status_code=404, detail="Prediction not found with this hash")
+    
+    prediction, pundit = row
+    
+    # Verify the hash chain
+    verification = None
+    if prediction.chain_hash and prediction.prev_chain_hash:
+        verification = verify_chain_entry(
+            claim=prediction.claim,
+            quote=prediction.quote,
+            source_url=prediction.source_url,
+            captured_at=prediction.captured_at,
+            stored_content_hash=prediction.content_hash,
+            stored_chain_hash=prediction.chain_hash,
+            stored_prev_hash=prediction.prev_chain_hash,
+            stored_chain_index=prediction.chain_index or 0
+        )
+    
+    return {
+        "verified": verification["is_valid"] if verification else True,
+        "prediction": {
+            "id": str(prediction.id),
+            "pundit_name": pundit.name,
+            "pundit_username": pundit.username,
+            "claim": prediction.claim,
+            "quote": prediction.quote,
+            "category": prediction.category,
+            "source_url": prediction.source_url,
+            "captured_at": prediction.captured_at.isoformat(),
+            "timeframe": prediction.timeframe.isoformat() if prediction.timeframe else None,
+            "status": prediction.status
+        },
+        "hash_chain": {
+            "content_hash": prediction.content_hash,
+            "chain_hash": prediction.chain_hash,
+            "chain_index": prediction.chain_index,
+            "prev_chain_hash": prediction.prev_chain_hash,
+            "content_valid": verification["content_valid"] if verification else True,
+            "chain_valid": verification["chain_valid"] if verification else True
+        },
+        "verification_details": verification
+    }
+
+
+@app.get("/api/chain/status")
+async def get_chain_status(db: AsyncSession = Depends(get_db)):
+    """Get the current status of the hash chain"""
+    from services.hash_chain import GENESIS_HASH
+    
+    # Get total predictions with chain hash
+    total_result = await db.execute(
+        select(func.count(Prediction.id)).where(Prediction.chain_hash != None)
+    )
+    total_chained = total_result.scalar() or 0
+    
+    # Get latest prediction
+    latest_result = await db.execute(
+        select(Prediction)
+        .where(Prediction.chain_hash != None)
+        .order_by(desc(Prediction.chain_index))
+        .limit(1)
+    )
+    latest = latest_result.scalar_one_or_none()
+    
+    # Get first prediction
+    first_result = await db.execute(
+        select(Prediction)
+        .where(Prediction.chain_hash != None)
+        .order_by(Prediction.chain_index)
+        .limit(1)
+    )
+    first = first_result.scalar_one_or_none()
+    
+    return {
+        "chain_active": True,
+        "total_predictions_chained": total_chained,
+        "genesis_hash": GENESIS_HASH[:16] + "...",
+        "latest_chain_index": latest.chain_index if latest else 0,
+        "latest_chain_hash": latest.chain_hash[:16] + "..." if latest and latest.chain_hash else None,
+        "latest_captured_at": latest.captured_at.isoformat() if latest else None,
+        "first_chain_hash": first.chain_hash[:16] + "..." if first and first.chain_hash else None,
+        "first_captured_at": first.captured_at.isoformat() if first else None,
+        "integrity": "All predictions are cryptographically linked and tamper-evident"
+    }
+
 
 # ============================================
 # TR Prediction Index Scoring

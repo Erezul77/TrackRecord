@@ -52,6 +52,9 @@ export interface PredictionWithPundit {
   timeframe: string
   captured_at: string
   tr_index?: TRIndex | null  // TR Prediction Index score
+  // Hash chain verification
+  chain_hash?: string | null  // Truncated hash for display
+  chain_index?: number | null  // Position in the chain
   pundit: {
     id: string
     name: string

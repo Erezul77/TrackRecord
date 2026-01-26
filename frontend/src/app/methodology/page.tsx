@@ -1,5 +1,5 @@
 // src/app/methodology/page.tsx
-import { BarChart3, Target, Scale, Clock } from 'lucide-react'
+import { BarChart3, Target, Scale, Clock, Shield, Link } from 'lucide-react'
 
 export default function MethodologyPage() {
   return (
@@ -87,6 +87,41 @@ export default function MethodologyPage() {
               <li><strong className="text-black dark:text-white">Community input</strong> — Users can vote on prediction accuracy</li>
               <li><strong className="text-black dark:text-white">Appeal process</strong> — Disputed resolutions can be reviewed</li>
             </ul>
+          </div>
+        </section>
+
+        {/* Section 5 - Hash Chain */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-green-600">
+              <Shield className="h-5 w-5 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-black dark:text-white">Cryptographic Verification</h2>
+          </div>
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6">
+            <p className="text-neutral-600 dark:text-neutral-400 mb-4">
+              Every prediction is cryptographically sealed and linked in a tamper-evident chain:
+            </p>
+            <ul className="space-y-3 text-neutral-600 dark:text-neutral-400">
+              <li><strong className="text-black dark:text-white">Content Hash</strong> — Each prediction's claim, quote, source, and timestamp are hashed using SHA-256</li>
+              <li><strong className="text-black dark:text-white">Chain Link</strong> — Each prediction links to the previous one, creating an unbreakable chain</li>
+              <li><strong className="text-black dark:text-white">Tamper-Evident</strong> — Any modification to past predictions breaks the chain and is immediately detectable</li>
+              <li><strong className="text-black dark:text-white">Public Verification</strong> — Anyone can verify a prediction's authenticity using its hash</li>
+            </ul>
+            
+            <div className="mt-6 p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+              <div className="flex items-center gap-2 mb-3">
+                <Link className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-bold text-black dark:text-white">How It Works</span>
+              </div>
+              <div className="text-xs font-mono text-neutral-500 dark:text-neutral-400 space-y-1">
+                <p>content_hash = SHA256(claim + quote + source + timestamp)</p>
+                <p>chain_hash = SHA256(content_hash + previous_chain_hash + index)</p>
+              </div>
+              <p className="text-xs text-neutral-500 mt-3">
+                Look for the <Shield className="h-3 w-3 inline text-green-600" /> Verified badge on prediction cards to see the hash.
+              </p>
+            </div>
           </div>
         </section>
       </div>

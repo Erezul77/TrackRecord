@@ -73,6 +73,11 @@ class Prediction(Base):
     captured_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     content_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
     
+    # Hash Chain - Immutability
+    chain_hash: Mapped[Optional[str]] = mapped_column(String(64), unique=True)  # Links to previous prediction
+    chain_index: Mapped[Optional[int]] = mapped_column(Integer)  # Position in chain (1, 2, 3...)
+    prev_chain_hash: Mapped[Optional[str]] = mapped_column(String(64))  # Hash of previous prediction
+    
     status: Mapped[str] = mapped_column(String(50), default='pending_match')
     matched_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     

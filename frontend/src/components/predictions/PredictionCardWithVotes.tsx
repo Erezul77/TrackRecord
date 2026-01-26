@@ -2,9 +2,10 @@
 'use client'
 import Link from "next/link"
 import { formatDate, cn } from "@/lib/utils"
-import { ExternalLink, User, CheckCircle, XCircle, Clock, Sparkles } from "lucide-react"
+import { ExternalLink, User, CheckCircle, XCircle, Clock, Sparkles, Shield, Copy } from "lucide-react"
 import { VoteButtons } from "./VoteButtons"
 import { PredictionWithPundit } from "@/lib/api"
+import { useState } from "react"
 
 // Generate UI Avatars URL - consistent with PunditCard
 function getAvatarUrl(name: string): string {
@@ -32,6 +33,16 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
   const StatusIcon = statusDisplay.icon
   const isResolved = pred.status === 'resolved' && pred.outcome
   const isCorrect = pred.outcome === 'YES'
+  const [showHash, setShowHash] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const copyHash = () => {
+    if (pred.chain_hash) {
+      navigator.clipboard.writeText(pred.chain_hash)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   return (
     <div className={cn(
@@ -91,11 +102,38 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
             <span>{pred.captured_at ? formatDate(pred.captured_at) : 'Unknown date'}</span>
             <VoteButtons predictionId={pred.id} />
           </div>
-          {pred.source_url && pred.source_url !== 'https://example.com/test' && (
-            <a href={pred.source_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:underline font-bold">
-              Source <ExternalLink className="h-3 w-3" />
-            </a>
-          )}
+          <div className="flex items-center gap-2">
+            {/* Hash Chain Verification Badge */}
+            {pred.chain_hash && (
+              <div className="relative">
+                <button 
+                  onClick={() => setShowHash(!showHash)}
+                  className="flex items-center gap-1 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-bold"
+                  title="Cryptographically verified"
+                >
+                  <Shield className="h-3 w-3" />
+                  <span className="hidden sm:inline">Verified</span>
+                </button>
+                {showHash && (
+                  <div className="absolute bottom-full right-0 mb-2 p-2 bg-black dark:bg-white text-white dark:text-black text-[10px] font-mono whitespace-nowrap z-10 shadow-lg">
+                    <div className="flex items-center gap-2">
+                      <span>#{pred.chain_index || '?'}</span>
+                      <span>{pred.chain_hash}</span>
+                      <button onClick={copyHash} className="hover:text-green-400 dark:hover:text-green-600">
+                        <Copy className="h-3 w-3" />
+                      </button>
+                    </div>
+                    {copied && <span className="text-green-400 dark:text-green-600 ml-2">Copied!</span>}
+                  </div>
+                )}
+              </div>
+            )}
+            {pred.source_url && pred.source_url !== 'https://example.com/test' && (
+              <a href={pred.source_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:underline font-bold">
+                Source <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>
