@@ -37,7 +37,7 @@ export function PredictionsList() {
     setLoading(true)
     try {
       const categoryParam = category !== 'All' ? `&category=${category.toLowerCase()}` : ''
-      const res = await fetch(`${API_URL}/api/predictions/recent?limit=50&sort=${sort}${categoryParam}`, {
+      const res = await fetch(`${API_URL}/api/predictions/recent?limit=300&sort=${sort}${categoryParam}`, {
         cache: 'no-store'
       })
       if (res.ok) {

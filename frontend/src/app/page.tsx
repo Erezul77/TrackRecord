@@ -5,7 +5,7 @@ import { TrendingUp, Users, Target, BarChart3 } from "lucide-react"
 
 async function getPundits() {
   try {
-    const data = await api.getLeaderboard()
+    const data = await api.getLeaderboard({ limit: 300 })
     return data as Pundit[]
   } catch (e) {
     console.error(e)

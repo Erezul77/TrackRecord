@@ -167,7 +167,7 @@ MIN_PREDICTIONS_FOR_RANKING = 3
 @app.get("/api/leaderboard", response_model=List[PunditResponse])
 async def get_leaderboard(
     category: Optional[str] = None,
-    limit: int = Query(50, ge=1, le=100),
+    limit: int = Query(100, ge=1, le=500),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -240,7 +240,7 @@ async def get_pundit_predictions(pundit_id: uuid.UUID, db: AsyncSession = Depend
 
 @app.get("/api/predictions/recent")
 async def get_recent_predictions(
-    limit: int = Query(50, ge=1, le=100),
+    limit: int = Query(100, ge=1, le=500),
     category: Optional[str] = None,
     sort: str = Query("default", description="Sort: default, newest, oldest, resolving_soon, boldest, highest_score"),
     db: AsyncSession = Depends(get_db)
