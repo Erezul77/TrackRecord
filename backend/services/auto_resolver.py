@@ -235,6 +235,36 @@ class AutoResolver:
         
         return results
     
+    async def _update_ai_resolved_metrics(self, db: AsyncSession, pundit_id, outcome: str):
+        """Update metrics for a pundit after AI resolution"""
+        try:
+            # Get pundit metrics
+            metrics_result = await db.execute(
+                select(PunditMetrics).where(PunditMetrics.pundit_id == pundit_id)
+            )
+            metrics = metrics_result.scalar_one_or_none()
+            
+            if metrics:
+                metrics.resolved_predictions = (metrics.resolved_predictions or 0) + 1
+                
+                # Update win rate and PnL
+                if outcome == "YES":
+                    # Correct prediction
+                    current_wins = int((metrics.paper_win_rate or 0) * (metrics.resolved_predictions - 1))
+                    new_wins = current_wins + 1
+                    metrics.paper_win_rate = new_wins / metrics.resolved_predictions
+                    metrics.paper_total_pnl = (metrics.paper_total_pnl or 0) + 50
+                else:
+                    # Wrong prediction
+                    current_wins = int((metrics.paper_win_rate or 0) * (metrics.resolved_predictions - 1))
+                    metrics.paper_win_rate = current_wins / metrics.resolved_predictions
+                    metrics.paper_total_pnl = (metrics.paper_total_pnl or 0) - 50
+                
+                metrics.last_calculated = datetime.utcnow()
+                
+        except Exception as e:
+            logger.error(f"Error updating AI resolved metrics: {e}")
+    
     async def _update_pundit_metrics(self, db: AsyncSession):
         """Update metrics for pundits with newly resolved predictions"""
         # Get all pundits
@@ -442,48 +472,12 @@ Only output the JSON, nothing else."""
                     # Resolve the prediction
                     pred.status = "resolved"
                     pred.flagged = False
-                    pred.flag_reason = None
-                    
-                    # Create or update position for tracking
-                    from database.models import Position, Match
-                    import uuid as uuid_module
-                    
-                    # Check if position exists
-                    pos_result = await db.execute(
-                        select(Position).where(Position.prediction_id == pred.id)
-                    )
-                    position = pos_result.scalar_one_or_none()
-                    
-                    if not position:
-                        # Create a virtual position for tracking
-                        position = Position(
-                            id=uuid_module.uuid4(),
-                            prediction_id=pred.id,
-                            pundit_id=pred.pundit_id,
-                            match_id=None,
-                            market_id="ai_resolved",
-                            market_question=pred.claim[:200],
-                            entry_price=0.5,  # Assume 50% odds
-                            entry_timestamp=pred.captured_at,
-                            position_size=100,
-                            shares=100,
-                            status="closed",
-                            outcome=outcome,
-                            exit_price=1.0 if outcome == "YES" else 0.0,
-                            exit_timestamp=datetime.utcnow(),
-                            realized_pnl=50 if outcome == "YES" else -50
-                        )
-                        db.add(position)
-                    else:
-                        position.status = "closed"
-                        position.outcome = outcome
-                        position.exit_timestamp = datetime.utcnow()
-                        position.realized_pnl = 50 if outcome == "YES" else -50
+                    pred.flag_reason = f"AI resolved: {reasoning[:200]}"
                     
                     await db.commit()
                     
-                    # Update pundit metrics
-                    await self._update_pundit_metrics(db)
+                    # Update pundit metrics based on AI resolution
+                    await self._update_ai_resolved_metrics(db, pred.pundit_id, outcome)
                     await db.commit()
                     
                     return {
