@@ -708,6 +708,75 @@ async def get_chain_status(db: AsyncSession = Depends(get_db)):
     }
 
 
+@app.post("/api/admin/chain/backfill", tags=["Admin"])
+async def backfill_hash_chain(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Backfill hash chain for all existing predictions that don't have hashes.
+    This creates a complete chain ordered by captured_at timestamp.
+    """
+    from services.hash_chain import create_chain_entry, GENESIS_HASH
+    
+    # Get the current highest chain_index
+    latest_result = await db.execute(
+        select(Prediction)
+        .where(Prediction.chain_hash != None)
+        .order_by(desc(Prediction.chain_index))
+        .limit(1)
+    )
+    latest = latest_result.scalar_one_or_none()
+    
+    if latest:
+        current_index = latest.chain_index
+        prev_hash = latest.chain_hash
+    else:
+        current_index = 0
+        prev_hash = GENESIS_HASH
+    
+    # Get all predictions without chain_hash, ordered by captured_at
+    result = await db.execute(
+        select(Prediction)
+        .where(Prediction.chain_hash == None)
+        .order_by(Prediction.captured_at)
+    )
+    predictions = result.scalars().all()
+    
+    if not predictions:
+        return {"message": "All predictions already have hashes", "total_processed": 0}
+    
+    processed = 0
+    for pred in predictions:
+        current_index += 1
+        
+        chain_entry = create_chain_entry(
+            claim=pred.claim,
+            quote=pred.quote or "",
+            source_url=pred.source_url or "",
+            captured_at=pred.captured_at,
+            prev_chain_hash=prev_hash,
+            chain_index=current_index
+        )
+        
+        pred.chain_hash = chain_entry.chain_hash
+        pred.chain_index = chain_entry.chain_index
+        pred.prev_chain_hash = chain_entry.prev_chain_hash
+        
+        prev_hash = chain_entry.chain_hash
+        processed += 1
+    
+    await db.commit()
+    
+    return {
+        "message": f"Backfilled {processed} predictions",
+        "total_processed": processed,
+        "first_index": current_index - processed + 1,
+        "last_index": current_index,
+        "last_hash": prev_hash[:16] + "..."
+    }
+
+
 # ============================================
 # TR Prediction Index Scoring
 # ============================================
