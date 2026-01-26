@@ -143,7 +143,7 @@ async def health_check():
 # Note: Scheduler tasks run in background threads (non-blocking)
 @app.on_event("startup")
 async def startup_event():
-    auto_start = os.getenv("AUTO_START_SCHEDULER", "true").lower() == "true"  # Default to true
+    auto_start = os.getenv("AUTO_START_SCHEDULER", "false").lower() == "true"  # Disabled by default - start manually via /api/admin/scheduler/start
     if auto_start:
         from services.scheduler import start_scheduler
         try:
