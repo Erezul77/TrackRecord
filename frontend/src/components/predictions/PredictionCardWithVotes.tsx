@@ -6,6 +6,12 @@ import { ExternalLink, User, CheckCircle, XCircle, Clock, Sparkles } from "lucid
 import { VoteButtons } from "./VoteButtons"
 import { PredictionWithPundit } from "@/lib/api"
 
+// Generate UI Avatars URL - consistent with PunditCard
+function getAvatarUrl(name: string): string {
+  const encoded = encodeURIComponent(name)
+  return `https://ui-avatars.com/api/?name=${encoded}&background=000&color=fff&bold=true&size=128`
+}
+
 interface Props {
   prediction: PredictionWithPundit
 }
@@ -58,12 +64,12 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
       <div className="p-4">
         {/* Pundit Header */}
         <Link href={`/pundits/${pred.pundit.id}`} className="flex items-center gap-3 mb-3 group">
-          <div className="h-8 w-8 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden flex items-center justify-center flex-shrink-0">
-            {pred.pundit.avatar_url ? (
-              <img src={pred.pundit.avatar_url} alt={pred.pundit.name} className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all" />
-            ) : (
-              <User className="h-4 w-4 text-neutral-400" />
-            )}
+          <div className="h-10 w-10 rounded-full border-2 border-neutral-200 dark:border-neutral-700 overflow-hidden bg-black flex items-center justify-center flex-shrink-0">
+            <img 
+              src={getAvatarUrl(pred.pundit.name)} 
+              alt={pred.pundit.name} 
+              className="h-full w-full object-cover" 
+            />
           </div>
           <div className="min-w-0">
             <p className="font-bold text-black dark:text-white text-sm truncate">{pred.pundit.name}</p>
