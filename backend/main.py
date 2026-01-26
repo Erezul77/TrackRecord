@@ -983,6 +983,10 @@ async def get_twitter_status(admin = Depends(require_admin)):
             "error": "TWITTER_BEARER_TOKEN not set in environment"
         }
     
+    # Debug: show token format (first 10 and last 5 chars)
+    token_preview = f"{bearer_token[:10]}...{bearer_token[-5:]}" if len(bearer_token) > 15 else "too_short"
+    token_length = len(bearer_token)
+    
     try:
         import httpx
         
@@ -1006,7 +1010,9 @@ async def get_twitter_status(admin = Depends(require_admin)):
                     "configured": True,
                     "status": "error",
                     "http_status": response.status_code,
-                    "error": response.text[:500]  # First 500 chars of error
+                    "error": response.text[:500],
+                    "token_preview": token_preview,
+                    "token_length": token_length
                 }
             
     except Exception as e:
