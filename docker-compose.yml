@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # API - handles HTTP requests only (lightweight, always responsive)
   api:
     build: ./backend
     ports:
@@ -11,11 +12,32 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - TWITTER_BEARER_TOKEN=${TWITTER_BEARER_TOKEN}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     depends_on:
       - db
       - redis
-    volumes:
-      - ./backend:/app
+    restart: unless-stopped
+
+  # Worker - handles all background tasks (RSS, AI, resolution)
+  # Runs separately so it never blocks the API
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.worker
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://trackrecord:trackrecord@db/trackrecord
+      - REDIS_URL=redis://redis:6379/0
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - RSS_INTERVAL_MINUTES=180
+      - RESOLUTION_INTERVAL_MINUTES=240
+      - HISTORICAL_ENABLED=true
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
 
   frontend:
     build: ./frontend
@@ -25,6 +47,7 @@ services:
       - NEXT_PUBLIC_API_URL=http://api:8000
     depends_on:
       - api
+    restart: unless-stopped
 
   db:
     image: ankane/pgvector:latest
@@ -36,6 +59,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
@@ -43,6 +67,7 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    restart: unless-stopped
 
 volumes:
   postgres_data:
