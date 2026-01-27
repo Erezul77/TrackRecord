@@ -143,14 +143,25 @@ async def health_check():
 # Note: Scheduler tasks run in background threads (non-blocking)
 @app.on_event("startup")
 async def startup_event():
-    auto_start = os.getenv("AUTO_START_SCHEDULER", "true").lower() == "true"  # Auto-start enabled - scheduler runs in background threads
-    if auto_start:
-        from services.scheduler import start_scheduler
+    import threading
+    
+    def delayed_scheduler_start():
+        """Start scheduler in a separate thread with delay to not block startup"""
+        import time
+        time.sleep(10)  # Wait 10 seconds for API to fully initialize
         try:
+            from services.scheduler import start_scheduler
             scheduler = start_scheduler()
-            logging.info("Background scheduler auto-started")
+            logging.info("Background scheduler auto-started (delayed)")
         except Exception as e:
             logging.error(f"Failed to start scheduler: {e}")
+    
+    auto_start = os.getenv("AUTO_START_SCHEDULER", "true").lower() == "true"
+    if auto_start:
+        # Start scheduler in background thread to not block API startup
+        thread = threading.Thread(target=delayed_scheduler_start, daemon=True)
+        thread.start()
+        logging.info("Scheduler start scheduled in background")
 
 @app.on_event("shutdown")
 async def shutdown_event():

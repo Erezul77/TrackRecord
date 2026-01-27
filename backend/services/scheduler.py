@@ -194,12 +194,13 @@ class TrackRecordScheduler:
                     standard_resolved = results.get("market_resolved", 0) + results.get("expired_auto_resolved", 0)
                     
                     # Step 2: Run AI resolution on remaining expired predictions
+                    # Run lighter to avoid overwhelming the server
                     ai_resolved = 0
                     try:
                         resolver = get_resolver()
                         ai_results = await asyncio.wait_for(
-                            resolver.ai_resolve_batch(session, limit=20),  # Resolve up to 20 per cycle
-                            timeout=180  # 3 minute timeout for AI
+                            resolver.ai_resolve_batch(session, limit=5),  # Resolve up to 5 per cycle (lighter load)
+                            timeout=120  # 2 minute timeout for AI
                         )
                         ai_resolved = ai_results.get("resolved_yes", 0) + ai_results.get("resolved_no", 0)
                         logger.info(f"AI resolution complete: {ai_resolved} resolved")
