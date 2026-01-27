@@ -7,11 +7,12 @@ on:
       - main
 
 jobs:
-  deploy:
+  deploy-api:
     runs-on: ubuntu-latest
+    name: Deploy API
     
     steps:
-      - name: Deploy to DigitalOcean Droplet
+      - name: Deploy API to Main Droplet
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DO_HOST }}
@@ -23,17 +24,12 @@ jobs:
             echo "📥 Pulling latest code..."
             git pull origin main
             
-            echo "🛑 Stopping old containers..."
+            echo "🛑 Stopping old API container..."
             docker stop trackrecord-api || true
             docker rm trackrecord-api || true
-            docker stop trackrecord-worker || true
-            docker rm trackrecord-worker || true
             
             echo "🔨 Building API image..."
             docker build -t trackrecord-api ./backend
-            
-            echo "🔨 Building Worker image..."
-            docker build -t trackrecord-worker -f ./backend/Dockerfile.worker ./backend
             
             echo "🚀 Starting API container..."
             docker run -d \
@@ -46,6 +42,35 @@ jobs:
               --restart unless-stopped \
               trackrecord-api
             
+            echo "✅ API Deployment complete!"
+            docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+  deploy-worker:
+    runs-on: ubuntu-latest
+    name: Deploy Worker
+    if: ${{ vars.WORKER_ENABLED == 'true' }}
+    
+    steps:
+      - name: Deploy Worker to Worker Droplet
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_WORKER_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            cd ~/TrackRecord || git clone https://github.com/Erezul77/TrackRecord.git ~/TrackRecord
+            cd ~/TrackRecord
+            
+            echo "📥 Pulling latest code..."
+            git pull origin main
+            
+            echo "🛑 Stopping old worker..."
+            docker stop trackrecord-worker || true
+            docker rm trackrecord-worker || true
+            
+            echo "🔨 Building Worker image..."
+            docker build -t trackrecord-worker -f ./backend/Dockerfile.worker ./backend
+            
             echo "🚀 Starting Worker container..."
             docker run -d \
               --name trackrecord-worker \
@@ -57,8 +82,5 @@ jobs:
               --restart unless-stopped \
               trackrecord-worker
             
-            echo "✅ Deployment complete!"
-            
-            # Show container status
-            echo "Running containers:"
-            docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+            echo "✅ Worker Deployment complete!"
+            docker ps --format "table {{.Names}}\t{{.Status}}"
