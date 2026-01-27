@@ -13,8 +13,38 @@ async function getPundits() {
   }
 }
 
+async function getStats() {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.trackrecord.life'}/api/admin/stats`, {
+      next: { revalidate: 300 } // Cache for 5 minutes
+    })
+    if (response.ok) {
+      return await response.json()
+    }
+  } catch (e) {
+    console.error(e)
+  }
+  return { total_pundits: 0, total_predictions: 0 }
+}
+
+function formatNumber(num: number): string {
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'k'
+  }
+  return num.toString()
+}
+
 export default async function Home() {
-  const pundits = await getPundits()
+  const [pundits, stats] = await Promise.all([getPundits(), getStats()])
+  
+  // Calculate real stats from pundits data
+  const totalPundits = stats.total_pundits || pundits.length
+  const totalPredictions = stats.total_predictions || 0
+  const punditsWithMetrics = pundits.filter(p => p.metrics?.resolved_predictions && p.metrics.resolved_predictions > 0)
+  const avgAccuracy = punditsWithMetrics.length > 0
+    ? Math.round(punditsWithMetrics.reduce((sum, p) => sum + (p.metrics?.paper_win_rate || 0), 0) / punditsWithMetrics.length * 100)
+    : 0
+  const totalResolved = pundits.reduce((sum, p) => sum + (p.metrics?.resolved_predictions || 0), 0)
 
   return (
     <div>
@@ -36,10 +66,10 @@ export default async function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
             {[
-              { label: 'Pundits Tracked', value: '150+', icon: Users, color: 'text-blue-400 dark:text-blue-600' },
-              { label: 'Predictions', value: '12.4k', icon: Target, color: 'text-white dark:text-black' },
-              { label: 'Avg Accuracy', value: '42%', icon: BarChart3, color: 'text-amber-400 dark:text-amber-600' },
-              { label: 'Verified', value: '8.2k', icon: TrendingUp, color: 'text-green-400 dark:text-green-600' },
+              { label: 'Pundits Tracked', value: `${totalPundits}+`, icon: Users, color: 'text-blue-400 dark:text-blue-600' },
+              { label: 'Predictions', value: formatNumber(totalPredictions), icon: Target, color: 'text-white dark:text-black' },
+              { label: 'Avg Accuracy', value: `${avgAccuracy}%`, icon: BarChart3, color: 'text-amber-400 dark:text-amber-600' },
+              { label: 'Verified', value: formatNumber(totalResolved), icon: TrendingUp, color: 'text-green-400 dark:text-green-600' },
             ].map((stat: any, i: number) => (
               <div key={i} className="text-center">
                 <div className={`text-3xl md:text-4xl font-black tracking-tight ${stat.color}`}>{stat.value}</div>
