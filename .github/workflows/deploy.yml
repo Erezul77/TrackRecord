@@ -23,14 +23,19 @@ jobs:
             echo "📥 Pulling latest code..."
             git pull origin main
             
-            echo "🛑 Stopping old container..."
+            echo "🛑 Stopping old containers..."
             docker stop trackrecord-api || true
             docker rm trackrecord-api || true
+            docker stop trackrecord-worker || true
+            docker rm trackrecord-worker || true
             
-            echo "🔨 Building new image..."
+            echo "🔨 Building API image..."
             docker build -t trackrecord-api ./backend
             
-            echo "🚀 Starting new container..."
+            echo "🔨 Building Worker image..."
+            docker build -t trackrecord-worker -f ./backend/Dockerfile.worker ./backend
+            
+            echo "🚀 Starting API container..."
             docker run -d \
               --name trackrecord-api \
               -p 8000:8000 \
@@ -41,7 +46,19 @@ jobs:
               --restart unless-stopped \
               trackrecord-api
             
+            echo "🚀 Starting Worker container..."
+            docker run -d \
+              --name trackrecord-worker \
+              --env-file backend/.env \
+              -e ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}" \
+              -e RSS_INTERVAL_MINUTES=180 \
+              -e RESOLUTION_INTERVAL_MINUTES=240 \
+              -e HISTORICAL_ENABLED=true \
+              --restart unless-stopped \
+              trackrecord-worker
+            
             echo "✅ Deployment complete!"
             
             # Show container status
-            docker ps | grep trackrecord-api
+            echo "Running containers:"
+            docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
