@@ -139,29 +139,12 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
-# Auto-start scheduler on startup
-# Note: Scheduler tasks run in background threads (non-blocking)
+# Startup event - API only, no scheduler (scheduler runs in separate worker)
 @app.on_event("startup")
 async def startup_event():
-    import threading
-    
-    def delayed_scheduler_start():
-        """Start scheduler in a separate thread with delay to not block startup"""
-        import time
-        time.sleep(10)  # Wait 10 seconds for API to fully initialize
-        try:
-            from services.scheduler import start_scheduler
-            scheduler = start_scheduler()
-            logging.info("Background scheduler auto-started (delayed)")
-        except Exception as e:
-            logging.error(f"Failed to start scheduler: {e}")
-    
-    auto_start = os.getenv("AUTO_START_SCHEDULER", "true").lower() == "true"
-    if auto_start:
-        # Start scheduler in background thread to not block API startup
-        thread = threading.Thread(target=delayed_scheduler_start, daemon=True)
-        thread.start()
-        logging.info("Scheduler start scheduled in background")
+    # Scheduler is now handled by the dedicated worker process
+    # This keeps the API lightweight and responsive
+    logging.info("TrackRecord API started (scheduler runs in separate worker)")
 
 @app.on_event("shutdown")
 async def shutdown_event():

@@ -1,9 +1,12 @@
 # digitalocean-deploy.yaml
 # Digital Ocean App Platform Specification
+# Architecture: API (handles requests) + Worker (handles background tasks)
 
 name: trackrecord-backend
 region: nyc
+
 services:
+  # API Service - handles all HTTP requests
   - name: api
     github:
       repo: Erezul77/TrackRecord
@@ -41,6 +44,40 @@ services:
     instance_size_slug: basic-m
     routes:
       - path: /
+
+# Worker Service - handles all background tasks (RSS, AI, resolution)
+workers:
+  - name: worker
+    github:
+      repo: Erezul77/TrackRecord
+      branch: main
+      deploy_on_push: true
+    source_dir: backend
+    dockerfile_path: Dockerfile.worker
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${trackrecord-db.DATABASE_URL}
+      - key: REDIS_URL
+        scope: RUN_TIME
+        value: ${trackrecord-redis.REDIS_URL}
+      - key: ANTHROPIC_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: OPENAI_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: RSS_INTERVAL_MINUTES
+        scope: RUN_TIME
+        value: "180"
+      - key: RESOLUTION_INTERVAL_MINUTES
+        scope: RUN_TIME
+        value: "240"
+      - key: HISTORICAL_ENABLED
+        scope: RUN_TIME
+        value: "true"
+    instance_count: 1
+    instance_size_slug: basic-xs
 
 databases:
   - name: trackrecord-db
