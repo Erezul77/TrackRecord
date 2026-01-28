@@ -136,8 +136,15 @@ async def root():
     return {"message": "TrackRecord API is running"}
 
 @app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
+async def health_check(db: AsyncSession = Depends(get_db)):
+    """Health check that verifies database connectivity"""
+    try:
+        # Verify database connection with a simple query
+        await db.execute(select(1))
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        logging.error(f"Health check failed - database error: {e}")
+        raise HTTPException(status_code=503, detail="Database connection failed")
 
 # Startup event - API only, no scheduler (scheduler runs in separate worker)
 @app.on_event("startup")
@@ -192,15 +199,24 @@ async def get_pundit(pundit_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     return pundit
 
 @app.get("/api/pundits/{pundit_id}/predictions")
-async def get_pundit_predictions(pundit_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    """Get all predictions for a pundit with outcome status"""
-    result = await db.execute(
-        select(Prediction)
-        .where(Prediction.pundit_id == pundit_id)
-        .options(selectinload(Prediction.position))
-        .order_by(desc(Prediction.captured_at))
-    )
-    predictions = result.scalars().all()
+async def get_pundit_predictions(
+    pundit_id: uuid.UUID, 
+    limit: int = Query(100, ge=1, le=500),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get predictions for a pundit with outcome status (paginated)"""
+    try:
+        result = await db.execute(
+            select(Prediction)
+            .where(Prediction.pundit_id == pundit_id)
+            .options(selectinload(Prediction.position))
+            .order_by(desc(Prediction.captured_at))
+            .limit(limit)
+        )
+        predictions = result.scalars().all()
+    except Exception as e:
+        logging.error(f"Error fetching predictions for pundit {pundit_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch predictions")
     
     return [
         {

@@ -102,15 +102,22 @@ class AutoAgentPipeline:
         await self._load_pundits_cache()
     
     async def _load_pundits_cache(self):
-        """Load all pundits into memory for quick lookup"""
-        result = self.db.execute(select(Pundit))
-        pundits = result.scalars().all()
-        
-        for pundit in pundits:
-            # Cache by name and username
-            self.pundits_cache[pundit.name.lower()] = pundit
-            if pundit.username:
-                self.pundits_cache[pundit.username.lower()] = pundit
+        """Load pundits into memory for quick lookup (limited for performance)"""
+        try:
+            # Limit to 500 pundits to prevent memory issues
+            result = self.db.execute(select(Pundit).limit(500))
+            pundits = result.scalars().all()
+            
+            for pundit in pundits:
+                # Cache by name and username
+                self.pundits_cache[pundit.name.lower()] = pundit
+                if pundit.username:
+                    self.pundits_cache[pundit.username.lower()] = pundit
+            
+            logger.info(f"Loaded {len(self.pundits_cache)} pundits into cache")
+        except Exception as e:
+            logger.error(f"Failed to load pundits cache: {e}")
+            # Continue with empty cache - will just create new pundits as needed
     
     def _find_pundit(self, name: str) -> Optional[Pundit]:
         """Find a pundit by name (fuzzy matching)"""

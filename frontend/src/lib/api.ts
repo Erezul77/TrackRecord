@@ -1,6 +1,28 @@
 // src/lib/api.ts
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const DEFAULT_TIMEOUT = 15000 // 15 seconds
+
+// Helper function to fetch with timeout
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = DEFAULT_TIMEOUT) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    })
+    return response
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timed out - please try again')
+    }
+    throw error
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
 
 export interface Pundit {
   id: string
@@ -76,7 +98,7 @@ export const api = {
     if (filters?.limit) params.append('limit', String(filters.limit))
     if (filters?.offset) params.append('offset', String(filters.offset))
     
-    const res = await fetch(`${API_BASE_URL}/api/leaderboard?${params}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/api/leaderboard?${params}`, {
       cache: 'no-store'
     })
     if (!res.ok) throw new Error('Failed to fetch leaderboard')
@@ -84,7 +106,7 @@ export const api = {
   },
   
   async getPundit(id: string) {
-    const res = await fetch(`${API_BASE_URL}/api/pundits/${id}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/api/pundits/${id}`, {
       cache: 'no-store'
     })
     if (!res.ok) throw new Error('Failed to fetch pundit')
@@ -92,7 +114,7 @@ export const api = {
   },
   
   async getPunditPredictions(id: string) {
-    const res = await fetch(`${API_BASE_URL}/api/pundits/${id}/predictions`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/api/pundits/${id}/predictions`, {
       cache: 'no-store'
     })
     if (!res.ok) throw new Error('Failed to fetch predictions')
@@ -105,8 +127,8 @@ export const api = {
     if (category) params.append('category', category)
     if (sort) params.append('sort', sort)
     
-    const res = await fetch(`${API_BASE_URL}/api/predictions/recent?${params}`, {
-      cache: 'no-store'  // Always fetch fresh data
+    const res = await fetchWithTimeout(`${API_BASE_URL}/api/predictions/recent?${params}`, {
+      cache: 'no-store'
     })
     if (!res.ok) throw new Error('Failed to fetch recent predictions')
     return res.json()
