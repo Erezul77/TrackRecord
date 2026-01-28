@@ -2492,6 +2492,64 @@ async def run_historical_collection(
         )
         return results
 
+@app.post("/api/admin/fix-timeframes", tags=["Admin"])
+async def fix_prediction_timeframes(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Fix incorrect timeframes on historical predictions.
+    
+    Predictions about past years (2023, 2024) should have timeframes in those years,
+    not in the future. This extracts the year from the claim and sets proper timeframes.
+    """
+    import re
+    
+    # Get all open predictions
+    result = await db.execute(
+        select(Prediction).where(
+            Prediction.status.in_(['open', 'pending_match', 'matched'])
+        )
+    )
+    predictions = result.scalars().all()
+    
+    fixed_count = 0
+    details = []
+    
+    for pred in predictions:
+        claim = pred.claim.lower()
+        
+        # Extract year from claim (e.g., "in 2024", "by 2023", "for 2024")
+        year_match = re.search(r'(?:in|by|for|during|of)\s+(202[0-5])', claim)
+        
+        if year_match:
+            target_year = int(year_match.group(1))
+            current_timeframe_year = pred.timeframe.year if pred.timeframe else 2026
+            
+            # If the prediction mentions a past year but timeframe is in the future
+            if target_year < 2026 and current_timeframe_year >= 2026:
+                # Set timeframe to end of the target year
+                new_timeframe = datetime(target_year, 12, 31)
+                old_timeframe = pred.timeframe
+                pred.timeframe = new_timeframe
+                fixed_count += 1
+                details.append({
+                    "id": str(pred.id),
+                    "claim": pred.claim[:80],
+                    "old_timeframe": old_timeframe.isoformat() if old_timeframe else None,
+                    "new_timeframe": new_timeframe.isoformat()
+                })
+    
+    await db.commit()
+    
+    return {
+        "status": "complete",
+        "predictions_checked": len(predictions),
+        "timeframes_fixed": fixed_count,
+        "details": details[:50]  # Limit output
+    }
+
+
 @app.get("/api/admin/historical/pundits")
 async def get_trackable_pundits(admin = Depends(require_admin)):
     """Get list of pundits that the historical collector tracks"""
