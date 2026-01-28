@@ -2168,9 +2168,46 @@ async def get_admin_stats(
     pundit_count = await db.execute(select(func.count()).select_from(Pundit))
     prediction_count = await db.execute(select(func.count()).select_from(Prediction))
     
+    # Count by status
+    status_counts = await db.execute(
+        select(Prediction.status, func.count())
+        .group_by(Prediction.status)
+    )
+    statuses = {row[0]: row[1] for row in status_counts.fetchall()}
+    
+    # Count predictions with past timeframes
+    now = datetime.utcnow()
+    past_due = await db.execute(
+        select(func.count()).select_from(Prediction).where(Prediction.timeframe < now)
+    )
+    future = await db.execute(
+        select(func.count()).select_from(Prediction).where(Prediction.timeframe >= now)
+    )
+    
+    # Count flagged
+    flagged = await db.execute(
+        select(func.count()).select_from(Prediction).where(Prediction.flagged == True)
+    )
+    
+    # Count resolvable (past due, not resolved, not flagged)
+    resolvable = await db.execute(
+        select(func.count()).select_from(Prediction).where(
+            and_(
+                Prediction.timeframe < now,
+                Prediction.status.in_(['pending', 'pending_match', 'matched', 'open']),
+                Prediction.flagged == False
+            )
+        )
+    )
+    
     return {
         "total_pundits": pundit_count.scalar(),
-        "total_predictions": prediction_count.scalar()
+        "total_predictions": prediction_count.scalar(),
+        "by_status": statuses,
+        "past_due": past_due.scalar(),
+        "future": future.scalar(),
+        "flagged": flagged.scalar(),
+        "resolvable_by_ai": resolvable.scalar()
     }
 
 
