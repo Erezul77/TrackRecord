@@ -1,6 +1,6 @@
 // src/components/predictions/PredictionCard.tsx
 import { formatDate, cn } from '@/lib/utils'
-import { Calendar, Quote, ExternalLink, CheckCircle, XCircle, Clock, Target } from 'lucide-react'
+import { Calendar, Quote, ExternalLink, CheckCircle, XCircle, Clock, Target, Timer, Hourglass } from 'lucide-react'
 
 // TR Index tier based on score
 function getTRTier(score: number | null | undefined) {
@@ -22,6 +22,25 @@ function getHorizonDisplay(horizon: string | null | undefined) {
   }
 }
 
+// Calculate time remaining until deadline
+function getTimeRemaining(timeframe: string) {
+  if (!timeframe) return null
+  const deadline = new Date(timeframe)
+  const now = new Date()
+  const diff = deadline.getTime() - now.getTime()
+  
+  if (diff < 0) return { text: 'Past due', isPast: true }
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const months = Math.floor(days / 30)
+  const years = Math.floor(days / 365)
+  
+  if (years > 0) return { text: `${years}y ${months % 12}mo left`, isPast: false }
+  if (months > 0) return { text: `${months}mo left`, isPast: false }
+  if (days > 0) return { text: `${days}d left`, isPast: false }
+  return { text: 'Due today', isPast: false }
+}
+
 interface PredictionCardProps {
   prediction: {
     id: string
@@ -37,23 +56,36 @@ interface PredictionCardProps {
   }
 }
 
-// Get outcome display - NO CONFIDENCE, a prediction is 100% owned
-function getOutcomeDisplay(status: string, outcome?: string) {
+// Get outcome display - clearer labels for unresolved predictions
+function getOutcomeDisplay(status: string, outcome?: string, timeframe?: string) {
   if (status === 'resolved' && outcome === 'YES') {
     return { label: 'CORRECT', color: 'bg-green-500 text-white', icon: CheckCircle }
   }
   if (status === 'resolved' && outcome === 'NO') {
     return { label: 'WRONG', color: 'bg-red-500 text-white', icon: XCircle }
   }
-  if (status === 'matched') {
-    return { label: 'OPEN', color: 'bg-black dark:bg-white text-white dark:text-black', icon: Clock }
+  
+  // Check if deadline has passed
+  const isPastDue = timeframe ? new Date(timeframe) < new Date() : false
+  
+  if (isPastDue) {
+    // Past due but not resolved - awaiting AI resolution
+    return { label: 'AWAITING', color: 'bg-amber-500 text-white', icon: Hourglass }
   }
-  return { label: 'PENDING', color: 'bg-amber-500 text-white', icon: Clock }
+  
+  // Future deadline - actively tracking
+  if (status === 'matched' || status === 'open') {
+    return { label: 'TRACKING', color: 'bg-blue-600 text-white', icon: Timer }
+  }
+  
+  return { label: 'TRACKING', color: 'bg-blue-600 text-white', icon: Timer }
 }
 
 export function PredictionCard({ prediction }: PredictionCardProps) {
-  const outcomeDisplay = getOutcomeDisplay(prediction.status, prediction.outcome)
+  const outcomeDisplay = getOutcomeDisplay(prediction.status, prediction.outcome, prediction.timeframe)
   const OutcomeIcon = outcomeDisplay.icon
+  const timeRemaining = getTimeRemaining(prediction.timeframe)
+  const isResolved = prediction.status === 'resolved'
 
   return (
     <div className={cn(
@@ -66,6 +98,12 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
         <div className="flex items-center gap-2">
           <OutcomeIcon className="h-4 w-4" />
           <span className="text-xs font-black uppercase tracking-wider">{outcomeDisplay.label}</span>
+          {/* Time remaining for unresolved predictions */}
+          {!isResolved && timeRemaining && !timeRemaining.isPast && (
+            <span className="text-[10px] font-bold opacity-90 bg-white/20 px-1.5 py-0.5 rounded">
+              {timeRemaining.text}
+            </span>
+          )}
           {/* Horizon Badge */}
           {prediction.horizon && getHorizonDisplay(prediction.horizon) && (
             <span 
@@ -97,10 +135,15 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
         </div>
 
         {/* Deadline & TR Index */}
-        <div className="flex items-center justify-between text-xs text-neutral-500">
+        <div className={cn(
+          "flex items-center justify-between text-xs",
+          !isResolved ? "bg-neutral-100 dark:bg-neutral-800 -mx-4 px-4 py-2 mt-2" : "text-neutral-500"
+        )}>
           <div className="flex items-center gap-2">
-            <Calendar className="h-3 w-3" />
-            <span>Resolves: {formatDate(prediction.timeframe)}</span>
+            <Calendar className={cn("h-3.5 w-3.5", !isResolved && "text-blue-500")} />
+            <span className={cn(!isResolved && "font-semibold text-neutral-700 dark:text-neutral-300")}>
+              {isResolved ? `Resolved: ${formatDate(prediction.timeframe)}` : `Deadline: ${formatDate(prediction.timeframe)}`}
+            </span>
           </div>
           {prediction.tr_index_score && getTRTier(prediction.tr_index_score) && (
             <div className={cn(
