@@ -85,13 +85,13 @@ async def run_auto_resolution():
             standard_resolved = results.get("market_resolved", 0) + results.get("expired_auto_resolved", 0)
             logger.info(f"Standard resolution: {standard_resolved} resolved")
             
-            # Step 2: AI resolution
+            # Step 2: AI resolution - be aggressive, resolve more!
             ai_resolved = 0
             try:
                 resolver = get_resolver()
                 ai_results = await asyncio.wait_for(
-                    resolver.ai_resolve_batch(session, limit=10),
-                    timeout=180  # 3 minute timeout
+                    resolver.ai_resolve_batch(session, limit=50),  # Increased from 10 to 50
+                    timeout=300  # 5 minute timeout for more predictions
                 )
                 ai_resolved = ai_results.get("resolved_yes", 0) + ai_results.get("resolved_no", 0)
                 logger.info(f"AI resolution: {ai_resolved} resolved")
@@ -149,7 +149,7 @@ def get_schedule_config():
     """Get schedule configuration from environment"""
     return {
         "rss_interval_minutes": int(os.getenv("RSS_INTERVAL_MINUTES", "180")),  # 3 hours
-        "resolution_interval_minutes": int(os.getenv("RESOLUTION_INTERVAL_MINUTES", "240")),  # 4 hours
+        "resolution_interval_minutes": int(os.getenv("RESOLUTION_INTERVAL_MINUTES", "60")),  # 1 hour - more aggressive
         "historical_enabled": os.getenv("HISTORICAL_ENABLED", "true").lower() == "true",
         "historical_day": os.getenv("HISTORICAL_DAY", "sunday"),  # Day of week
     }

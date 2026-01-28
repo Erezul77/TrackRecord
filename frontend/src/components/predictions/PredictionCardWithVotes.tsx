@@ -2,7 +2,7 @@
 'use client'
 import Link from "next/link"
 import { formatDate, cn } from "@/lib/utils"
-import { ExternalLink, User, CheckCircle, XCircle, Clock, Sparkles, Shield, Copy } from "lucide-react"
+import { ExternalLink, User, CheckCircle, XCircle, Clock, Sparkles, Shield, Copy, Timer, Hourglass } from "lucide-react"
 import { VoteButtons } from "./VoteButtons"
 import { PredictionWithPundit } from "@/lib/api"
 import { useState } from "react"
@@ -17,7 +17,8 @@ interface Props {
   prediction: PredictionWithPundit
 }
 
-function getStatusDisplay(status: string, outcome?: string | null) {
+function getStatusDisplay(status: string, outcome?: string | null, timeframe?: string | null) {
+  // Resolved predictions
   if (status === 'resolved' && outcome) {
     if (outcome === 'YES') {
       return { color: 'bg-green-500 text-white', label: 'CORRECT', icon: CheckCircle }
@@ -25,14 +26,47 @@ function getStatusDisplay(status: string, outcome?: string | null) {
       return { color: 'bg-red-500 text-white', label: 'WRONG', icon: XCircle }
     }
   }
-  return { color: 'bg-black dark:bg-white text-white dark:text-black', label: 'OPEN', icon: Clock }
+  
+  // Check if deadline has passed
+  const isPastDue = timeframe ? new Date(timeframe) < new Date() : false
+  
+  if (isPastDue) {
+    // Past deadline but not resolved - awaiting resolution
+    return { color: 'bg-amber-500 text-white', label: 'AWAITING', icon: Hourglass }
+  }
+  
+  // Future deadline - actively tracking
+  return { color: 'bg-blue-600 text-white', label: 'TRACKING', icon: Timer }
+}
+
+// Calculate time remaining until deadline
+function getTimeRemaining(timeframe?: string | null) {
+  if (!timeframe) return null
+  const deadline = new Date(timeframe)
+  const now = new Date()
+  const diff = deadline.getTime() - now.getTime()
+  
+  if (diff < 0) {
+    const daysPast = Math.abs(Math.floor(diff / (1000 * 60 * 60 * 24)))
+    return { text: `${daysPast}d overdue`, isPast: true }
+  }
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const months = Math.floor(days / 30)
+  const years = Math.floor(days / 365)
+  
+  if (years > 0) return { text: `${years}y ${months % 12}mo left`, isPast: false }
+  if (months > 0) return { text: `${months}mo left`, isPast: false }
+  if (days > 0) return { text: `${days}d left`, isPast: false }
+  return { text: 'Due today', isPast: false }
 }
 
 export function PredictionCardWithVotes({ prediction: pred }: Props) {
-  const statusDisplay = getStatusDisplay(pred.status, pred.outcome)
+  const statusDisplay = getStatusDisplay(pred.status, pred.outcome, pred.timeframe)
   const StatusIcon = statusDisplay.icon
   const isResolved = pred.status === 'resolved' && pred.outcome
   const isCorrect = pred.outcome === 'YES'
+  const timeRemaining = getTimeRemaining(pred.timeframe)
   const [showHash, setShowHash] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -55,6 +89,15 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
         <div className="flex items-center gap-2">
           <StatusIcon className="h-4 w-4" />
           <span className="text-xs font-black uppercase tracking-wider">{statusDisplay.label}</span>
+          {/* Time remaining/overdue indicator */}
+          {!isResolved && timeRemaining && (
+            <span className={cn(
+              "text-[10px] font-bold px-1.5 py-0.5 rounded",
+              timeRemaining.isPast ? "bg-red-600/30" : "bg-white/20"
+            )}>
+              {timeRemaining.text}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {pred.tr_index?.score && (

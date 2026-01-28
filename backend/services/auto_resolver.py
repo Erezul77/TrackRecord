@@ -161,12 +161,13 @@ class AutoResolver:
         now = datetime.utcnow()
         
         # Find predictions with passed timeframes that are still open
+        # IMPORTANT: Include ALL unresolved statuses, especially 'pending'
         query = (
             select(Prediction)
             .where(
                 and_(
                     Prediction.timeframe < now,
-                    Prediction.status.in_(['pending_match', 'matched', 'open']),
+                    Prediction.status.in_(['pending', 'pending_match', 'matched', 'open']),
                 )
             )
             .options(selectinload(Prediction.position))
