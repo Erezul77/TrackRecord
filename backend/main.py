@@ -1542,6 +1542,67 @@ async def batch_score_predictions(
     }
 
 
+@app.post("/api/admin/flag-vague-predictions", tags=["Admin"])
+async def flag_vague_predictions(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Flag predictions that are too vague to be resolvable.
+    
+    Identifies predictions containing vague words like:
+    - "impact", "affect", "influence", "shape", "define"
+    - "can be", "could be", "might", "may"
+    - Subjective terms without measurable outcomes
+    """
+    # Vague word patterns
+    vague_patterns = [
+        '%impact%', '%affect%', '%influence%', '%shape%', '%define%',
+        '%can be%', '%could be%', '%might%', '%may be%',
+        '%important%', '%matter%', '%significant%'
+    ]
+    
+    flagged_count = 0
+    flagged_examples = []
+    
+    for pattern in vague_patterns:
+        result = await db.execute(
+            select(Prediction)
+            .where(Prediction.claim.ilike(pattern))
+            .where(Prediction.status == "pending")
+            .where(Prediction.flagged == False)
+        )
+        predictions = result.scalars().all()
+        
+        for pred in predictions:
+            # Check if it has redeeming qualities (specific numbers)
+            claim_lower = pred.claim.lower()
+            has_number = any(char.isdigit() for char in claim_lower) or any(
+                w in claim_lower for w in ['$', '%', 'million', 'billion', 'trillion']
+            )
+            
+            # If no numbers and uses vague language, flag it
+            if not has_number:
+                pred.flagged = True
+                pred.flag_reason = f"Vague prediction - not verifiable (matched: {pattern.replace('%', '')})"
+                pred.status = "needs_review"
+                flagged_count += 1
+                if len(flagged_examples) < 10:
+                    flagged_examples.append({
+                        "claim": pred.claim[:100],
+                        "reason": pred.flag_reason
+                    })
+    
+    await db.commit()
+    
+    return {
+        "status": "complete",
+        "flagged": flagged_count,
+        "examples": flagged_examples,
+        "message": f"Flagged {flagged_count} vague predictions for review"
+    }
+
+
 @app.post("/api/admin/test-add-prediction", tags=["Admin"])
 async def test_add_single_prediction(
     db: AsyncSession = Depends(get_db),
