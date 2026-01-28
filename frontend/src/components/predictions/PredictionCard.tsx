@@ -1,6 +1,15 @@
 // src/components/predictions/PredictionCard.tsx
 import { formatDate, cn } from '@/lib/utils'
-import { Calendar, Quote, ExternalLink, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { Calendar, Quote, ExternalLink, CheckCircle, XCircle, Clock, Target } from 'lucide-react'
+
+// TR Index tier based on score
+function getTRTier(score: number | null | undefined) {
+  if (!score) return null
+  if (score >= 80) return { label: 'Gold', color: 'bg-yellow-500 text-black' }
+  if (score >= 60) return { label: 'Silver', color: 'bg-neutral-400 text-black' }
+  if (score >= 40) return { label: 'Bronze', color: 'bg-amber-700 text-white' }
+  return null
+}
 
 interface PredictionCardProps {
   prediction: {
@@ -12,6 +21,7 @@ interface PredictionCardProps {
     source_url: string
     status: string
     outcome?: string // 'YES' | 'NO' | null
+    tr_index_score?: number | null
   }
 }
 
@@ -62,10 +72,21 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
           "{prediction.quote}"
         </div>
 
-        {/* Deadline */}
-        <div className="flex items-center gap-2 text-xs text-neutral-500">
-          <Calendar className="h-3 w-3" />
-          <span>Resolves: {formatDate(prediction.timeframe)}</span>
+        {/* Deadline & TR Index */}
+        <div className="flex items-center justify-between text-xs text-neutral-500">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-3 w-3" />
+            <span>Resolves: {formatDate(prediction.timeframe)}</span>
+          </div>
+          {prediction.tr_index_score && getTRTier(prediction.tr_index_score) && (
+            <div className={cn(
+              "flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase",
+              getTRTier(prediction.tr_index_score)?.color
+            )}>
+              <Target className="h-3 w-3" />
+              TR {Math.round(prediction.tr_index_score)}
+            </div>
+          )}
         </div>
       </div>
       

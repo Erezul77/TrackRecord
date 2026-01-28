@@ -1442,6 +1442,106 @@ async def ai_resolve_single_prediction(
     return result
 
 
+@app.post("/api/admin/score-predictions", tags=["Admin"])
+async def batch_score_predictions(
+    limit: int = Query(100, ge=1, le=500, description="Max predictions to score"),
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Calculate TR Index scores for predictions that don't have them.
+    
+    This analyzes each prediction claim and calculates:
+    - Specificity score (0-35)
+    - Verifiability score (0-25)
+    - Boldness score (0-20)
+    - Relevance score (0-15) based on timeframe
+    - Stakes score (0-5)
+    
+    Predictions need total >= 40 and pass minimum thresholds to be valid.
+    """
+    from tr_index import calculate_tr_index
+    
+    # Get predictions without TR Index scores
+    result = await db.execute(
+        select(Prediction)
+        .where(Prediction.tr_index_score == None)
+        .limit(limit)
+    )
+    predictions = result.scalars().all()
+    
+    scored = 0
+    rejected = 0
+    
+    for pred in predictions:
+        claim_lower = pred.claim.lower()
+        
+        # Analyze claim
+        has_number = any(char.isdigit() for char in claim_lower) or any(
+            w in claim_lower for w in ['$', '%', 'million', 'billion', 'trillion']
+        )
+        has_date = any(
+            w in claim_lower for w in ['2020', '2021', '2022', '2023', '2024', '2025', '2026', 
+                                        'january', 'february', 'march', 'april', 'may', 'june',
+                                        'july', 'august', 'september', 'october', 'november', 'december',
+                                        'q1', 'q2', 'q3', 'q4', 'by end of', 'by the end']
+        )
+        has_clear_outcome = any(
+            w in claim_lower for w in ['will win', 'will lose', 'will reach', 'will hit',
+                                        'will dominate', 'will control', 'will be', 'will become',
+                                        'will pass', 'will fail', 'will beat']
+        )
+        is_binary = any(
+            w in claim_lower for w in ['will', 'won\'t', 'will not', 'either', 'or']
+        )
+        
+        tr_score = calculate_tr_index(
+            prediction_date=pred.captured_at or datetime.now(),
+            timeframe=pred.timeframe or datetime.now() + timedelta(days=365),
+            has_specific_number=has_number,
+            has_specific_date=has_date,
+            has_clear_condition=has_clear_outcome,
+            has_measurable_outcome=has_clear_outcome,
+            is_binary=is_binary,
+            has_public_data_source=True,
+            outcome_is_objective=has_clear_outcome,
+            no_subjective_interpretation=has_number or has_clear_outcome,
+            has_clear_resolution_criteria=has_date and has_clear_outcome,
+            against_consensus=False,
+            minority_opinion=False,
+            predicts_unexpected=False,
+            high_confidence_stated=pred.confidence >= 0.8 if pred.confidence else False,
+            major_market_impact=any(w in claim_lower for w in ['market', 'economy', 'gdp', 'fed', 'rates']),
+            affects_many_people=any(w in claim_lower for w in ['global', 'world', 'everyone', 'all']),
+            significant_if_true=True
+        )
+        
+        # Update prediction
+        pred.tr_index_score = tr_score.total if tr_score.passed else None
+        pred.tr_specificity_score = tr_score.specificity
+        pred.tr_verifiability_score = tr_score.verifiability
+        pred.tr_boldness_score = tr_score.boldness
+        pred.tr_relevance_score = tr_score.relevance
+        pred.tr_stakes_score = tr_score.stakes
+        pred.tr_rejected = not tr_score.passed
+        pred.tr_rejection_reason = tr_score.rejection_reason
+        
+        if tr_score.passed:
+            scored += 1
+        else:
+            rejected += 1
+    
+    await db.commit()
+    
+    return {
+        "status": "complete",
+        "total_processed": len(predictions),
+        "scored": scored,
+        "rejected": rejected,
+        "message": f"Scored {scored} predictions, {rejected} failed quality threshold"
+    }
+
+
 @app.post("/api/admin/test-add-prediction", tags=["Admin"])
 async def test_add_single_prediction(
     db: AsyncSession = Depends(get_db),
