@@ -252,6 +252,7 @@ async def get_pundit_predictions(
 async def get_recent_predictions(
     limit: int = Query(100, ge=1, le=500),
     category: Optional[str] = None,
+    horizon: Optional[str] = Query(None, description="Filter by horizon: ST, MT, LT, V"),
     sort: str = Query("default", description="Sort: default, newest, oldest, resolving_soon, boldest, highest_score"),
     db: AsyncSession = Depends(get_db)
 ):
@@ -265,6 +266,10 @@ async def get_recent_predictions(
     
     if category:
         query = query.where(Prediction.category == category)
+    
+    # Filter by horizon if specified
+    if horizon and horizon.upper() in ["ST", "MT", "LT", "V"]:
+        query = query.where(Prediction.horizon == horizon.upper())
     
     query = query.order_by(desc(Prediction.captured_at)).limit(limit * 2)  # Get more to sort properly
     
@@ -323,6 +328,7 @@ async def get_recent_predictions(
                         "silver" if p.tr_index_score and p.tr_index_score >= 60 else 
                         "bronze" if p.tr_index_score and p.tr_index_score >= 40 else None
             } if p.tr_index_score else None,
+            "horizon": p.horizon,
             "chain_hash": p.chain_hash[:16] + "..." if p.chain_hash else None,
             "chain_index": p.chain_index,
             "pundit": {
@@ -1615,6 +1621,129 @@ async def flag_vague_predictions(
         "examples": flagged_examples,
         "message": f"Flagged {flagged_count} vague predictions for review"
     }
+
+
+def calculate_horizon(prediction_date: datetime, timeframe: datetime) -> str:
+    """
+    Calculate prediction horizon based on time until resolution.
+    
+    Returns:
+        ST = Short-term (< 6 months)
+        MT = Medium-term (6-24 months)
+        LT = Long-term (2-5 years)
+        V = Visionary (5+ years)
+    """
+    if not timeframe or not prediction_date:
+        return "MT"  # Default to medium-term if unknown
+    
+    days_until = (timeframe - prediction_date).days
+    
+    if days_until < 0:
+        # Already past - calculate from original prediction date
+        days_until = abs(days_until)
+    
+    months = days_until / 30.0
+    
+    if months < 6:
+        return "ST"  # Short-term
+    elif months < 24:
+        return "MT"  # Medium-term
+    elif months < 60:
+        return "LT"  # Long-term
+    else:
+        return "V"   # Visionary
+
+
+@app.post("/api/admin/calculate-horizons", tags=["Admin"])
+async def calculate_prediction_horizons(
+    limit: int = Query(500, ge=1, le=1000, description="Max predictions to process"),
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Calculate and set horizon values for all predictions.
+    
+    Horizons:
+    - ST: Short-term (< 6 months)
+    - MT: Medium-term (6-24 months)
+    - LT: Long-term (2-5 years)
+    - V: Visionary (5+ years)
+    """
+    # Get predictions without horizon set
+    result = await db.execute(
+        select(Prediction)
+        .where(Prediction.horizon == None)
+        .limit(limit)
+    )
+    predictions = result.scalars().all()
+    
+    counts = {"ST": 0, "MT": 0, "LT": 0, "V": 0}
+    
+    for pred in predictions:
+        horizon = calculate_horizon(
+            pred.captured_at or pred.created_at or datetime.utcnow(),
+            pred.timeframe
+        )
+        pred.horizon = horizon
+        counts[horizon] += 1
+    
+    await db.commit()
+    
+    return {
+        "status": "complete",
+        "total_processed": len(predictions),
+        "horizons": counts,
+        "message": f"Set horizons for {len(predictions)} predictions"
+    }
+
+
+@app.get("/api/predictions/by-horizon/{horizon}", tags=["Predictions"])
+async def get_predictions_by_horizon(
+    horizon: str,
+    limit: int = Query(50, ge=1, le=200),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get predictions filtered by time horizon.
+    
+    Horizons:
+    - ST: Short-term (< 6 months)
+    - MT: Medium-term (6-24 months)  
+    - LT: Long-term (2-5 years)
+    - V: Visionary (5+ years)
+    """
+    if horizon.upper() not in ["ST", "MT", "LT", "V"]:
+        raise HTTPException(status_code=400, detail="Invalid horizon. Use ST, MT, LT, or V")
+    
+    result = await db.execute(
+        select(Prediction)
+        .where(Prediction.horizon == horizon.upper())
+        .where(Prediction.flagged == False)
+        .options(selectinload(Prediction.pundit))
+        .order_by(desc(Prediction.captured_at))
+        .limit(limit)
+    )
+    predictions = result.scalars().all()
+    
+    return [
+        {
+            "id": str(p.id),
+            "claim": p.claim,
+            "timeframe": p.timeframe.isoformat() if p.timeframe else None,
+            "quote": p.quote,
+            "category": p.category,
+            "source_url": p.source_url,
+            "status": p.status,
+            "horizon": p.horizon,
+            "tr_index_score": p.tr_index_score,
+            "pundit": {
+                "id": str(p.pundit.id),
+                "name": p.pundit.name,
+                "username": p.pundit.username
+            } if p.pundit else None
+        }
+        for p in predictions
+    ]
 
 
 @app.post("/api/admin/test-add-prediction", tags=["Admin"])

@@ -11,6 +11,17 @@ function getTRTier(score: number | null | undefined) {
   return null
 }
 
+// Horizon display - time until resolution
+function getHorizonDisplay(horizon: string | null | undefined) {
+  switch (horizon) {
+    case 'ST': return { label: 'Short', full: 'Short-term (<6mo)', color: 'bg-blue-500 text-white' }
+    case 'MT': return { label: 'Med', full: 'Medium-term (6-24mo)', color: 'bg-purple-500 text-white' }
+    case 'LT': return { label: 'Long', full: 'Long-term (2-5yr)', color: 'bg-orange-500 text-white' }
+    case 'V': return { label: 'Vision', full: 'Visionary (5+yr)', color: 'bg-amber-400 text-black' }
+    default: return null
+  }
+}
+
 interface PredictionCardProps {
   prediction: {
     id: string
@@ -22,6 +33,7 @@ interface PredictionCardProps {
     status: string
     outcome?: string // 'YES' | 'NO' | null
     tr_index_score?: number | null
+    horizon?: string | null
   }
 }
 
@@ -54,6 +66,18 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
         <div className="flex items-center gap-2">
           <OutcomeIcon className="h-4 w-4" />
           <span className="text-xs font-black uppercase tracking-wider">{outcomeDisplay.label}</span>
+          {/* Horizon Badge */}
+          {prediction.horizon && getHorizonDisplay(prediction.horizon) && (
+            <span 
+              className={cn(
+                "px-1.5 py-0.5 text-[9px] font-bold uppercase rounded",
+                getHorizonDisplay(prediction.horizon)?.color
+              )}
+              title={getHorizonDisplay(prediction.horizon)?.full}
+            >
+              {getHorizonDisplay(prediction.horizon)?.label}
+            </span>
+          )}
         </div>
         <span className="text-xs font-semibold uppercase tracking-wider opacity-80">
           {prediction.category}

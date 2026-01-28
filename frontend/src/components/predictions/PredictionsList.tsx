@@ -22,22 +22,33 @@ const TOPIC_CATEGORIES = ['All', 'Politics', 'Economy', 'Markets', 'Crypto', 'Te
 // Regions
 const REGION_CATEGORIES = ['US', 'UK', 'EU', 'China', 'Japan', 'India', 'Israel', 'Russia', 'Brazil', 'LATAM', 'Middle-East', 'Africa']
 
+// Time Horizons
+const HORIZON_OPTIONS = [
+  { value: 'All', label: 'All Horizons', description: 'All time horizons' },
+  { value: 'ST', label: 'Short-term', description: 'Less than 6 months' },
+  { value: 'MT', label: 'Medium-term', description: '6-24 months' },
+  { value: 'LT', label: 'Long-term', description: '2-5 years' },
+  { value: 'V', label: 'Visionary', description: '5+ years' },
+]
+
 export function PredictionsList() {
   const [predictions, setPredictions] = useState<PredictionWithPundit[]>([])
   const [loading, setLoading] = useState(true)
   const [sort, setSort] = useState('default')
   const [category, setCategory] = useState('All')
+  const [horizon, setHorizon] = useState('All')
   const [showRegions, setShowRegions] = useState(false)
 
   useEffect(() => {
     loadPredictions()
-  }, [sort, category])
+  }, [sort, category, horizon])
 
   const loadPredictions = async () => {
     setLoading(true)
     try {
       const categoryParam = category !== 'All' ? `&category=${category.toLowerCase()}` : ''
-      const res = await fetch(`${API_URL}/api/predictions/recent?limit=300&sort=${sort}${categoryParam}`, {
+      const horizonParam = horizon !== 'All' ? `&horizon=${horizon}` : ''
+      const res = await fetch(`${API_URL}/api/predictions/recent?limit=300&sort=${sort}${categoryParam}${horizonParam}`, {
         cache: 'no-store'
       })
       if (res.ok) {
@@ -83,6 +94,36 @@ export function PredictionsList() {
               }`}
             >
               {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Horizon Filter */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-sm font-bold text-neutral-500 flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Time Horizon:
+          </span>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {HORIZON_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setHorizon(opt.value)}
+              title={opt.description}
+              className={`text-sm font-bold px-3 py-1.5 transition-colors ${
+                opt.value === horizon
+                  ? opt.value === 'ST' ? 'bg-blue-500 text-white shadow-sm'
+                  : opt.value === 'MT' ? 'bg-purple-500 text-white shadow-sm'
+                  : opt.value === 'LT' ? 'bg-orange-500 text-white shadow-sm'
+                  : opt.value === 'V' ? 'bg-amber-400 text-black shadow-sm'
+                  : 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+                  : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+              }`}
+            >
+              {opt.label}
             </button>
           ))}
         </div>

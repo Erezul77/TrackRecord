@@ -95,6 +95,11 @@ class Prediction(Base):
     tr_rejected: Mapped[bool] = mapped_column(Boolean, default=False)
     tr_rejection_reason: Mapped[Optional[str]] = mapped_column(Text)
     
+    # Time Horizon - Auto-calculated from timeframe
+    # ST = Short-term (< 6 months), MT = Medium-term (6-24 months)
+    # LT = Long-term (2-5 years), V = Visionary (5+ years)
+    horizon: Mapped[Optional[str]] = mapped_column(String(10))
+    
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     pundit = relationship("Pundit", back_populates="predictions")
