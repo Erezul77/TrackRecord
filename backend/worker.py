@@ -40,26 +40,30 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 async def run_rss_ingestion():
-    """Run RSS feed ingestion"""
-    from database.session import async_session
-    from services.auto_agent import AutoAgentPipeline
-    
+    """Run RSS feed ingestion with strict timeout"""
     logger.info("Starting RSS ingestion...")
     
     try:
-        async with async_session() as session:
-            pipeline = AutoAgentPipeline(session)
-            results = await asyncio.wait_for(
-                pipeline.run_pipeline(max_articles=15),
-                timeout=300  # 5 minute timeout
-            )
-            logger.info(f"RSS ingestion complete: {results}")
-            return results
+        # Import inside function to avoid module-level issues
+        from database.session import async_session
+        from services.auto_agent import AutoAgentPipeline
+        
+        async def _do_rss():
+            async with async_session() as session:
+                pipeline = AutoAgentPipeline(session)
+                return await pipeline.run_pipeline(max_articles=10)
+        
+        results = await asyncio.wait_for(_do_rss(), timeout=180)  # 3 minute timeout
+        logger.info(f"RSS ingestion complete: {results}")
+        return results
+        
     except asyncio.TimeoutError:
-        logger.error("RSS ingestion timed out after 5 minutes")
-        return {"error": "timeout"}
+        logger.error("RSS ingestion timed out after 3 minutes - skipping")
+        return {"error": "timeout", "skipped": True}
     except Exception as e:
         logger.error(f"RSS ingestion failed: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
         return {"error": str(e)}
 
 
@@ -176,33 +180,51 @@ async def main_loop():
     
     while not shutdown_requested:
         now = datetime.utcnow()
+        logger.info(f"Worker loop check at {now.strftime('%H:%M:%S')}")
         
         try:
-            # Check if RSS should run
-            rss_interval = config["rss_interval_minutes"] * 60
-            if last_rss_run is None or (now - last_rss_run).total_seconds() >= rss_interval:
-                await run_rss_ingestion()
-                last_rss_run = now
-            
-            # Check if resolution should run
+            # Run RESOLUTION FIRST (most important for user experience)
             resolution_interval = config["resolution_interval_minutes"] * 60
             if last_resolution_run is None or (now - last_resolution_run).total_seconds() >= resolution_interval:
-                await run_auto_resolution()
-                last_resolution_run = now
+                logger.info("Running auto-resolution task...")
+                try:
+                    await run_auto_resolution()
+                except Exception as e:
+                    logger.error(f"Resolution task failed: {e}")
+                last_resolution_run = datetime.utcnow()
+                logger.info("Auto-resolution task completed")
             
-            # Check if historical should run (only on configured day)
+            # Then run RSS (less critical)
+            rss_interval = config["rss_interval_minutes"] * 60
+            if last_rss_run is None or (now - last_rss_run).total_seconds() >= rss_interval:
+                logger.info("Running RSS ingestion task...")
+                try:
+                    await run_rss_ingestion()
+                except Exception as e:
+                    logger.error(f"RSS task failed: {e}")
+                last_rss_run = datetime.utcnow()
+                logger.info("RSS ingestion task completed")
+            
+            # Historical collection (weekly, least critical)
             if config["historical_enabled"]:
                 current_day = now.strftime("%A").lower()
                 if current_day == config["historical_day"].lower():
-                    # Run once per day
                     if last_historical_run is None or (now - last_historical_run).days >= 1:
-                        await run_historical_collection()
-                        last_historical_run = now
+                        logger.info("Running historical collection task...")
+                        try:
+                            await run_historical_collection()
+                        except Exception as e:
+                            logger.error(f"Historical task failed: {e}")
+                        last_historical_run = datetime.utcnow()
+                        logger.info("Historical collection task completed")
             
         except Exception as e:
             logger.error(f"Error in main loop: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
         
         # Sleep for 1 minute before checking again
+        logger.info("Sleeping for 60 seconds...")
         for _ in range(60):
             if shutdown_requested:
                 break
