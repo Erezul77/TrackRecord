@@ -64,6 +64,28 @@ async def migrate_add_chain_columns():
             
     print("Hash chain migration complete!")
 
+async def migrate_add_horizon_column():
+    """Add horizon column to predictions table if it doesn't exist"""
+    print("Checking for horizon column...")
+    async with engine.begin() as conn:
+        result = await conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'predictions' AND column_name = 'horizon'
+        """))
+        
+        if not result.fetchone():
+            print("Adding horizon column...")
+            await conn.execute(text("""
+                ALTER TABLE predictions 
+                ADD COLUMN horizon VARCHAR(10)
+            """))
+            print("Horizon column added!")
+        else:
+            print("Horizon column already exists")
+            
+    print("Horizon migration complete!")
+
 async def full_setup():
     """Run full setup including migrations"""
     try:
@@ -74,7 +96,12 @@ async def full_setup():
     try:
         await migrate_add_chain_columns()
     except Exception as e:
-        print(f"Warning: migration failed: {e}")
+        print(f"Warning: chain migration failed: {e}")
+    
+    try:
+        await migrate_add_horizon_column()
+    except Exception as e:
+        print(f"Warning: horizon migration failed: {e}")
     
     print("Setup complete (with possible warnings above)")
 
