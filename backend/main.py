@@ -2211,6 +2211,98 @@ async def get_admin_stats(
     }
 
 
+@app.get("/api/admin/debug-predictions", tags=["Admin"])
+async def debug_predictions(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Debug: Show sample predictions to understand why they're not being resolved."""
+    from sqlalchemy import func
+    
+    now = datetime.utcnow()
+    
+    # Get sample unresolved predictions
+    unresolved_query = (
+        select(Prediction)
+        .where(Prediction.status != 'resolved')
+        .order_by(Prediction.timeframe.asc())
+        .limit(20)
+    )
+    result = await db.execute(unresolved_query)
+    predictions = result.scalars().all()
+    
+    samples = []
+    for p in predictions:
+        is_past = p.timeframe < now if p.timeframe else False
+        samples.append({
+            "id": str(p.id),
+            "claim": p.claim[:80] + "..." if len(p.claim) > 80 else p.claim,
+            "status": p.status,
+            "timeframe": p.timeframe.isoformat() if p.timeframe else None,
+            "is_past_due": is_past,
+            "flagged": p.flagged,
+            "captured_at": p.captured_at.isoformat() if p.captured_at else None
+        })
+    
+    return {
+        "current_time": now.isoformat(),
+        "sample_unresolved_predictions": samples,
+        "count": len(samples)
+    }
+
+
+@app.post("/api/admin/fix-timeframes-aggressive", tags=["Admin"])
+async def fix_timeframes_aggressive(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    AGGRESSIVE FIX: Set all predictions with future timeframes to their claim year's end.
+    For example, a 2024 prediction about 2024 events should have timeframe 2024-12-31.
+    """
+    import re
+    from sqlalchemy import and_
+    
+    now = datetime.utcnow()
+    fixed_count = 0
+    
+    # Get all predictions with future timeframes
+    result = await db.execute(
+        select(Prediction)
+        .where(
+            and_(
+                Prediction.timeframe > now,
+                Prediction.status != 'resolved'
+            )
+        )
+    )
+    predictions = result.scalars().all()
+    
+    for pred in predictions:
+        # Find year mentioned in claim
+        years_in_claim = re.findall(r'20(2[0-5]|1\d)', pred.claim)
+        
+        if years_in_claim:
+            # Use the most recent year mentioned
+            year = max(int(f'20{y}') for y in years_in_claim)
+            
+            # Set timeframe to end of that year
+            new_timeframe = datetime(year, 12, 31, 23, 59, 59)
+            
+            if new_timeframe < now and pred.timeframe > now:
+                pred.timeframe = new_timeframe
+                fixed_count += 1
+    
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "predictions_checked": len(predictions),
+        "timeframes_fixed": fixed_count,
+        "message": f"Fixed {fixed_count} predictions to have past timeframes"
+    }
+
+
 @app.post("/api/admin/populate-batch-4", tags=["Admin"])
 async def populate_batch_4(
     db: AsyncSession = Depends(get_db),
