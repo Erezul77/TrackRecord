@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 EXTRACTION_PROMPT = """
-You are analyzing a news article to extract specific predictions about future events made by notable individuals.
+You are analyzing a news article to extract SPECIFIC, MEASURABLE predictions made by notable individuals.
 
 Article Title: {title}
 Source: {source}
@@ -35,50 +35,59 @@ Article Text:
 {text}
 ---
 
-IMPORTANT: Extract predictions from ANY notable person mentioned in the article - politicians, CEOs, analysts, experts, celebrities, athletes, commentators, etc. 
-Do NOT limit to a predefined list. If someone notable makes a prediction, capture it.
+STRICT QUALITY RULES - REJECT predictions that:
+1. Use vague words: "impact", "affect", "influence", "shape", "define" (without metrics)
+2. Are possibilities, not predictions: "can be", "could be", "might", "may"
+3. Have no clear success/fail criteria: "will be important", "will matter"
+4. Are opinions, not predictions: "is the best", "should do"
+5. Have no timeframe and can't be assigned one
 
-A prediction must:
-1. Be attributed to a specific NAMED person (full name required)
-2. Make a claim about something that will/won't happen in the future
-3. Be specific enough to potentially verify later
-4. Have a timeframe (explicit or implicit)
+ACCEPT only predictions that:
+1. Have CLEAR YES/NO outcome: "will win", "will reach $X", "will beat", "will pass"
+2. Have SPECIFIC targets: numbers, percentages, rankings, binary outcomes
+3. Are VERIFIABLE: Can look up result with public data
+4. Have TIMEFRAME: explicit date or can assign one (e.g., "by end of 2024")
 
-The person must be notable - someone with a public profile:
-- Politicians, government officials
-- CEOs, executives, investors
-- Analysts, economists, experts
-- TV personalities, journalists
-- Athletes, coaches, sports commentators
-- Religious leaders, activists
-- Scientists, researchers
-- Celebrities with influence
+GOOD EXAMPLES (ACCEPT):
+- "Bitcoin will reach $100,000 by end of 2024" → Clear target, clear deadline
+- "Mets will make playoffs in 2024" → Binary outcome, clear timeframe
+- "Crypto market cap will exceed $3 trillion in 2024" → Specific number, deadline
+- "Trump will win 2024 election" → Binary outcome, known date
+- "Fed will cut rates 3 times in 2024" → Specific count, timeframe
 
-For each prediction found, extract:
-- pundit_name: Full name of the person (e.g., "Elon Musk", not "Musk" or "Tesla CEO")
-- pundit_title: Their role/title (e.g., "Tesla CEO", "Senator", "CNBC Host")
-- pundit_affiliation: Organization they're associated with
-- claim: The specific prediction (phrased as a statement)
-- confidence: The speaker's implied confidence (certain/high/medium/low/speculative)
-- timeframe: When this will be verifiable (date like "2026-12-31", or "within 6 months", etc.)
-- quote: The exact quote from the article (verbatim)
-- category: politics/economy/markets/crypto/tech/macro/sports/entertainment/religion/science/business/media/health/climate/geopolitics/us/uk/eu/china/japan/india/israel/russia/brazil/latam/middle-east/africa/asia-pacific
+BAD EXAMPLES (REJECT - do NOT extract):
+- "AI will impact the economy" → "impact" is vague, no metric
+- "Trump trials will affect the election" → "affect" is vague, unmeasurable
+- "LeBron can still be the best player" → "can be" is possibility, "best" is subjective
+- "Vision Pro will define spatial computing" → "define" is vague, subjective
+- "This will be important for markets" → No specific outcome
 
-Return ONLY valid JSON array:
+For each VALID prediction, extract:
+- pundit_name: Full name (e.g., "Elon Musk", not "Musk")
+- pundit_title: Their role/title
+- pundit_affiliation: Organization
+- claim: The prediction, reworded to be SPECIFIC and MEASURABLE
+- confidence: certain/high/medium/low/speculative
+- timeframe: Specific date (e.g., "2024-12-31") or period (e.g., "by Q4 2024")
+- quote: Exact quote from article
+- category: One of: politics/economy/markets/crypto/tech/macro/sports/entertainment/religion/science/business/media/health/climate/geopolitics/us/uk/eu/china/japan/india/israel/russia/brazil/latam/middle-east/africa/asia-pacific
+
+Return ONLY valid JSON array. Be STRICT - it's better to extract fewer high-quality predictions than many vague ones.
+
 [
   {{
-    "pundit_name": "Janet Yellen",
-    "pundit_title": "Treasury Secretary",
-    "pundit_affiliation": "US Treasury Department",
-    "claim": "US economy will achieve soft landing in 2026",
+    "pundit_name": "Steve Cohen",
+    "pundit_title": "Owner",
+    "pundit_affiliation": "New York Mets",
+    "claim": "Mets will make MLB playoffs in 2024",
     "confidence": "high",
-    "timeframe": "2026-12-31",
-    "quote": "We expect the economy to continue its path to a soft landing",
-    "category": "economy"
+    "timeframe": "2024-10-31",
+    "quote": "The Mets will make the playoffs in 2024",
+    "category": "sports"
   }}
 ]
 
-If no predictions are found, return empty array: []
+If no VALID predictions found, return empty array: []
 """
 
 
