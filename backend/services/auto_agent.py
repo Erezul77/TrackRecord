@@ -410,6 +410,64 @@ class AutoAgentPipeline:
         if existing:
             return None
         
+        # Calculate TR Index score for quality filtering
+        from tr_index import calculate_tr_index
+        
+        claim_lower = pred_data["claim"].lower()
+        
+        # Analyze claim for specificity
+        has_number = any(char.isdigit() for char in claim_lower) or any(
+            w in claim_lower for w in ['$', '%', 'million', 'billion', 'trillion']
+        )
+        has_date = any(
+            w in claim_lower for w in ['2020', '2021', '2022', '2023', '2024', '2025', '2026', 
+                                        'january', 'february', 'march', 'april', 'may', 'june',
+                                        'july', 'august', 'september', 'october', 'november', 'december',
+                                        'q1', 'q2', 'q3', 'q4', 'by end of', 'by the end']
+        )
+        has_clear_outcome = any(
+            w in claim_lower for w in ['will win', 'will lose', 'will reach', 'will hit',
+                                        'will dominate', 'will control', 'will be', 'will become',
+                                        'will pass', 'will fail', 'will beat']
+        )
+        is_binary = any(
+            w in claim_lower for w in ['will', 'won\'t', 'will not', 'either', 'or']
+        )
+        
+        tr_score = calculate_tr_index(
+            prediction_date=datetime.utcnow(),
+            timeframe=timeframe,
+            has_specific_number=has_number,
+            has_specific_date=has_date,
+            has_clear_condition=has_clear_outcome,
+            has_measurable_outcome=has_clear_outcome,
+            is_binary=is_binary,
+            has_public_data_source=True,  # Assume RSS sources are public
+            outcome_is_objective=has_clear_outcome,
+            no_subjective_interpretation=has_number or has_clear_outcome,
+            has_clear_resolution_criteria=has_date and has_clear_outcome,
+            against_consensus=False,  # Can't easily determine from extraction
+            minority_opinion=False,
+            predicts_unexpected=False,
+            high_confidence_stated=confidence >= 0.8,
+            major_market_impact=any(w in claim_lower for w in ['market', 'economy', 'gdp', 'fed', 'rates']),
+            affects_many_people=any(w in claim_lower for w in ['global', 'world', 'everyone', 'all']),
+            significant_if_true=True
+        )
+        
+        # Log TR Index score
+        logger.info(f"TR Index for '{pred_data['claim'][:50]}...': {tr_score.total:.1f} ({tr_score.tier})")
+        
+        # Flag low-quality predictions but still track them
+        status = "pending"
+        flagged = False
+        flag_reason = None
+        
+        if not tr_score.passed:
+            flagged = True
+            flag_reason = f"TR Index rejected: {tr_score.rejection_reason}"
+            status = "needs_review"
+        
         return Prediction(
             id=uuid.uuid4(),
             pundit_id=pundit.id,
@@ -422,8 +480,16 @@ class AutoAgentPipeline:
             source_type="rss",
             captured_at=datetime.utcnow(),
             content_hash=content_hash,
-            status="pending",
-            flagged=False,
+            status=status,
+            flagged=flagged,
+            flag_reason=flag_reason,
+            # TR Index scores
+            tr_index_score=tr_score.total if tr_score.passed else None,
+            tr_specificity_score=tr_score.specificity,
+            tr_verifiability_score=tr_score.verifiability,
+            tr_boldness_score=tr_score.boldness,
+            tr_relevance_score=tr_score.relevance,
+            tr_stakes_score=tr_score.stakes,
             created_at=datetime.utcnow()
         )
     

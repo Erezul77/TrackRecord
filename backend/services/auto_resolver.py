@@ -407,26 +407,39 @@ class AutoResolver:
         made_at = pred.captured_at.strftime("%B %Y") if pred.captured_at else "Unknown date"
         timeframe = pred.timeframe.strftime("%B %Y") if pred.timeframe else "Unknown"
         
-        prompt = f"""You are evaluating whether a prediction was CORRECT or WRONG based on what actually happened.
+        prompt = f"""You are a fact-checker evaluating whether a prediction came true. Be DECISIVE.
 
-PREDICTION DETAILS:
+PREDICTION:
 - Made by: {pundit_name}
 - Claim: "{claim}"
 - Made around: {made_at}
-- Timeframe/Deadline: {timeframe}
+- Deadline: {timeframe}
 
-TASK: Based on your knowledge, determine if this prediction turned out to be CORRECT (YES) or WRONG (NO).
+TODAY'S DATE: January 2026
 
-IMPORTANT RULES:
-1. If the prediction clearly came true → answer YES
-2. If the prediction clearly did NOT come true → answer NO
-3. If the timeframe hasn't passed yet (it's still in the future) → answer PENDING
-4. If you genuinely cannot determine the outcome → answer UNKNOWN
+EVALUATION RULES:
+1. For market/industry claims (e.g., "NVIDIA will dominate chips in 2024"):
+   - Check if the company/entity achieved the claimed dominance by the deadline
+   - Market share leadership or clear dominance = YES
+   - Did not achieve dominance = NO
 
-Respond in this EXACT JSON format:
-{{"outcome": "YES/NO/PENDING/UNKNOWN", "confidence": 0.0-1.0, "reasoning": "Brief explanation of why"}}
+2. For price/number predictions (e.g., "Bitcoin will hit $100k in 2024"):
+   - Check if the target was reached by deadline
+   - Reached target = YES, Did not reach = NO
 
-Only output the JSON, nothing else."""
+3. For event predictions (e.g., "X will win election"):
+   - Check if the event happened
+   - Event happened = YES, Did not happen = NO
+
+4. For vague predictions without clear metrics:
+   - If reasonable interpretation shows it came true = YES
+   - If reasonable interpretation shows it failed = NO
+   - Only use UNKNOWN if truly impossible to evaluate
+
+BE DECISIVE. Most predictions CAN be evaluated. Only use UNKNOWN as last resort.
+
+Respond ONLY with JSON:
+{{"outcome": "YES/NO/UNKNOWN", "confidence": 0.6-1.0, "reasoning": "One sentence explanation"}}"""
 
         try:
             async with httpx.AsyncClient(timeout=30) as client:
@@ -467,8 +480,8 @@ Only output the JSON, nothing else."""
                 confidence = result_data.get("confidence", 0.5)
                 reasoning = result_data.get("reasoning", "")
                 
-                # Only auto-resolve if confident and definitive
-                if outcome in ["YES", "NO"] and confidence >= 0.7:
+                # Auto-resolve if reasonably confident (lowered threshold for better coverage)
+                if outcome in ["YES", "NO"] and confidence >= 0.6:
                     # Resolve the prediction
                     pred.status = "resolved"
                     pred.flagged = False
