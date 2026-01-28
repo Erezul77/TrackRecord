@@ -54,8 +54,11 @@ export function PunditCard({ pundit, rank }: PunditCardProps) {
     <Link href={`/pundits/${pundit.id}`} className="block group">
       <div className="flex items-center gap-3 sm:gap-6 p-4 sm:p-5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-black dark:hover:border-white transition-all">
         {/* Rank */}
-        <div className="text-2xl sm:text-3xl font-black text-neutral-200 dark:text-neutral-700 w-8 sm:w-12 text-center flex-shrink-0 group-hover:text-black dark:group-hover:text-white transition-colors">
-          {rank}
+        <div className="flex flex-col items-center w-8 sm:w-12 flex-shrink-0">
+          <span className="text-[8px] font-bold text-neutral-400 uppercase tracking-wider">Rank</span>
+          <span className="text-2xl sm:text-3xl font-black text-neutral-300 dark:text-neutral-600 group-hover:text-black dark:group-hover:text-white transition-colors">
+            #{rank}
+          </span>
         </div>
         
         {/* Avatar - Using UI Avatars API */}
@@ -81,15 +84,15 @@ export function PunditCard({ pundit, rank }: PunditCardProps) {
           
           {/* Stats - Hidden on mobile, shown on desktop */}
           <div className="hidden sm:flex flex-wrap gap-4 text-xs mt-2">
-            <span className="text-neutral-500">
-              <span className="font-semibold text-black dark:text-white">{pundit.metrics.total_predictions}</span> predictions
+            <span className="text-neutral-500" title="Total predictions tracked">
+              📊 <span className="font-semibold text-black dark:text-white">{pundit.metrics.total_predictions}</span> tracked
             </span>
-            <span className="text-neutral-500">
-              <span className="font-semibold text-black dark:text-white">{pundit.metrics.resolved_predictions}</span> resolved
+            <span className="text-neutral-500" title="Predictions that have been resolved as correct or wrong">
+              ✓ <span className="font-semibold text-black dark:text-white">{pundit.metrics.resolved_predictions}</span> resolved
             </span>
             {pundit.net_worth && (
-              <span className="text-neutral-500">
-                <span className="font-semibold text-green-600 dark:text-green-400">{formatNetWorth(pundit.net_worth)}</span>
+              <span className="text-neutral-500" title="Estimated net worth">
+                💰 <span className="font-semibold text-green-600 dark:text-green-400">{formatNetWorth(pundit.net_worth)}</span>
               </span>
             )}
           </div>

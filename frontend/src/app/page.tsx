@@ -82,9 +82,25 @@ export default async function Home() {
 
       {/* Leaderboard Section */}
       <section className="container mx-auto px-4 py-16">
-        <div className="mb-10">
+        <div className="mb-8">
           <h2 className="text-2xl sm:text-3xl font-black text-black dark:text-white tracking-tight mb-2">Leaderboard</h2>
-          <p className="text-neutral-500">Who's right most often? Track the best—and worst—predictors.</p>
+          <p className="text-neutral-500 mb-4">Who's right most often? Track the best—and worst—predictors.</p>
+          
+          {/* Legend */}
+          <div className="flex flex-wrap gap-4 text-xs text-neutral-500 bg-neutral-50 dark:bg-neutral-900 px-4 py-3 rounded border border-neutral-200 dark:border-neutral-800">
+            <span title="Position in the ranking">
+              <strong className="text-black dark:text-white">#Rank</strong> = Position
+            </span>
+            <span title="Percentage of predictions that came true">
+              <strong className="text-green-600">%</strong> = Accuracy (predictions correct ÷ total resolved)
+            </span>
+            <span title="Total predictions being tracked">
+              <strong className="text-black dark:text-white">📊</strong> = Predictions tracked
+            </span>
+            <span title="Predictions that have been verified as correct or wrong">
+              <strong className="text-black dark:text-white">✓</strong> = Resolved (verified outcome)
+            </span>
+          </div>
         </div>
 
         <LeaderboardTabs pundits={pundits} />
