@@ -542,9 +542,11 @@ Respond ONLY with JSON:
             .where(
                 and_(
                     Prediction.timeframe < now,
-                    Prediction.status.in_(['pending_match', 'matched', 'open'])
+                    Prediction.status.in_(['pending', 'pending_match', 'matched', 'open']),
+                    Prediction.flagged == False  # Don't resolve flagged predictions
                 )
             )
+            .options(selectinload(Prediction.pundit))
             .limit(limit)
         )
         
