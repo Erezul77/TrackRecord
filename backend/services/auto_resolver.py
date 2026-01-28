@@ -483,8 +483,11 @@ Respond ONLY with JSON:
                 
                 # Auto-resolve if reasonably confident (lowered threshold for better coverage)
                 if outcome in ["YES", "NO"] and confidence >= 0.6:
-                    # Resolve the prediction
+                    # Resolve the prediction - SET THE OUTCOME!
                     pred.status = "resolved"
+                    pred.outcome = outcome  # THIS WAS MISSING!
+                    pred.resolved_at = datetime.utcnow()
+                    pred.resolution_source = "ai"
                     pred.flagged = False
                     pred.flag_reason = f"AI resolved: {reasoning[:200]}"
                     

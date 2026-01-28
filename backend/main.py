@@ -2303,6 +2303,78 @@ async def fix_timeframes_aggressive(
     }
 
 
+@app.post("/api/admin/fix-null-outcomes", tags=["Admin"])
+async def fix_null_outcomes(
+    limit: int = Query(50, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Fix predictions that are marked as 'resolved' but have null outcomes.
+    Uses AI to determine the outcome.
+    """
+    from services.auto_resolver import get_resolver
+    
+    # Find resolved predictions with null outcomes
+    result = await db.execute(
+        select(Prediction)
+        .where(
+            and_(
+                Prediction.status == 'resolved',
+                Prediction.outcome == None
+            )
+        )
+        .options(selectinload(Prediction.pundit))
+        .limit(limit)
+    )
+    predictions = result.scalars().all()
+    
+    fixed = 0
+    errors = 0
+    details = []
+    
+    resolver = get_resolver()
+    
+    for pred in predictions:
+        try:
+            # Reset status so AI can re-resolve
+            pred.status = 'pending'
+            await db.commit()
+            
+            # Use AI to resolve
+            res = await resolver.ai_resolve_prediction(db, str(pred.id))
+            
+            if res.get("success") and res.get("action") == "resolved":
+                fixed += 1
+                details.append({
+                    "id": str(pred.id),
+                    "claim": pred.claim[:60],
+                    "outcome": res.get("outcome"),
+                    "reasoning": res.get("reasoning", "")[:100]
+                })
+            else:
+                # Keep it as resolved but mark we couldn't determine outcome
+                pred.status = 'resolved'
+                pred.outcome = None
+                pred.resolution_source = 'unknown'
+                await db.commit()
+                
+        except Exception as e:
+            errors += 1
+            logging.error(f"Error fixing outcome for {pred.id}: {e}")
+            # Restore resolved status
+            pred.status = 'resolved'
+            await db.commit()
+    
+    return {
+        "status": "complete",
+        "total_with_null_outcomes": len(predictions),
+        "fixed": fixed,
+        "errors": errors,
+        "details": details
+    }
+
+
 @app.post("/api/admin/populate-batch-4", tags=["Admin"])
 async def populate_batch_4(
     db: AsyncSession = Depends(get_db),

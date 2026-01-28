@@ -81,6 +81,11 @@ class Prediction(Base):
     status: Mapped[str] = mapped_column(String(50), default='pending_match')
     matched_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     
+    # Resolution outcome - YES (correct) or NO (wrong)
+    outcome: Mapped[Optional[str]] = mapped_column(String(10))
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    resolution_source: Mapped[Optional[str]] = mapped_column(String(50))  # 'ai', 'manual', 'market'
+    
     flagged: Mapped[bool] = mapped_column(Boolean, default=False)
     flag_reason: Mapped[Optional[str]] = mapped_column(Text)
     verified_by_pundit: Mapped[Optional[bool]] = mapped_column(Boolean)

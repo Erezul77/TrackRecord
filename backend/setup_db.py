@@ -86,6 +86,63 @@ async def migrate_add_horizon_column():
             
     print("Horizon migration complete!")
 
+async def migrate_add_outcome_columns():
+    """Add outcome, resolved_at, resolution_source columns to predictions table"""
+    print("Checking for outcome columns...")
+    async with engine.begin() as conn:
+        # Check and add outcome column
+        result = await conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'predictions' AND column_name = 'outcome'
+        """))
+        
+        if not result.fetchone():
+            print("Adding outcome column...")
+            await conn.execute(text("""
+                ALTER TABLE predictions 
+                ADD COLUMN outcome VARCHAR(10)
+            """))
+            print("Outcome column added!")
+        else:
+            print("Outcome column already exists")
+        
+        # Check and add resolved_at column
+        result = await conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'predictions' AND column_name = 'resolved_at'
+        """))
+        
+        if not result.fetchone():
+            print("Adding resolved_at column...")
+            await conn.execute(text("""
+                ALTER TABLE predictions 
+                ADD COLUMN resolved_at TIMESTAMP
+            """))
+            print("resolved_at column added!")
+        else:
+            print("resolved_at column already exists")
+        
+        # Check and add resolution_source column
+        result = await conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'predictions' AND column_name = 'resolution_source'
+        """))
+        
+        if not result.fetchone():
+            print("Adding resolution_source column...")
+            await conn.execute(text("""
+                ALTER TABLE predictions 
+                ADD COLUMN resolution_source VARCHAR(50)
+            """))
+            print("resolution_source column added!")
+        else:
+            print("resolution_source column already exists")
+            
+    print("Outcome migration complete!")
+
 async def full_setup():
     """Run full setup including migrations"""
     try:
@@ -102,6 +159,11 @@ async def full_setup():
         await migrate_add_horizon_column()
     except Exception as e:
         print(f"Warning: horizon migration failed: {e}")
+    
+    try:
+        await migrate_add_outcome_columns()
+    except Exception as e:
+        print(f"Warning: outcome migration failed: {e}")
     
     print("Setup complete (with possible warnings above)")
 
