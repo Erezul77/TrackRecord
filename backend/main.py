@@ -1548,18 +1548,32 @@ async def flag_vague_predictions(
     admin = Depends(require_admin)
 ):
     """
-    Flag predictions that are too vague to be resolvable.
+    Flag predictions that are too vague or unfalsifiable.
     
-    Identifies predictions containing vague words like:
-    - "impact", "affect", "influence", "shape", "define"
-    - "can be", "could be", "might", "may"
-    - Subjective terms without measurable outcomes
+    Identifies predictions containing:
+    - Vague words: "impact", "affect", "influence", "shape", "define"
+    - Possibilities: "can be", "could be", "might", "may"
+    - Hyperbolic/unfalsifiable: "world will end", "everything will change"
+    - Advice, not predictions: "remains best strategy", "should do"
+    - Conditional statements: "if we don't", "unless", "without"
     """
     # Vague word patterns
     vague_patterns = [
+        # Vague impact words
         '%impact%', '%affect%', '%influence%', '%shape%', '%define%',
-        '%can be%', '%could be%', '%might%', '%may be%',
-        '%important%', '%matter%', '%significant%'
+        # Possibilities, not predictions  
+        '%can be%', '%could be%', '%might%', '%may be%', '%can still%',
+        # Subjective
+        '%important%', '%matter%', '%significant%',
+        # Hyperbolic/unfalsifiable
+        '%world will end%', '%everything will%', '%destroy humanity%',
+        '%change everything%', '%transform everything%',
+        # Advice, not predictions
+        '%remains best%', '%is best strategy%', '%should always%',
+        '%buy what you know%', '%never sell%',
+        # Conditional (not direct predictions)
+        '%if we don\'t%', '%if we do not%', '%unless we%', '%without action%',
+        '%without climate%'
     ]
     
     flagged_count = 0
