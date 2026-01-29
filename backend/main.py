@@ -206,6 +206,87 @@ async def get_pundit(pundit_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Pundit not found")
     return pundit
 
+
+@app.post("/api/pundits/{pundit_id}/activate-tracking", tags=["Admin"])
+async def activate_pundit_tracking(
+    pundit_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Immediately search for and extract predictions from a specific pundit.
+    Uses Google News RSS to find recent articles mentioning this pundit.
+    """
+    import feedparser
+    import httpx
+    from urllib.parse import quote
+    
+    # Get the pundit
+    result = await db.execute(
+        select(Pundit).where(Pundit.id == pundit_id)
+    )
+    pundit = result.scalar_one_or_none()
+    if not pundit:
+        raise HTTPException(status_code=404, detail="Pundit not found")
+    
+    # Search Google News for this pundit
+    search_query = quote(f'"{pundit.name}" prediction OR forecast OR "will" OR "expect"')
+    google_news_url = f"https://news.google.com/rss/search?q={search_query}&hl=en-US&gl=US&ceid=US:en"
+    
+    articles_found = 0
+    predictions_extracted = 0
+    errors = []
+    
+    try:
+        # Fetch RSS feed
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.get(google_news_url)
+            if response.status_code != 200:
+                raise HTTPException(status_code=500, detail="Failed to fetch news")
+        
+        # Parse feed
+        feed = feedparser.parse(response.text)
+        articles_found = len(feed.entries[:10])  # Limit to 10 articles
+        
+        # Process articles with AI
+        from services.auto_agent import AutoAgentPipeline
+        from services.rss_ingestion import NewsArticle
+        
+        pipeline = AutoAgentPipeline(db)
+        
+        for entry in feed.entries[:10]:
+            try:
+                article = NewsArticle(
+                    title=entry.get('title', ''),
+                    url=entry.get('link', ''),
+                    summary=entry.get('summary', entry.get('description', '')),
+                    published=datetime.utcnow(),
+                    source="Google News",
+                    author=None
+                )
+                
+                # Extract predictions (force this specific pundit)
+                new_predictions = await pipeline._process_article(article, force_pundit=pundit)
+                predictions_extracted += new_predictions
+                
+            except Exception as e:
+                errors.append(str(e)[:100])
+        
+        await db.commit()
+        
+    except Exception as e:
+        logging.error(f"Error activating tracking for {pundit.name}: {e}")
+        errors.append(str(e))
+    
+    return {
+        "status": "complete",
+        "pundit": pundit.name,
+        "articles_searched": articles_found,
+        "predictions_extracted": predictions_extracted,
+        "errors": errors[:5] if errors else None,
+        "message": f"Found {articles_found} articles, extracted {predictions_extracted} predictions for {pundit.name}"
+    }
+
 @app.get("/api/pundits/{pundit_id}/predictions")
 async def get_pundit_predictions(
     pundit_id: uuid.UUID, 

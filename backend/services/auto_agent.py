@@ -284,14 +284,19 @@ class AutoAgentPipeline:
         logger.info(f"Pipeline complete. Stats: {stats}")
         return stats
     
-    async def _process_article(self, article: NewsArticle) -> Dict:
-        """Process a single article through the pipeline"""
-        result = {
-            "predictions_found": 0,
-            "predictions_matched": 0,
-            "predictions_stored": 0,
-            "new_pundits": 0
-        }
+    async def _process_article(self, article: NewsArticle, force_pundit=None) -> int:
+        """
+        Process a single article through the pipeline.
+        
+        Args:
+            article: The news article to process
+            force_pundit: If provided, attribute all predictions to this pundit
+                         (used when activating tracking for a specific pundit)
+        
+        Returns:
+            Number of predictions stored
+        """
+        predictions_stored = 0
         
         # Check for duplicate by URL hash
         url_hash = hashlib.sha256(article.url.encode()).hexdigest()
@@ -301,35 +306,35 @@ class AutoAgentPipeline:
         
         if existing:
             logger.debug(f"Skipping duplicate article: {article.title}")
-            return result
+            return 0
         
-        # Extract predictions using AI (now extracts from ANY notable person)
+        # Extract predictions using AI
         predictions_data = await self._extract_predictions(article)
-        result["predictions_found"] = len(predictions_data)
         
         if not predictions_data:
-            return result
+            return 0
         
         # Process each extracted prediction
         for pred_data in predictions_data:
             try:
-                pundit_name = pred_data.get("pundit_name", "").strip()
-                if not pundit_name or len(pundit_name) < 3:
-                    continue
-                
-                # Find existing pundit or auto-create new one
-                pundit = self._find_pundit(pundit_name)
-                is_new_pundit = False
-                if not pundit:
-                    # Auto-create new pundit!
-                    pundit = self._auto_create_pundit(
-                        name=pundit_name,
-                        title=pred_data.get("pundit_title", ""),
-                        affiliation=pred_data.get("pundit_affiliation", ""),
-                        category=pred_data.get("category", "general")
-                    )
-                    is_new_pundit = True
-                    result["new_pundits"] += 1
+                # If force_pundit is set, use that pundit for all predictions
+                if force_pundit:
+                    pundit = force_pundit
+                else:
+                    pundit_name = pred_data.get("pundit_name", "").strip()
+                    if not pundit_name or len(pundit_name) < 3:
+                        continue
+                    
+                    # Find existing pundit or auto-create new one
+                    pundit = self._find_pundit(pundit_name)
+                    if not pundit:
+                        # Auto-create new pundit!
+                        pundit = self._auto_create_pundit(
+                            name=pundit_name,
+                            title=pred_data.get("pundit_title", ""),
+                            affiliation=pred_data.get("pundit_affiliation", ""),
+                            category=pred_data.get("category", "general")
+                        )
                 
                 # Create prediction
                 prediction = await self._create_prediction(pundit, pred_data, article)
@@ -337,13 +342,11 @@ class AutoAgentPipeline:
                     continue
                 
                 # Match to Polymarket
-                match_result = await self._match_to_polymarket(prediction)
-                if match_result:
-                    result["predictions_matched"] += 1
+                await self._match_to_polymarket(prediction)
                 
                 # Save to database
                 self.db.add(prediction)
-                result["predictions_stored"] += 1
+                predictions_stored += 1
                 
             except Exception as e:
                 logger.error(f"Error processing prediction: {e}")
@@ -351,7 +354,7 @@ class AutoAgentPipeline:
         # Commit all changes
         self.db.commit()
         
-        return result
+        return predictions_stored
     
     async def _extract_predictions(self, article: NewsArticle) -> List[Dict]:
         """Use Claude to extract predictions from article - finds ANY notable person"""
