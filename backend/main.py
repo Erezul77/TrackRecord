@@ -272,8 +272,11 @@ async def get_recent_predictions(
         selectinload(Prediction.position)
     )
     
-    # Always exclude flagged predictions from public feed
+    # Always exclude flagged predictions and low-quality (TR Index < 40) from public feed
     query = query.where(Prediction.flagged == False)
+    query = query.where(
+        (Prediction.tr_index_score >= 40) | (Prediction.tr_index_score == None)
+    )  # Allow None (unscored) but filter out low scores
     
     if category:
         query = query.where(Prediction.category == category)
