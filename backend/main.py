@@ -172,17 +172,25 @@ async def get_leaderboard(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Get all pundits. Frontend handles showing 'needs more data' for < 3 resolved.
-    Ranked by win rate (accuracy).
+    Get all pundits. Ranked by win rate, but only pundits with >= 3 resolved predictions
+    are officially ranked. Those with < 3 show at the end with 'needs more data'.
     """
+    from sqlalchemy import case
+    
     query = select(Pundit).join(PunditMetrics).options(selectinload(Pundit.metrics))
     
     if category:
         query = query.where(Pundit.domains.any(category))
     
-    # Show everyone, ranked by win rate
-    # Those with < 3 resolved will show "needs more data" in frontend
-    query = query.order_by(desc(PunditMetrics.paper_win_rate)).limit(limit)
+    # Order: First by having enough data (>=3 resolved), then by win rate
+    query = query.order_by(
+        case(
+            (PunditMetrics.resolved_predictions >= MIN_PREDICTIONS_FOR_RANKING, 0),
+            else_=1
+        ),  # Ranked pundits first
+        desc(PunditMetrics.paper_win_rate),  # Then by win rate
+        desc(PunditMetrics.resolved_predictions)  # Tie-breaker: more resolved
+    ).limit(limit)
     
     result = await db.execute(query)
     pundits = result.scalars().all()
@@ -283,7 +291,7 @@ async def get_recent_predictions(
     elif sort == "resolving_soon":
         # Soonest timeframe first (open predictions only, then resolved)
         def resolving_key(p):
-            has_outcome = p.position and p.position.outcome
+            has_outcome = p.outcome or (p.position and p.position.outcome)
             if has_outcome:
                 return (1, float('inf'))  # Resolved at the end
             return (0, p.timeframe.timestamp() if p.timeframe else float('inf'))
@@ -300,7 +308,7 @@ async def get_recent_predictions(
     else:
         # Default: Open predictions first (newest first), then resolved (newest first)
         def sort_key(p):
-            has_outcome = p.position and p.position.outcome
+            has_outcome = p.outcome or (p.position and p.position.outcome)
             return (
                 1 if has_outcome else 0,  # Open first
                 -(p.captured_at.timestamp() if p.captured_at else 0)  # Newest first
