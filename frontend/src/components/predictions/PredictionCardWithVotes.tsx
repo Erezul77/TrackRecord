@@ -187,10 +187,17 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
                 </div>
               )}
             </div>
-            {pred.source_url && pred.source_url !== 'https://example.com/test' && (
+            {pred.source_url && 
+             pred.source_url !== 'https://example.com/test' && 
+             !pred.source_url.includes('archive.trackrecord.life') && (
               <a href={pred.source_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:underline font-bold">
                 Source <ExternalLink className="h-3 w-3" />
               </a>
+            )}
+            {pred.source_url?.includes('archive.trackrecord.life') && (
+              <span className="flex items-center gap-1 text-neutral-400 text-[10px]">
+                Historical data
+              </span>
             )}
           </div>
         </div>
