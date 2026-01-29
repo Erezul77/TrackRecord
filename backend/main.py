@@ -272,6 +272,9 @@ async def get_recent_predictions(
         selectinload(Prediction.position)
     )
     
+    # Always exclude flagged predictions from public feed
+    query = query.where(Prediction.flagged == False)
+    
     if category:
         query = query.where(Prediction.category == category)
     
