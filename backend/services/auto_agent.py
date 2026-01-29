@@ -12,7 +12,7 @@ from typing import List, Dict, Optional
 import uuid
 
 from anthropic import Anthropic
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
 
 from database.models import Pundit, Prediction, Match, Position, PunditMetrics, RawContent
@@ -480,6 +480,36 @@ class AutoAgentPipeline:
             flag_reason = f"TR Index rejected: {tr_score.rejection_reason}"
             status = "needs_review"
         
+        # Create hash chain entry for verification
+        from services.hash_chain import create_chain_entry, GENESIS_HASH
+        
+        captured_at = datetime.utcnow()
+        
+        # Get the latest chain hash for linking
+        latest_result = self.db.execute(
+            select(Prediction)
+            .where(Prediction.chain_hash != None)
+            .order_by(Prediction.chain_index.desc())
+            .limit(1)
+        )
+        latest_pred = latest_result.scalar_one_or_none()
+        
+        if latest_pred and latest_pred.chain_hash:
+            prev_chain_hash = latest_pred.chain_hash
+            chain_index = (latest_pred.chain_index or 0) + 1
+        else:
+            prev_chain_hash = GENESIS_HASH
+            chain_index = 1
+        
+        chain_entry = create_chain_entry(
+            claim=pred_data["claim"],
+            quote=pred_data.get("quote", pred_data["claim"]),
+            source_url=article.url,
+            captured_at=captured_at,
+            prev_chain_hash=prev_chain_hash,
+            chain_index=chain_index
+        )
+        
         return Prediction(
             id=uuid.uuid4(),
             pundit_id=pundit.id,
@@ -490,8 +520,11 @@ class AutoAgentPipeline:
             category=pred_data.get("category", "general"),
             source_url=article.url,
             source_type="rss",
-            captured_at=datetime.utcnow(),
-            content_hash=content_hash,
+            captured_at=captured_at,
+            content_hash=chain_entry.content_hash,  # Use chain content hash
+            chain_hash=chain_entry.chain_hash,
+            chain_index=chain_entry.chain_index,
+            prev_chain_hash=chain_entry.prev_chain_hash,
             status=status,
             flagged=flagged,
             flag_reason=flag_reason,
@@ -502,7 +535,7 @@ class AutoAgentPipeline:
             tr_boldness_score=tr_score.boldness,
             tr_relevance_score=tr_score.relevance,
             tr_stakes_score=tr_score.stakes,
-            created_at=datetime.utcnow()
+            created_at=captured_at
         )
     
     async def _match_to_polymarket(self, prediction: Prediction) -> Optional[Match]:
