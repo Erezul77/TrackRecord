@@ -1,6 +1,6 @@
 // src/app/predictions/page.tsx
 import { PredictionsList } from "@/components/predictions/PredictionsList"
-import { Sparkles, Clock, CheckCircle, XCircle, Hourglass } from "lucide-react"
+import { Clock, CheckCircle, XCircle, Hourglass } from "lucide-react"
 
 export default function PredictionsPage() {
   return (
@@ -45,25 +45,25 @@ export default function PredictionsPage() {
             </div>
           </div>
           
-          {/* TR Index */}
+          {/* TR Score */}
           <div>
-            <p className="font-semibold text-neutral-600 dark:text-neutral-400 mb-2">TR Index (Quality Score):</p>
+            <p className="font-semibold text-neutral-600 dark:text-neutral-400 mb-2">TR Score (Quality Rating):</p>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="flex items-center gap-1 px-2 py-0.5 bg-yellow-400 text-yellow-900 rounded-full text-[10px] font-bold">
-                  <Sparkles className="h-3 w-3" /> 80+
+                  🥇 TR 80+
                 </span>
                 <span className="text-neutral-500">Gold - Exceptional quality</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="flex items-center gap-1 px-2 py-0.5 bg-neutral-300 text-neutral-800 rounded-full text-[10px] font-bold">
-                  <Sparkles className="h-3 w-3" /> 60-79
+                  🥈 TR 60-79
                 </span>
                 <span className="text-neutral-500">Silver - Good quality</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="flex items-center gap-1 px-2 py-0.5 bg-orange-300 text-orange-900 rounded-full text-[10px] font-bold">
-                  <Sparkles className="h-3 w-3" /> 40-59
+                  🥉 TR 40-59
                 </span>
                 <span className="text-neutral-500">Bronze - Acceptable</span>
               </div>

@@ -2,7 +2,7 @@
 'use client'
 import Link from "next/link"
 import { formatDate, cn } from "@/lib/utils"
-import { ExternalLink, User, CheckCircle, XCircle, Clock, Sparkles, Shield, Copy, Timer, Hourglass } from "lucide-react"
+import { ExternalLink, User, CheckCircle, XCircle, Clock, Shield, Copy, Timer, Hourglass } from "lucide-react"
 import { VoteButtons } from "./VoteButtons"
 import { PredictionWithPundit } from "@/lib/api"
 import { useState } from "react"
@@ -108,9 +108,12 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
                 pred.tr_index.tier === 'silver' ? 'bg-neutral-300/90 text-neutral-800' :
                 'bg-orange-300/90 text-orange-900'
               )}
-              title={`TR Index: ${pred.tr_index.score.toFixed(0)}/100 (${pred.tr_index.tier === 'gold' ? 'Gold - Exceptional' : pred.tr_index.tier === 'silver' ? 'Silver - Good' : 'Bronze - Acceptable'})\n\nMeasures prediction quality:\n• Specificity - Clear targets?\n• Verifiability - Can we check it?\n• Boldness - Non-obvious?\n• Relevance - Timely?\n• Stakes - Significant?`}
+              title={`TR Score: ${pred.tr_index.score.toFixed(0)}/100 (${pred.tr_index.tier === 'gold' ? 'Gold - Exceptional' : pred.tr_index.tier === 'silver' ? 'Silver - Good' : 'Bronze - Acceptable'})\n\nMeasures prediction quality:\n• Specificity - Clear targets?\n• Verifiability - Can we check it?\n• Boldness - Non-obvious?\n• Relevance - Timely?\n• Stakes - Significant?`}
             >
-              <Sparkles className="h-3 w-3" />
+              <span className="text-sm">
+                {pred.tr_index.tier === 'gold' ? '🥇' : pred.tr_index.tier === 'silver' ? '🥈' : '🥉'}
+              </span>
+              <span className="text-[10px] opacity-70">TR</span>
               {pred.tr_index.score.toFixed(0)}
             </span>
           )}
