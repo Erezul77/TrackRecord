@@ -1533,8 +1533,8 @@ async def batch_score_predictions(
             significant_if_true=True
         )
         
-        # Update prediction
-        pred.tr_index_score = tr_score.total if tr_score.passed else None
+        # Update prediction - ALWAYS store the score so we can display it
+        pred.tr_index_score = tr_score.total  # Always store, even if low
         pred.tr_specificity_score = tr_score.specificity
         pred.tr_verifiability_score = tr_score.verifiability
         pred.tr_boldness_score = tr_score.boldness
