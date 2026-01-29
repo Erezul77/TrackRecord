@@ -230,7 +230,7 @@ async def get_pundit_predictions(
             "source_type": p.source_type,
             "timeframe": p.timeframe.isoformat() if p.timeframe else None,
             "captured_at": p.captured_at.isoformat() if p.captured_at else None,
-            "outcome": p.position.outcome if p.position and p.position.outcome else None,
+            "outcome": p.outcome or (p.position.outcome if p.position else None),
             "tr_index": {
                 "score": p.tr_index_score,
                 "tier": "gold" if p.tr_index_score and p.tr_index_score >= 80 else 
@@ -321,7 +321,7 @@ async def get_recent_predictions(
             "source_type": p.source_type,
             "timeframe": p.timeframe.isoformat() if p.timeframe else None,
             "captured_at": p.captured_at.isoformat() if p.captured_at else None,
-            "outcome": p.position.outcome if p.position and p.position.outcome else None,
+            "outcome": p.outcome or (p.position.outcome if p.position else None),
             "tr_index": {
                 "score": p.tr_index_score,
                 "tier": "gold" if p.tr_index_score and p.tr_index_score >= 80 else 
