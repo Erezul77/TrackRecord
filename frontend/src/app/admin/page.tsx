@@ -1,7 +1,7 @@
 // src/app/admin/page.tsx
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle, UserPlus, Search, Sparkles, ClipboardCheck, XCircle, Check, X, Bot, Play, Square, History, Zap } from 'lucide-react'
+import { Plus, Rss, RefreshCw, CheckCircle, AlertCircle, UserPlus, Search, Sparkles, ClipboardCheck, XCircle, Check, X, Bot, Play, Square, History, Zap, Radar } from 'lucide-react'
 import { KNOWN_PUNDITS, searchKnownPundits, KnownPundit } from '@/data/knownPundits'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -60,6 +60,9 @@ export default function AdminPage() {
     predictions_extracted: number
     errors: string[]
   } | null>(null)
+  
+  // Activate tracking state
+  const [activatingPundit, setActivatingPundit] = useState<string | null>(null)
   
   // Pundit search state
   const [punditSearch, setPunditSearch] = useState('')
@@ -294,6 +297,27 @@ export default function AdminPage() {
       setMessage({ type: 'error', text: 'Error running auto-agent' })
     }
     setBotLoading(false)
+  }
+  
+  const activateTracking = async (punditId: string, punditName: string) => {
+    setActivatingPundit(punditId)
+    setMessage(null)
+    try {
+      const res = await fetch(`${API_URL}/api/pundits/${punditId}/activate-tracking`, { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json()
+        setMessage({ 
+          type: 'success', 
+          text: `Tracking activated for ${punditName}! Found ${data.articles_searched} articles, extracted ${data.predictions_extracted} predictions.`
+        })
+      } else {
+        const data = await res.json()
+        setMessage({ type: 'error', text: data.detail || 'Failed to activate tracking' })
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Error activating tracking' })
+    }
+    setActivatingPundit(null)
   }
 
   return (
@@ -872,11 +896,20 @@ export default function AdminPage() {
           {/* Current pundits list */}
           <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
             <p className="text-sm font-bold text-black dark:text-white mb-2">Currently Tracked ({pundits.length})</p>
+            <p className="text-xs text-neutral-500 mb-3">Click the radar icon to immediately search for predictions from a pundit:</p>
             <div className="flex flex-wrap gap-2">
               {pundits.map(p => (
-                <span key={p.id} className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full font-medium">
-                  {p.name}
-                </span>
+                <div key={p.id} className="flex items-center gap-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full">
+                  <span className="text-xs font-medium">{p.name}</span>
+                  <button
+                    onClick={() => activateTracking(p.id, p.name)}
+                    disabled={activatingPundit === p.id}
+                    className="ml-1 p-0.5 hover:bg-green-200 dark:hover:bg-green-800 rounded-full transition-colors disabled:opacity-50"
+                    title="Activate tracking - search for predictions now"
+                  >
+                    <Radar className={`h-3 w-3 ${activatingPundit === p.id ? 'animate-pulse' : ''}`} />
+                  </button>
+                </div>
               ))}
             </div>
           </div>
