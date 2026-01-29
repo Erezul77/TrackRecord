@@ -737,12 +737,26 @@ class RSSIngestionService:
         
         return articles
     
-    def fetch_all_feeds(self) -> List[NewsArticle]:
-        """Fetch all configured RSS feeds"""
+    def fetch_all_feeds(self, max_feeds: int = 20) -> List[NewsArticle]:
+        """Fetch RSS feeds (limited to prevent timeout)"""
+        import logging
+        logger = logging.getLogger(__name__)
+        
         all_articles = []
-        for feed_key in RSS_FEEDS:
-            articles = self.fetch_feed(feed_key)
-            all_articles.extend(articles)
+        feed_keys = list(RSS_FEEDS.keys())[:max_feeds]  # Limit feeds to prevent timeout
+        
+        logger.info(f"Fetching {len(feed_keys)} RSS feeds (max {max_feeds})...")
+        
+        for i, feed_key in enumerate(feed_keys):
+            try:
+                logger.info(f"Fetching feed {i+1}/{len(feed_keys)}: {feed_key}")
+                articles = self.fetch_feed(feed_key)
+                all_articles.extend(articles)
+                logger.info(f"  -> Got {len(articles)} articles from {feed_key}")
+            except Exception as e:
+                logger.warning(f"  -> Failed to fetch {feed_key}: {e}")
+        
+        logger.info(f"Total articles fetched: {len(all_articles)}")
         return all_articles
     
     def find_pundit_mentions(self, text: str) -> List[str]:
