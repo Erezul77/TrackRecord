@@ -114,7 +114,7 @@ class AutoAgentPipeline:
         """Load pundits into memory for quick lookup (limited for performance)"""
         try:
             # Limit to 500 pundits to prevent memory issues
-            result = self.db.execute(select(Pundit).limit(500))
+            result = await self.db.execute(select(Pundit).limit(500))
             pundits = result.scalars().all()
             
             for pundit in pundits:
@@ -151,14 +151,15 @@ class AutoAgentPipeline:
         username = username.lower().replace(' ', '_')
         return username[:50]  # Limit length
     
-    def _auto_create_pundit(self, name: str, title: str = "", affiliation: str = "", category: str = "general") -> Pundit:
+    async def _auto_create_pundit(self, name: str, title: str = "", affiliation: str = "", category: str = "general") -> Pundit:
         """Auto-create a new pundit when discovered"""
         username = self._create_username(name)
         
         # Check if username already exists (might have different name variation)
-        existing = self.db.execute(
+        result = await self.db.execute(
             select(Pundit).where(Pundit.username == username)
-        ).scalar_one_or_none()
+        )
+        existing = result.scalar_one_or_none()
         
         if existing:
             # Add to cache and return existing
@@ -300,9 +301,10 @@ class AutoAgentPipeline:
         
         # Check for duplicate by URL hash
         url_hash = hashlib.sha256(article.url.encode()).hexdigest()
-        existing = self.db.execute(
+        result = await self.db.execute(
             select(RawContent).where(RawContent.content_hash == url_hash)
-        ).scalar_one_or_none()
+        )
+        existing = result.scalar_one_or_none()
         
         if existing:
             logger.debug(f"Skipping duplicate article: {article.title}")
@@ -329,7 +331,7 @@ class AutoAgentPipeline:
                     pundit = self._find_pundit(pundit_name)
                     if not pundit:
                         # Auto-create new pundit!
-                        pundit = self._auto_create_pundit(
+                        pundit = await self._auto_create_pundit(
                             name=pundit_name,
                             title=pred_data.get("pundit_title", ""),
                             affiliation=pred_data.get("pundit_affiliation", ""),
@@ -352,7 +354,7 @@ class AutoAgentPipeline:
                 logger.error(f"Error processing prediction: {e}")
         
         # Commit all changes
-        self.db.commit()
+        await self.db.commit()
         
         return predictions_stored
     
@@ -415,9 +417,10 @@ class AutoAgentPipeline:
         ).hexdigest()
         
         # Check for duplicate
-        existing = self.db.execute(
+        result = await self.db.execute(
             select(Prediction).where(Prediction.content_hash == content_hash)
-        ).scalar_one_or_none()
+        )
+        existing = result.scalar_one_or_none()
         
         if existing:
             return None
@@ -486,7 +489,7 @@ class AutoAgentPipeline:
         captured_at = datetime.utcnow()
         
         # Get the latest chain hash for linking
-        latest_result = self.db.execute(
+        latest_result = await self.db.execute(
             select(Prediction)
             .where(Prediction.chain_hash != None)
             .order_by(Prediction.chain_index.desc())
