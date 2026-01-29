@@ -101,12 +101,15 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
         </div>
         <div className="flex items-center gap-2">
           {pred.tr_index?.score && (
-            <span className={cn(
-              "flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full",
-              pred.tr_index.tier === 'gold' ? 'bg-yellow-400/90 text-yellow-900' :
-              pred.tr_index.tier === 'silver' ? 'bg-neutral-300/90 text-neutral-800' :
-              'bg-orange-300/90 text-orange-900'
-            )}>
+            <span 
+              className={cn(
+                "flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full cursor-help",
+                pred.tr_index.tier === 'gold' ? 'bg-yellow-400/90 text-yellow-900' :
+                pred.tr_index.tier === 'silver' ? 'bg-neutral-300/90 text-neutral-800' :
+                'bg-orange-300/90 text-orange-900'
+              )}
+              title={`TR Index: ${pred.tr_index.score.toFixed(0)}/100 (${pred.tr_index.tier === 'gold' ? 'Gold - Exceptional' : pred.tr_index.tier === 'silver' ? 'Silver - Good' : 'Bronze - Acceptable'})\n\nMeasures prediction quality:\n• Specificity - Clear targets?\n• Verifiability - Can we check it?\n• Boldness - Non-obvious?\n• Relevance - Timely?\n• Stakes - Significant?`}
+            >
               <Sparkles className="h-3 w-3" />
               {pred.tr_index.score.toFixed(0)}
             </span>
