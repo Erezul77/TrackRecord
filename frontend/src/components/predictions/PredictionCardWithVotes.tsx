@@ -154,36 +154,26 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
           <div className="flex items-center gap-2">
             {/* Hash Chain Verification Badge */}
             <div className="relative">
-              <button 
-                onClick={() => setShowHash(!showHash)}
-                className={cn(
-                  "flex items-center gap-1 font-bold",
-                  pred.chain_hash 
-                    ? "text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300" 
-                    : "text-neutral-400 dark:text-neutral-500 hover:text-neutral-500 dark:hover:text-neutral-400"
-                )}
-                title={pred.chain_hash ? "Cryptographically verified" : "Verification pending"}
-              >
-                <Shield className="h-3 w-3" />
-                <span className="hidden sm:inline">{pred.chain_hash ? "Verified" : "Pending"}</span>
-              </button>
-              {showHash && (
+              {pred.chain_hash && (
+                <button 
+                  onClick={() => setShowHash(!showHash)}
+                  className="flex items-center gap-1 font-bold text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+                  title="Cryptographically verified on blockchain"
+                >
+                  <Shield className="h-3 w-3" />
+                  <span className="hidden sm:inline">Verified</span>
+                </button>
+              )}
+              {showHash && pred.chain_hash && (
                 <div className="absolute bottom-full right-0 mb-2 p-2 bg-black dark:bg-white text-white dark:text-black text-[10px] font-mono whitespace-nowrap z-10 shadow-lg">
-                  {pred.chain_hash ? (
-                    <div className="flex items-center gap-2">
-                      <span>#{pred.chain_index || '?'}</span>
-                      <span>{pred.chain_hash}</span>
-                      <button onClick={copyHash} className="hover:text-green-400 dark:hover:text-green-600">
-                        <Copy className="h-3 w-3" />
-                      </button>
-                      {copied && <span className="text-green-400 dark:text-green-600 ml-2">Copied!</span>}
-                    </div>
-                  ) : (
-                    <div>
-                      <p>Hash verification pending</p>
-                      <p className="text-neutral-400 dark:text-neutral-500 mt-1">Legacy prediction - will be verified soon</p>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <span>#{pred.chain_index || '?'}</span>
+                    <span>{pred.chain_hash}</span>
+                    <button onClick={copyHash} className="hover:text-green-400 dark:hover:text-green-600">
+                      <Copy className="h-3 w-3" />
+                    </button>
+                    {copied && <span className="text-green-400 dark:text-green-600 ml-2">Copied!</span>}
+                  </div>
                 </div>
               )}
             </div>
