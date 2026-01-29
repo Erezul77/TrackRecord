@@ -13,6 +13,12 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "TrackRecord | Accountability for Pundits",
   description: "Tracking predictions and financial performance of world pundits.",
+  icons: {
+    icon: "/TrackRecord_Logo1.png",
+    shortcut: "/TrackRecord_Logo1.png",
+    apple: "/TrackRecord_Logo1.png",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
