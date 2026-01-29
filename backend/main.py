@@ -1587,7 +1587,12 @@ async def flag_vague_predictions(
         '%buy what you know%', '%never sell%',
         # Conditional (not direct predictions)
         '%if we don\'t%', '%if we do not%', '%unless we%', '%without action%',
-        '%without climate%'
+        '%without climate%',
+        # Too long-term / unmeasurable
+        '%in the long run%', '%long term%', '%eventually%', '%someday%',
+        # Vague outcomes
+        '%will challenge%', '%will compete%', '%will be important%',
+        '%more jobs than%destroys%'
     ]
     
     flagged_count = 0
@@ -1597,7 +1602,7 @@ async def flag_vague_predictions(
         result = await db.execute(
             select(Prediction)
             .where(Prediction.claim.ilike(pattern))
-            .where(Prediction.status == "pending")
+            .where(Prediction.status.in_(['pending', 'pending_match', 'matched', 'open']))
             .where(Prediction.flagged == False)
         )
         predictions = result.scalars().all()
