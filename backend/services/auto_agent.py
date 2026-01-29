@@ -269,14 +269,12 @@ class AutoAgentPipeline:
         # Step 3-5: Process each article
         for article in prediction_articles:
             try:
-                result = await self._process_article(article)
+                predictions_stored = await self._process_article(article)
                 
-                if result["predictions_found"] > 0:
+                if predictions_stored > 0:
                     stats["articles_with_predictions"] += 1
-                    stats["predictions_extracted"] += result["predictions_found"]
-                    stats["predictions_matched"] += result["predictions_matched"]
-                    stats["predictions_stored"] += result["predictions_stored"]
-                    stats["new_pundits_created"] += result.get("new_pundits", 0)
+                    stats["predictions_stored"] += predictions_stored
+                    stats["predictions_extracted"] += predictions_stored
                     
             except Exception as e:
                 logger.error(f"Error processing article: {e}")
@@ -376,7 +374,10 @@ class AutoAgentPipeline:
             )
             
             import json
+            import re
             content = response.content[0].text
+            
+            logger.debug(f"AI response: {content[:200]}...")
             
             # Handle markdown code blocks
             if "```json" in content:
@@ -384,7 +385,25 @@ class AutoAgentPipeline:
             elif "```" in content:
                 content = content.split("```")[1].split("```")[0]
             
-            return json.loads(content.strip())
+            # Try to find JSON array in response
+            content = content.strip()
+            
+            # If content doesn't start with [, try to find it
+            if not content.startswith('['):
+                match = re.search(r'\[[\s\S]*\]', content)
+                if match:
+                    content = match.group(0)
+                else:
+                    # No predictions found
+                    logger.info(f"No predictions in article: {article.title[:50]}...")
+                    return []
+            
+            result = json.loads(content)
+            
+            # Ensure we return a list
+            if isinstance(result, dict):
+                return [result] if result else []
+            return result if isinstance(result, list) else []
             
         except Exception as e:
             logger.error(f"AI extraction failed: {e}")
