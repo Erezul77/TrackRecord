@@ -2316,12 +2316,13 @@ async def fix_null_outcomes(
     from services.auto_resolver import get_resolver
     
     # Find resolved predictions with null outcomes
+    # Use .is_(None) for proper SQL NULL comparison
     result = await db.execute(
         select(Prediction)
         .where(
             and_(
                 Prediction.status == 'resolved',
-                Prediction.outcome == None
+                Prediction.outcome.is_(None)
             )
         )
         .options(selectinload(Prediction.pundit))
