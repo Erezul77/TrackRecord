@@ -51,9 +51,9 @@ async def run_rss_ingestion():
         async def _do_rss():
             async with async_session() as session:
                 pipeline = AutoAgentPipeline(session)
-                return await pipeline.run_pipeline(max_articles=10)
+                return await pipeline.run_pipeline(max_articles=50)  # Increased to find more predictions
         
-        results = await asyncio.wait_for(_do_rss(), timeout=180)  # 3 minute timeout
+        results = await asyncio.wait_for(_do_rss(), timeout=600)  # 10 minute timeout for more articles
         logger.info(f"RSS ingestion complete: {results}")
         return results
         
