@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, and_
+from sqlalchemy import select, desc, and_, delete
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 import logging
@@ -3749,29 +3749,32 @@ async def get_pending_predictions(
     admin = Depends(require_admin),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get all predictions pending manual verification (no Polymarket match or unresolved)"""
+    """Get predictions that are OVERDUE (past deadline) and need manual verification"""
     from sqlalchemy import or_
+    from datetime import datetime
     
-    # Get predictions that are either:
-    # 1. pending_match (no Polymarket match found)
-    # 2. matched but not yet resolved
+    now = datetime.utcnow()
+    
+    # Only get predictions that are:
+    # 1. Unresolved (pending_match, matched, pending, open)
+    # 2. PAST their deadline (timeframe < now) - actually overdue
     result = await db.execute(
         select(Prediction, Pundit)
         .join(Pundit, Prediction.pundit_id == Pundit.id)
         .outerjoin(Position, Position.prediction_id == Prediction.id)
         .where(
-            or_(
-                Prediction.status == 'pending_match',
-                Prediction.status == 'matched'
-            )
+            Prediction.status.in_(['pending', 'pending_match', 'matched', 'open'])
         )
         .where(
-            or_(
-                Position.id == None,  # No position (unmatched)
-                Position.outcome == None  # Position exists but no outcome
-            )
+            Prediction.timeframe < now  # ONLY overdue predictions
         )
-        .order_by(Prediction.timeframe.asc())  # Soonest deadline first
+        .where(
+            Prediction.outcome.is_(None)  # Not yet resolved
+        )
+        .where(
+            Prediction.flagged == False  # Not flagged as vague/invalid
+        )
+        .order_by(Prediction.timeframe.asc())  # Most overdue first
     )
     
     predictions = []
@@ -3883,6 +3886,55 @@ async def resolve_prediction_manually(
         "prediction_id": str(prediction_id),
         "outcome": resolution.outcome,
         "notes": resolution.notes
+    }
+
+
+@app.delete("/api/admin/predictions/{prediction_id}")
+async def delete_prediction(
+    prediction_id: uuid.UUID,
+    admin = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Delete a prediction that shouldn't exist (e.g., news report captured as prediction).
+    This permanently removes the prediction and any associated positions/matches.
+    """
+    from database.models import Match
+    
+    # Get prediction
+    result = await db.execute(
+        select(Prediction).where(Prediction.id == prediction_id)
+    )
+    prediction = result.scalar_one_or_none()
+    
+    if not prediction:
+        raise HTTPException(status_code=404, detail="Prediction not found")
+    
+    claim = prediction.claim[:50]
+    
+    # Delete associated positions first
+    await db.execute(
+        delete(Position).where(Position.prediction_id == prediction_id)
+    )
+    
+    # Delete associated matches
+    await db.execute(
+        delete(Match).where(Match.prediction_id == prediction_id)
+    )
+    
+    # Delete the prediction
+    await db.execute(
+        delete(Prediction).where(Prediction.id == prediction_id)
+    )
+    
+    await db.commit()
+    
+    logging.info(f"Deleted prediction {prediction_id}: {claim}...")
+    
+    return {
+        "status": "deleted",
+        "prediction_id": str(prediction_id),
+        "claim": claim
     }
 
 

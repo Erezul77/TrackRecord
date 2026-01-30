@@ -1011,8 +1011,8 @@ export default function AdminPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-black dark:text-white">Pending Verification</h2>
-              <p className="text-sm text-neutral-500">Manually verify predictions that can't be auto-resolved via Polymarket</p>
+              <h2 className="text-xl font-bold text-black dark:text-white">Resolution Center</h2>
+              <p className="text-sm text-neutral-500">Only shows OVERDUE predictions (past deadline) that need manual resolution</p>
             </div>
             <button
               onClick={loadPendingPredictions}
@@ -1033,14 +1033,14 @@ export default function AdminPage() {
               {pendingPredictions.map(pred => (
                 <div key={pred.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden">
                   {/* Header */}
-                  <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-between">
+                  <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 px-4 py-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+                      <span className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">
                         {pred.category}
                       </span>
-                      <span className="text-xs text-amber-600 dark:text-amber-500">•</span>
-                      <span className="text-xs text-amber-600 dark:text-amber-500">
-                        Resolves: {pred.timeframe ? new Date(pred.timeframe).toLocaleDateString() : 'TBD'}
+                      <span className="text-xs text-red-600 dark:text-red-500">•</span>
+                      <span className="text-xs font-bold text-red-600 dark:text-red-500">
+                        {pred.timeframe ? `${Math.floor((Date.now() - new Date(pred.timeframe).getTime()) / (1000 * 60 * 60 * 24))} DAYS OVERDUE` : 'TBD'}
                       </span>
                     </div>
                     {pred.tr_index_score && (
@@ -1088,6 +1088,28 @@ export default function AdminPage() {
                         >
                           <X className="h-4 w-4" />
                           WRONG
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (confirm('Delete this prediction? This cannot be undone.')) {
+                              try {
+                                const res = await fetch(`${API_URL}/api/admin/predictions/${pred.id}`, { method: 'DELETE' })
+                                if (res.ok) {
+                                  setMessage({ type: 'success', text: 'Prediction deleted' })
+                                  setPendingPredictions(prev => prev.filter(p => p.id !== pred.id))
+                                } else {
+                                  setMessage({ type: 'error', text: 'Failed to delete' })
+                                }
+                              } catch {
+                                setMessage({ type: 'error', text: 'Network error' })
+                              }
+                            }
+                          }}
+                          className="flex items-center gap-1 bg-neutral-600 text-white font-bold px-4 py-2 hover:bg-neutral-700 transition-colors"
+                          title="Delete prediction (not a real prediction)"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          DELETE
                         </button>
                       </div>
                     </div>
