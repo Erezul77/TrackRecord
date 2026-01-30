@@ -3660,14 +3660,10 @@ async def get_predictions_ready_for_resolution(
         select(Prediction, Pundit)
         .join(Pundit, Prediction.pundit_id == Pundit.id)
         .outerjoin(Position, Position.prediction_id == Prediction.id)
-        .where(Prediction.timeframe <= now)  # Past deadline
-        .where(Prediction.status != 'resolved')  # Not yet resolved
-        .where(
-            or_(
-                Position.id == None,  # No position
-                Position.outcome == None  # Position exists but no outcome
-            )
-        )
+        .where(Prediction.timeframe < now)  # Past deadline (strict less than)
+        .where(Prediction.status.in_(['pending', 'pending_match', 'matched', 'open']))  # Unresolved statuses
+        .where(Prediction.outcome.is_(None))  # No outcome yet
+        .where(Prediction.flagged == False)  # Not flagged as invalid
         .order_by(Prediction.timeframe.asc())  # Oldest deadline first
     )
     
