@@ -24,29 +24,31 @@ logger = logging.getLogger(__name__)
 
 
 EXTRACTION_PROMPT = """
-You are analyzing a news article to extract SPECIFIC, MEASURABLE predictions made by notable individuals.
+You are analyzing a news HEADLINE to extract SPECIFIC, MEASURABLE predictions about FUTURE events.
 
 Article Title: {title}
 Source: {source}
 Date: {date}
 
-Article Text:
+Headline:
 ---
 {text}
 ---
 
-STRICT QUALITY RULES - REJECT predictions that:
-1. Use vague words: "impact", "affect", "influence", "shape", "define" (without metrics)
-2. Are possibilities, not predictions: "can be", "could be", "might", "may"
-3. Have no clear success/fail criteria: "will be important", "will matter"
-4. Are opinions, not predictions: "is the best", "should do"
-5. Have no timeframe and can't be assigned one
+CRITICAL - REJECT THESE (NOT predictions):
+1. PAST TENSE / NEWS REPORTS: "climbed", "rose", "fell", "increased", "happened", "reached" - These report what ALREADY happened, NOT predictions
+2. CURRENT EVENTS: "is", "are", "has" - These describe the present, not future
+3. VAGUE words: "impact", "affect", "influence", "shape", "define" (without metrics)
+4. POSSIBILITIES: "can be", "could be", "might", "may"
+5. OPINIONS: "is the best", "should do", "believes"
+6. NO CLEAR OUTCOME: "will be important", "will matter"
 
-ACCEPT only predictions that:
-1. Have CLEAR YES/NO outcome: "will win", "will reach $X", "will beat", "will pass"
-2. Have SPECIFIC targets: numbers, percentages, rankings, binary outcomes
-3. Are VERIFIABLE: Can look up result with public data
-4. Have TIMEFRAME: explicit date or can assign one (e.g., "by end of 2024")
+ONLY ACCEPT predictions that:
+1. FUTURE TENSE: "will", "going to", "expects", "predicts", "forecasts"
+2. CLEAR YES/NO outcome: "will win", "will reach $X", "will beat", "will pass"
+3. SPECIFIC targets: numbers, percentages, rankings, binary outcomes
+4. VERIFIABLE: Can check with public data
+5. TIMEFRAME: explicit date or can assign one (e.g., "by end of 2025")
 
 GOOD EXAMPLES (ACCEPT):
 - "Bitcoin will reach $100,000 by end of 2024" → Clear target, clear deadline
@@ -56,11 +58,14 @@ GOOD EXAMPLES (ACCEPT):
 - "Fed will cut rates 3 times in 2024" → Specific count, timeframe
 
 BAD EXAMPLES (REJECT - do NOT extract):
+- "Bybit's market share climbed in 2025" → PAST TENSE - news report, NOT a prediction
+- "Bitcoin reached $50,000 yesterday" → PAST TENSE - already happened
 - "AI will impact the economy" → "impact" is vague, no metric
 - "Trump trials will affect the election" → "affect" is vague, unmeasurable
 - "LeBron can still be the best player" → "can be" is possibility, "best" is subjective
 - "Vision Pro will define spatial computing" → "define" is vague, subjective
 - "This will be important for markets" → No specific outcome
+- "Company reported strong earnings" → NEWS, not prediction
 
 For each VALID prediction, extract:
 - pundit_name: Full name (e.g., "Elon Musk", not "Musk")
