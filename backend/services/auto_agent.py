@@ -357,12 +357,14 @@ class AutoAgentPipeline:
         return predictions_stored
     
     async def _extract_predictions(self, article: NewsArticle) -> List[Dict]:
-        """Use Claude to extract predictions from article - finds ANY notable person"""
+        """Use Claude to extract predictions from headlines - predictions are usually in headlines"""
+        # Focus on headline - predictions are typically in headlines or pull quotes
+        # This lets us process many more articles faster
         prompt = EXTRACTION_PROMPT.format(
             title=article.title,
             source=article.source,
             date=article.published.isoformat(),
-            text=f"{article.title}\n\n{article.summary}"
+            text=article.title  # Headlines only - where predictions live
         )
         
         try:
