@@ -547,10 +547,12 @@ Respond ONLY with JSON:
                 and_(
                     Prediction.timeframe < now,
                     Prediction.status.in_(['pending', 'pending_match', 'matched', 'open']),
+                    Prediction.outcome.is_(None),  # Not already resolved
                     Prediction.flagged == False  # Don't resolve flagged predictions
                 )
             )
             .options(selectinload(Prediction.pundit))
+            .order_by(Prediction.timeframe.asc())  # Oldest overdue first
             .limit(limit)
         )
         
