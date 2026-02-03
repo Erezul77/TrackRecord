@@ -1,7 +1,7 @@
 // src/components/predictions/PredictionsList.tsx
 'use client'
 import { useState, useEffect } from 'react'
-import { Clock, ArrowUpDown, Flame, Star, Calendar, SortAsc, Filter } from 'lucide-react'
+import { Clock, ArrowUpDown, Flame, Star, Calendar, SortAsc, Filter, Search, X } from 'lucide-react'
 import { PredictionCardWithVotes } from './PredictionCardWithVotes'
 import { PredictionWithPundit } from '@/lib/api'
 
@@ -38,6 +38,7 @@ export function PredictionsList() {
   const [category, setCategory] = useState('All')
   const [horizon, setHorizon] = useState('All')
   const [showRegions, setShowRegions] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     loadPredictions()
@@ -63,8 +64,44 @@ export function PredictionsList() {
 
   const currentSort = SORT_OPTIONS.find(o => o.value === sort) || SORT_OPTIONS[0]
 
+  // Filter predictions by search query (client-side)
+  const filteredPredictions = searchQuery.trim() 
+    ? predictions.filter(p => 
+        p.claim.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.pundit_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.quote && p.quote.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : predictions
+
   return (
     <div>
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search predictions or pundits..."
+            className="w-full pl-10 pr-10 py-3 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-black dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <p className="text-sm text-neutral-500 mt-2">
+            Found {filteredPredictions.length} result{filteredPredictions.length !== 1 ? 's' : ''} for "{searchQuery}"
+          </p>
+        )}
+      </div>
+
       {/* Category Filters */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-3">
@@ -164,15 +201,15 @@ export function PredictionsList() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {predictions.length > 0 ? (
-            predictions.map((pred) => (
+          {filteredPredictions.length > 0 ? (
+            filteredPredictions.map((pred) => (
               <PredictionCardWithVotes key={pred.id} prediction={pred} />
             ))
           ) : (
             <div className="col-span-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-12 sm:p-20 text-center">
               <Clock className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-4" />
               <p className="text-neutral-400 font-bold text-xl">No predictions found.</p>
-              <p className="text-neutral-400 mt-2">Check back later as our AI processes more content.</p>
+              <p className="text-neutral-400 mt-2">{searchQuery ? 'Try a different search term.' : 'Check back later as our AI processes more content.'}</p>
             </div>
           )}
         </div>

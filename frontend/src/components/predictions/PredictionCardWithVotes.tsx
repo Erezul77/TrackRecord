@@ -2,10 +2,12 @@
 'use client'
 import Link from "next/link"
 import { formatDate, cn } from "@/lib/utils"
-import { ExternalLink, User, CheckCircle, XCircle, Clock, Shield, Copy, Timer, Hourglass } from "lucide-react"
+import { ExternalLink, User, CheckCircle, XCircle, Clock, Shield, Copy, Timer, Hourglass, Flag } from "lucide-react"
 import { VoteButtons } from "./VoteButtons"
 import { PredictionWithPundit } from "@/lib/api"
 import { useState } from "react"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 // Generate UI Avatars URL - consistent with PunditCard
 function getAvatarUrl(name: string): string {
@@ -69,12 +71,34 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
   const timeRemaining = getTimeRemaining(pred.timeframe)
   const [showHash, setShowHash] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showReport, setShowReport] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [reportSent, setReportSent] = useState(false)
 
   const copyHash = () => {
     if (pred.chain_hash) {
       navigator.clipboard.writeText(pred.chain_hash)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+    }
+  }
+  
+  const submitReport = async () => {
+    if (!reportReason.trim()) return
+    try {
+      await fetch(`${API_URL}/api/predictions/${pred.id}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reportReason })
+      })
+      setReportSent(true)
+      setTimeout(() => {
+        setShowReport(false)
+        setReportSent(false)
+        setReportReason('')
+      }, 2000)
+    } catch {
+      // Silent fail
     }
   }
 
@@ -189,7 +213,56 @@ export function PredictionCardWithVotes({ prediction: pred }: Props) {
                 Historical data
               </span>
             )}
+            {/* Report Button */}
+            <button
+              onClick={() => setShowReport(!showReport)}
+              className="flex items-center gap-1 text-neutral-400 hover:text-red-500 transition-colors"
+              title="Report issue"
+            >
+              <Flag className="h-3 w-3" />
+            </button>
           </div>
+          
+          {/* Report Form */}
+          {showReport && (
+            <div className="mt-3 p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+              {reportSent ? (
+                <p className="text-sm text-green-600 dark:text-green-400 font-bold">Thanks for reporting!</p>
+              ) : (
+                <>
+                  <p className="text-xs text-neutral-500 mb-2">Report an issue with this prediction:</p>
+                  <select
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    className="w-full text-sm border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-900 px-2 py-1 mb-2"
+                  >
+                    <option value="">Select reason...</option>
+                    <option value="broken_source">Source link broken</option>
+                    <option value="wrong_pundit">Wrong pundit attribution</option>
+                    <option value="duplicate">Duplicate prediction</option>
+                    <option value="not_prediction">Not a real prediction</option>
+                    <option value="wrong_outcome">Outcome is incorrect</option>
+                    <option value="other">Other issue</option>
+                  </select>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={submitReport}
+                      disabled={!reportReason}
+                      className="flex-1 text-xs bg-red-500 text-white px-2 py-1 font-bold disabled:opacity-50"
+                    >
+                      Submit Report
+                    </button>
+                    <button
+                      onClick={() => setShowReport(false)}
+                      className="text-xs text-neutral-500 hover:text-neutral-700 px-2 py-1"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

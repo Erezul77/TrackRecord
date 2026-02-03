@@ -3297,43 +3297,83 @@ async def submit_crowdsourced_prediction(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Accept crowdsourced historical prediction submissions.
-    These are stored for review before being added to the main database.
+    Accept crowdsourced prediction submissions.
+    Auto-adds to database so they appear immediately on the site.
     """
-    import json
-    from pathlib import Path
-    
-    # Store submissions in a JSON file for review
-    submissions_file = Path(__file__).parent / "crowdsourced_submissions.json"
-    
     try:
-        if submissions_file.exists():
-            with open(submissions_file, "r") as f:
-                submissions = json.load(f)
+        # Find or create the pundit
+        pundit_result = await db.execute(
+            select(Pundit).where(
+                (Pundit.username == submission.pundit_username) | 
+                (Pundit.name == submission.pundit_name)
+            )
+        )
+        pundit = pundit_result.scalar_one_or_none()
+        
+        if not pundit:
+            # Create new pundit
+            username = submission.pundit_username or submission.pundit_name.lower().replace(" ", "_").replace(".", "")[:30]
+            pundit = Pundit(
+                name=submission.pundit_name,
+                username=username,
+                bio=f"Submitted by community",
+                domains=[submission.category],
+                is_active=True
+            )
+            db.add(pundit)
+            await db.flush()
+            logging.info(f"Created new pundit from submission: {pundit.name}")
+        
+        # Parse timeframe
+        timeframe = None
+        if submission.resolution_date:
+            try:
+                timeframe = datetime.strptime(submission.resolution_date, "%Y-%m-%d")
+            except:
+                timeframe = datetime.utcnow() + timedelta(days=365)  # Default 1 year
         else:
-            submissions = []
+            timeframe = datetime.utcnow() + timedelta(days=365)
         
-        # Add new submission
-        submissions.append({
-            "id": str(uuid.uuid4()),
-            "submitted_at": datetime.utcnow().isoformat(),
-            "status": "pending_review",
-            **submission.dict()
-        })
+        # Determine status based on outcome
+        status = "pending"
+        outcome = None
+        if submission.outcome == "right":
+            status = "resolved"
+            outcome = "YES"
+        elif submission.outcome == "wrong":
+            status = "resolved"
+            outcome = "NO"
         
-        with open(submissions_file, "w") as f:
-            json.dump(submissions, f, indent=2)
+        # Create the prediction
+        prediction = Prediction(
+            pundit_id=pundit.id,
+            claim=submission.claim,
+            quote=submission.quote or submission.claim,
+            source_url=submission.source_url,
+            source_type="community_submission",
+            category=submission.category,
+            timeframe=timeframe,
+            captured_at=datetime.utcnow(),
+            status=status,
+            outcome=outcome,
+            resolution_source="community" if outcome else None,
+            resolved_at=datetime.utcnow() if outcome else None
+        )
+        db.add(prediction)
+        await db.commit()
         
-        logging.info(f"New prediction submission: {submission.pundit_name} - {submission.claim[:50]}")
+        logging.info(f"New community prediction: {submission.pundit_name} - {submission.claim[:50]}")
         
         return {
             "status": "success",
-            "message": "Submission received and queued for review"
+            "message": "Prediction added successfully! It's now live on the site.",
+            "prediction_id": str(prediction.id),
+            "pundit_id": str(pundit.id)
         }
         
     except Exception as e:
         logging.error(f"Failed to save submission: {e}")
-        raise HTTPException(status_code=500, detail="Failed to save submission")
+        raise HTTPException(status_code=500, detail=f"Failed to save submission: {str(e)}")
 
 
 class PunditApplication(BaseModel):
@@ -3941,6 +3981,48 @@ async def delete_prediction(
 class VoteInput(BaseModel):
     user_id: str
     vote_type: str  # 'up' or 'down'
+
+class ReportInput(BaseModel):
+    reason: str
+
+@app.post("/api/predictions/{prediction_id}/report")
+async def report_prediction(
+    prediction_id: uuid.UUID,
+    report: ReportInput,
+    db: AsyncSession = Depends(get_db)
+):
+    """Report an issue with a prediction (broken source, wrong attribution, etc.)"""
+    import json
+    from pathlib import Path
+    
+    # Store reports in a JSON file for admin review
+    reports_file = Path(__file__).parent / "prediction_reports.json"
+    
+    try:
+        if reports_file.exists():
+            with open(reports_file, "r") as f:
+                reports = json.load(f)
+        else:
+            reports = []
+        
+        reports.append({
+            "id": str(uuid.uuid4()),
+            "prediction_id": str(prediction_id),
+            "reason": report.reason,
+            "reported_at": datetime.utcnow().isoformat(),
+            "status": "pending"
+        })
+        
+        with open(reports_file, "w") as f:
+            json.dump(reports, f, indent=2)
+        
+        logging.info(f"Prediction reported: {prediction_id} - {report.reason}")
+        
+        return {"status": "success", "message": "Report submitted"}
+        
+    except Exception as e:
+        logging.error(f"Failed to save report: {e}")
+        return {"status": "success", "message": "Report submitted"}  # Silent fail for user
 
 @app.post("/api/predictions/{prediction_id}/vote")
 async def vote_on_prediction(
