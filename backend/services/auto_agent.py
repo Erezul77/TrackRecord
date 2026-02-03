@@ -35,49 +35,74 @@ Headline:
 {text}
 ---
 
-CRITICAL - REJECT THESE (NOT predictions):
-1. PAST TENSE / NEWS REPORTS: "climbed", "rose", "fell", "increased", "happened", "reached" - These report what ALREADY happened, NOT predictions
-2. CURRENT EVENTS: "is", "are", "has" - These describe the present, not future
+=== PUNDIT RULES (CRITICAL - WHO is making the prediction?) ===
+
+VALID PUNDITS - Must be ONE of these:
+1. NAMED PERSON with first AND last name: "Elon Musk", "Janet Yellen", "Ray Dalio"
+2. NAMED ANALYST/EXPERT quoted in the article: "John Smith, analyst at Goldman Sachs"
+3. SPECIFIC INSTITUTION making an official forecast: "Goldman Sachs", "Federal Reserve", "IMF"
+
+INVALID PUNDITS (DO NOT EXTRACT):
+- Generic groups: "Democrats", "Republicans", "experts", "analysts", "officials"
+- News subjects/topics: "NFL", "Bitcoin", "Tesla", "Gulfstream", "GalaxySpace"
+- Unnamed sources: "sources say", "reports indicate", "officials claim"
+- Single names: "Musk", "Biden" (need full name)
+- Companies being reported ON (not making predictions): "Texas Democrat" is a SUBJECT, not a pundit
+- The article author or news outlet (unless they are explicitly making a prediction as an institution)
+
+ASK YOURSELF: "Is this entity ACTIVELY MAKING a prediction, or are they just the SUBJECT of the news?"
+- "NFL announces new playoff format" → NFL is the SUBJECT, not making a prediction. REJECT.
+- "Ray Dalio predicts recession in 2025" → Ray Dalio IS making a prediction. ACCEPT.
+
+=== PREDICTION RULES ===
+
+REJECT THESE (NOT predictions):
+1. PAST TENSE / NEWS REPORTS: "climbed", "rose", "fell", "increased", "happened", "reached"
+2. CURRENT EVENTS: "is", "are", "has" - describe the present, not future
 3. VAGUE words: "impact", "affect", "influence", "shape", "define" (without metrics)
 4. POSSIBILITIES: "can be", "could be", "might", "may"
 5. OPINIONS: "is the best", "should do", "believes"
 6. NO CLEAR OUTCOME: "will be important", "will matter"
 
-ONLY ACCEPT predictions that:
+ACCEPT predictions that have ALL of:
 1. FUTURE TENSE: "will", "going to", "expects", "predicts", "forecasts"
 2. CLEAR YES/NO outcome: "will win", "will reach $X", "will beat", "will pass"
 3. SPECIFIC targets: numbers, percentages, rankings, binary outcomes
 4. VERIFIABLE: Can check with public data
 5. TIMEFRAME: explicit date or can assign one (e.g., "by end of 2025")
+6. VALID PUNDIT: Real person or institution MAKING the prediction (see above)
 
-GOOD EXAMPLES (ACCEPT):
-- "Bitcoin will reach $100,000 by end of 2024" → Clear target, clear deadline
-- "Mets will make playoffs in 2024" → Binary outcome, clear timeframe
-- "Crypto market cap will exceed $3 trillion in 2024" → Specific number, deadline
-- "Trump will win 2024 election" → Binary outcome, known date
-- "Fed will cut rates 3 times in 2024" → Specific count, timeframe
+=== EXAMPLES ===
 
-BAD EXAMPLES (REJECT - do NOT extract):
-- "Bybit's market share climbed in 2025" → PAST TENSE - news report, NOT a prediction
-- "Bitcoin reached $50,000 yesterday" → PAST TENSE - already happened
-- "AI will impact the economy" → "impact" is vague, no metric
-- "Trump trials will affect the election" → "affect" is vague, unmeasurable
-- "LeBron can still be the best player" → "can be" is possibility, "best" is subjective
-- "Vision Pro will define spatial computing" → "define" is vague, subjective
-- "This will be important for markets" → No specific outcome
-- "Company reported strong earnings" → NEWS, not prediction
+GOOD (ACCEPT):
+- "Ray Dalio predicts Bitcoin will reach $100,000 by end of 2024"
+  → Named person (Ray Dalio), specific target ($100K), clear deadline
+- "Goldman Sachs forecasts Fed will cut rates 3 times in 2024"
+  → Named institution making official forecast, specific count, timeframe
+- "Steve Cohen says Mets will make MLB playoffs in 2024"
+  → Named person, binary outcome, clear timeframe
+
+BAD (REJECT):
+- "Texas Democrat sworn in to House" → This is NEWS, no prediction, "Texas Democrat" is not a pundit
+- "NFL expands playoff format to 16 teams" → NEWS about NFL, not a prediction BY anyone
+- "Gulfstream announces new jet model" → Company announcement, not a prediction
+- "Experts predict market volatility" → "Experts" is not a valid pundit name
+- "Bitcoin will impact the economy" → Vague, and no pundit identified
+- "Sources say recession is coming" → "Sources" is not a valid pundit
+
+=== OUTPUT FORMAT ===
 
 For each VALID prediction, extract:
-- pundit_name: Full name (e.g., "Elon Musk", not "Musk")
-- pundit_title: Their role/title
-- pundit_affiliation: Organization
+- pundit_name: Full name of PERSON or official name of INSTITUTION making the prediction
+- pundit_title: Their role/title (or "Institution" for organizations)
+- pundit_affiliation: Organization they belong to
 - claim: The prediction, reworded to be SPECIFIC and MEASURABLE
 - confidence: certain/high/medium/low/speculative
 - timeframe: Specific date (e.g., "2024-12-31") or period (e.g., "by Q4 2024")
 - quote: Exact quote from article
 - category: One of: politics/economy/markets/crypto/tech/macro/sports/entertainment/religion/science/business/media/health/climate/geopolitics/us/uk/eu/china/japan/india/israel/russia/brazil/latam/middle-east/africa/asia-pacific
 
-Return ONLY valid JSON array. Be STRICT - it's better to extract fewer high-quality predictions than many vague ones.
+Return ONLY valid JSON array. Be VERY STRICT - reject anything without a clearly identified pundit.
 
 [
   {{
@@ -92,7 +117,7 @@ Return ONLY valid JSON array. Be STRICT - it's better to extract fewer high-qual
   }}
 ]
 
-If no VALID predictions found, return empty array: []
+If no VALID predictions with identifiable pundits found, return empty array: []
 """
 
 
@@ -132,6 +157,57 @@ class AutoAgentPipeline:
         except Exception as e:
             logger.error(f"Failed to load pundits cache: {e}")
             # Continue with empty cache - will just create new pundits as needed
+    
+    # Invalid pundit patterns - these are news subjects, not people making predictions
+    INVALID_PUNDIT_PATTERNS = {
+        # Generic groups
+        'democrat', 'democrats', 'republican', 'republicans', 'gop', 'liberals', 'conservatives',
+        'experts', 'analysts', 'officials', 'sources', 'insiders', 'traders', 'investors',
+        # Sports/organizations as subjects
+        'nfl', 'nba', 'mlb', 'nhl', 'fifa', 'uefa', 'ncaa', 'espn',
+        # Companies/products being reported on (not making predictions)
+        'bitcoin', 'ethereum', 'crypto', 'tesla', 'apple', 'google', 'meta', 'amazon',
+        'gulfstream', 'boeing', 'airbus', 'spacex', 'galaxyspace',
+        # Generic terms
+        'report', 'study', 'research', 'poll', 'survey', 'data', 'market', 'markets',
+        'government', 'administration', 'congress', 'senate', 'house',
+        # News outlet names (unless making official forecasts)
+        'reuters', 'bloomberg', 'cnbc', 'fox', 'cnn', 'bbc', 'nyt', 'wsj',
+    }
+    
+    def _is_valid_pundit_name(self, name: str) -> bool:
+        """Validate that a pundit name is a real person or institution, not a news subject"""
+        if not name or len(name) < 3:
+            return False
+        
+        name_lower = name.lower().strip()
+        
+        # Reject if it's an invalid pattern
+        for pattern in self.INVALID_PUNDIT_PATTERNS:
+            if pattern in name_lower or name_lower in pattern:
+                logger.info(f"Rejected invalid pundit name: '{name}' (matches pattern: {pattern})")
+                return False
+        
+        # Reject single-word names (except known institutions)
+        words = name.split()
+        if len(words) == 1:
+            # Allow known financial institutions
+            known_institutions = {
+                'jpmorgan', 'goldman', 'morgan', 'citi', 'barclays', 'hsbc', 
+                'ubs', 'blackrock', 'vanguard', 'fidelity', 'schwab',
+                'fed', 'ecb', 'imf', 'worldbank'
+            }
+            if name_lower not in known_institutions:
+                logger.info(f"Rejected single-word pundit name: '{name}'")
+                return False
+        
+        # Reject names that are just titles
+        title_only = {'ceo', 'cfo', 'cto', 'president', 'chairman', 'director', 'analyst', 'manager'}
+        if name_lower in title_only:
+            logger.info(f"Rejected title-only pundit name: '{name}'")
+            return False
+        
+        return True
     
     def _find_pundit(self, name: str) -> Optional[Pundit]:
         """Find a pundit by name (fuzzy matching)"""
@@ -328,6 +404,12 @@ class AutoAgentPipeline:
                 else:
                     pundit_name = pred_data.get("pundit_name", "").strip()
                     if not pundit_name or len(pundit_name) < 3:
+                        logger.debug(f"Skipping prediction - no valid pundit name")
+                        continue
+                    
+                    # Validate pundit name is a real person/institution, not a news subject
+                    if not self._is_valid_pundit_name(pundit_name):
+                        logger.info(f"Skipping prediction - invalid pundit: '{pundit_name}'")
                         continue
                     
                     # Find existing pundit or auto-create new one
