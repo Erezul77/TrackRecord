@@ -68,7 +68,8 @@ export function PredictionsList() {
   const filteredPredictions = searchQuery.trim() 
     ? predictions.filter(p => 
         p.claim.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.pundit_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.pundit.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.pundit.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.quote && p.quote.toLowerCase().includes(searchQuery.toLowerCase()))
       )
     : predictions
