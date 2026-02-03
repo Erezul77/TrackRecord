@@ -1644,6 +1644,93 @@ async def batch_score_predictions(
     }
 
 
+@app.post("/api/admin/cleanup-overdue", tags=["Admin"])
+async def cleanup_overdue_predictions(
+    days_overdue: int = 1,
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Delete all predictions that are overdue and have no outcome"""
+    from database.models import Match
+    
+    now = datetime.utcnow()
+    cutoff = now - timedelta(days=days_overdue)
+    
+    # Find all overdue predictions without outcome
+    result = await db.execute(
+        select(Prediction)
+        .where(Prediction.timeframe < cutoff)
+        .where(Prediction.outcome.is_(None))
+    )
+    predictions = result.scalars().all()
+    
+    deleted = 0
+    for pred in predictions:
+        # Delete associated positions
+        await db.execute(delete(Position).where(Position.prediction_id == pred.id))
+        # Delete associated matches
+        await db.execute(delete(Match).where(Match.prediction_id == pred.id))
+        # Delete prediction
+        await db.execute(delete(Prediction).where(Prediction.id == pred.id))
+        deleted += 1
+    
+    await db.commit()
+    
+    return {
+        "status": "complete",
+        "deleted": deleted,
+        "message": f"Deleted {deleted} predictions more than {days_overdue} day(s) overdue"
+    }
+
+
+@app.post("/api/admin/cleanup-duplicates", tags=["Admin"])
+async def cleanup_duplicate_predictions(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """Find and delete duplicate predictions (same claim text)"""
+    from database.models import Match
+    from sqlalchemy import func
+    
+    # Find claims that appear more than once
+    dup_result = await db.execute(
+        select(Prediction.claim, func.count(Prediction.id).label('cnt'))
+        .group_by(Prediction.claim)
+        .having(func.count(Prediction.id) > 1)
+    )
+    duplicates = dup_result.all()
+    
+    deleted = 0
+    kept = 0
+    
+    for claim, count in duplicates:
+        # Get all predictions with this claim
+        pred_result = await db.execute(
+            select(Prediction)
+            .where(Prediction.claim == claim)
+            .order_by(Prediction.captured_at.asc())  # Keep oldest
+        )
+        preds = pred_result.scalars().all()
+        
+        # Keep the first one, delete the rest
+        for pred in preds[1:]:  # Skip first (oldest)
+            await db.execute(delete(Position).where(Position.prediction_id == pred.id))
+            await db.execute(delete(Match).where(Match.prediction_id == pred.id))
+            await db.execute(delete(Prediction).where(Prediction.id == pred.id))
+            deleted += 1
+        kept += 1
+    
+    await db.commit()
+    
+    return {
+        "status": "complete",
+        "duplicate_claims_found": len(duplicates),
+        "kept": kept,
+        "deleted": deleted,
+        "message": f"Found {len(duplicates)} duplicate claims, kept oldest, deleted {deleted} copies"
+    }
+
+
 @app.post("/api/admin/flag-vague-predictions", tags=["Admin"])
 async def flag_vague_predictions(
     db: AsyncSession = Depends(get_db),

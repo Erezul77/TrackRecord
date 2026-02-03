@@ -437,16 +437,26 @@ class AutoAgentPipeline:
             0.60
         )
         
-        # Create content hash for deduplication
+        # Create content hash for deduplication (without URL to catch same claim from different sources)
         content_hash = hashlib.sha256(
-            f"{pundit.id}|{pred_data['claim']}|{article.url}".encode()
+            f"{pundit.id}|{pred_data['claim']}".encode()
         ).hexdigest()
         
-        # Check for duplicate
+        # Check for duplicate by content hash
         result = await self.db.execute(
             select(Prediction).where(Prediction.content_hash == content_hash)
         )
         existing = result.scalar_one_or_none()
+        
+        # Also check for similar claim text (in case hash differs)
+        if not existing:
+            claim_check = await self.db.execute(
+                select(Prediction).where(
+                    Prediction.pundit_id == pundit.id,
+                    Prediction.claim == pred_data['claim']
+                )
+            )
+            existing = claim_check.scalar_one_or_none()
         
         if existing:
             return None
