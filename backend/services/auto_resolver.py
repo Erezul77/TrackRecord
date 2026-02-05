@@ -545,8 +545,12 @@ Respond ONLY with JSON:
             .where(
                 and_(
                     Prediction.timeframe < now,
-                    Prediction.status != 'resolved',  # ANY status that's not resolved
-                    Prediction.outcome.is_(None),  # Not already resolved
+                    Prediction.status.notin_(['resolved']),  # ANY status that's not resolved
+                    or_(
+                        Prediction.outcome.is_(None),  # NULL outcome
+                        Prediction.outcome == '',  # Empty string outcome
+                        Prediction.outcome == 'pending',  # Pending outcome
+                    )
                 )
             )
             .options(selectinload(Prediction.pundit))
