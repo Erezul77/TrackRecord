@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, and_, delete
+from sqlalchemy import select, desc, and_, or_, delete
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 import logging
@@ -2432,13 +2432,26 @@ async def get_admin_stats(
         select(func.count()).select_from(Prediction).where(Prediction.flagged == True)
     )
     
-    # Count resolvable (past due, not resolved, not flagged)
+    # Count resolvable (past due, not resolved - ANY status except resolved)
     resolvable = await db.execute(
         select(func.count()).select_from(Prediction).where(
             and_(
                 Prediction.timeframe < now,
-                Prediction.status.in_(['pending', 'pending_match', 'matched', 'open']),
-                Prediction.flagged == False
+                Prediction.status != 'resolved',
+                or_(
+                    Prediction.outcome.is_(None),
+                    Prediction.outcome == '',
+                )
+            )
+        )
+    )
+    
+    # Count needs_review that are past due
+    needs_review_past = await db.execute(
+        select(func.count()).select_from(Prediction).where(
+            and_(
+                Prediction.status == 'needs_review',
+                Prediction.timeframe < now
             )
         )
     )
@@ -2450,7 +2463,8 @@ async def get_admin_stats(
         "past_due": past_due.scalar(),
         "future": future.scalar(),
         "flagged": flagged.scalar(),
-        "resolvable_by_ai": resolvable.scalar()
+        "resolvable_by_ai": resolvable.scalar(),
+        "needs_review_past_due": needs_review_past.scalar()
     }
 
 
@@ -2485,7 +2499,7 @@ async def debug_predictions(
     )
     overdue_count = overdue_result.scalar()
     
-    # Get sample unresolved predictions
+    # Get sample unresolved predictions (ANY status except resolved, past due)
     unresolved_query = (
         select(Prediction)
         .where(
@@ -2499,6 +2513,26 @@ async def debug_predictions(
     )
     result = await db.execute(unresolved_query)
     predictions = result.scalars().all()
+    
+    # Also get needs_review samples specifically
+    needs_review_query = (
+        select(Prediction)
+        .where(Prediction.status == 'needs_review')
+        .order_by(Prediction.timeframe.asc())
+        .limit(10)
+    )
+    nr_result = await db.execute(needs_review_query)
+    nr_predictions = nr_result.scalars().all()
+    
+    needs_review_samples = []
+    for p in nr_predictions:
+        needs_review_samples.append({
+            "id": str(p.id),
+            "claim": p.claim[:60] + "..." if len(p.claim) > 60 else p.claim,
+            "outcome": p.outcome,
+            "timeframe": p.timeframe.isoformat() if p.timeframe else None,
+            "is_past": p.timeframe < now if p.timeframe else False
+        })
     
     samples = []
     for p in predictions:
@@ -2520,7 +2554,8 @@ async def debug_predictions(
         "status_counts": status_counts,
         "total_overdue": overdue_count,
         "sample_overdue_predictions": samples,
-        "sample_count": len(samples)
+        "sample_count": len(samples),
+        "needs_review_samples": needs_review_samples
     }
 
 
