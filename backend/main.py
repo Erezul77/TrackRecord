@@ -1495,7 +1495,7 @@ async def run_auto_resolution_endpoint(
 
 @app.post("/api/admin/ai-resolve", tags=["Admin"])
 async def ai_resolve_predictions(
-    limit: int = Query(20, ge=1, le=50, description="Max predictions to process"),
+    limit: int = Query(100, ge=1, le=500, description="Max predictions to process"),
     db: AsyncSession = Depends(get_db),
     admin = Depends(require_admin)
 ):
@@ -1507,9 +1507,14 @@ async def ai_resolve_predictions(
     2. Determine what actually happened based on its knowledge
     3. Resolve as YES (correct) or NO (wrong) with confidence score
     
-    Only resolves predictions where AI is confident (>70%).
+    Only resolves predictions where AI is confident (>60%).
     """
     from services.auto_resolver import get_resolver
+    import os
+    
+    # Check for API key
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        return {"status": "error", "message": "ANTHROPIC_API_KEY not configured!"}
     
     resolver = get_resolver()
     results = await resolver.ai_resolve_batch(db, limit=limit)
@@ -1542,6 +1547,56 @@ async def ai_resolve_single_prediction(
     result = await resolver.ai_resolve_prediction(db, str(prediction_id))
     
     return result
+
+
+@app.post("/api/admin/ai-resolve-all", tags=["Admin"])
+async def ai_resolve_all_overdue(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    AGGRESSIVE: Resolve ALL overdue predictions using AI.
+    
+    Runs multiple batches until all overdue predictions are processed.
+    Use this to clear the backlog!
+    """
+    from services.auto_resolver import get_resolver
+    import os
+    
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        return {"status": "error", "message": "ANTHROPIC_API_KEY not configured!"}
+    
+    resolver = get_resolver()
+    total_results = {
+        "batches": 0,
+        "total_processed": 0,
+        "total_resolved_yes": 0,
+        "total_resolved_no": 0,
+        "total_skipped": 0,
+        "total_errors": 0
+    }
+    
+    # Run batches until we process everything
+    max_batches = 10  # Safety limit
+    for batch in range(max_batches):
+        results = await resolver.ai_resolve_batch(db, limit=100)
+        
+        processed = results.get("processed", 0)
+        total_results["batches"] += 1
+        total_results["total_processed"] += processed
+        total_results["total_resolved_yes"] += results.get("resolved_yes", 0)
+        total_results["total_resolved_no"] += results.get("resolved_no", 0)
+        total_results["total_skipped"] += results.get("skipped", 0)
+        total_results["total_errors"] += results.get("errors", 0)
+        
+        # If we processed fewer than 100, we've caught up
+        if processed < 100:
+            break
+    
+    total_results["status"] = "complete"
+    total_results["total_resolved"] = total_results["total_resolved_yes"] + total_results["total_resolved_no"]
+    
+    return total_results
 
 
 @app.post("/api/admin/score-predictions", tags=["Admin"])
@@ -2406,13 +2461,39 @@ async def debug_predictions(
 ):
     """Debug: Show sample predictions to understand why they're not being resolved."""
     from sqlalchemy import func
+    import os
     
     now = datetime.utcnow()
+    
+    # Count by status
+    status_counts = {}
+    for status in ['pending', 'pending_match', 'matched', 'open', 'resolved']:
+        count_result = await db.execute(
+            select(func.count()).select_from(Prediction).where(Prediction.status == status)
+        )
+        status_counts[status] = count_result.scalar()
+    
+    # Count overdue (past deadline and not resolved)
+    overdue_result = await db.execute(
+        select(func.count()).select_from(Prediction).where(
+            and_(
+                Prediction.timeframe < now,
+                Prediction.status != 'resolved',
+                Prediction.outcome.is_(None)
+            )
+        )
+    )
+    overdue_count = overdue_result.scalar()
     
     # Get sample unresolved predictions
     unresolved_query = (
         select(Prediction)
-        .where(Prediction.status != 'resolved')
+        .where(
+            and_(
+                Prediction.status != 'resolved',
+                Prediction.timeframe < now
+            )
+        )
         .order_by(Prediction.timeframe.asc())
         .limit(20)
     )
@@ -2421,21 +2502,25 @@ async def debug_predictions(
     
     samples = []
     for p in predictions:
-        is_past = p.timeframe < now if p.timeframe else False
+        days_overdue = (now - p.timeframe).days if p.timeframe else 0
         samples.append({
             "id": str(p.id),
             "claim": p.claim[:80] + "..." if len(p.claim) > 80 else p.claim,
             "status": p.status,
+            "outcome": p.outcome,
             "timeframe": p.timeframe.isoformat() if p.timeframe else None,
-            "is_past_due": is_past,
+            "days_overdue": days_overdue,
             "flagged": p.flagged,
-            "captured_at": p.captured_at.isoformat() if p.captured_at else None
+            "flag_reason": p.flag_reason
         })
     
     return {
         "current_time": now.isoformat(),
-        "sample_unresolved_predictions": samples,
-        "count": len(samples)
+        "anthropic_key_set": bool(os.getenv("ANTHROPIC_API_KEY")),
+        "status_counts": status_counts,
+        "total_overdue": overdue_count,
+        "sample_overdue_predictions": samples,
+        "sample_count": len(samples)
     }
 
 

@@ -538,16 +538,15 @@ Respond ONLY with JSON:
         }
         
         # Get open predictions with past timeframes (candidates for resolution)
-        # BE AGGRESSIVE: include flagged predictions too - AI can handle them!
+        # BE VERY AGGRESSIVE: include ALL non-resolved predictions!
         now = datetime.utcnow()
         query = (
             select(Prediction)
             .where(
                 and_(
                     Prediction.timeframe < now,
-                    Prediction.status.in_(['pending', 'pending_match', 'matched', 'open']),
+                    Prediction.status != 'resolved',  # ANY status that's not resolved
                     Prediction.outcome.is_(None),  # Not already resolved
-                    # REMOVED: Prediction.flagged == False - AI should resolve flagged too!
                 )
             )
             .options(selectinload(Prediction.pundit))
