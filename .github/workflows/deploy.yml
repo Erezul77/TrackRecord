@@ -48,21 +48,19 @@ jobs:
   deploy-worker:
     runs-on: ubuntu-latest
     name: Deploy Worker
-    if: ${{ vars.WORKER_ENABLED == 'true' }}
+    needs: deploy-api  # Wait for API to deploy first
     
     steps:
-      - name: Deploy Worker to Worker Droplet
+      - name: Deploy Worker to Same Server as API
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.DO_WORKER_HOST }}
+          host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
-            cd ~/TrackRecord || git clone https://github.com/Erezul77/TrackRecord.git ~/TrackRecord
             cd ~/TrackRecord
             
-            echo "📥 Pulling latest code..."
-            git pull origin main
+            echo "📥 Code already pulled by API deployment..."
             
             echo "🛑 Stopping old worker..."
             docker stop trackrecord-worker || true
@@ -77,10 +75,12 @@ jobs:
               --env-file backend/.env \
               -e ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}" \
               -e RSS_INTERVAL_MINUTES=180 \
-              -e RESOLUTION_INTERVAL_MINUTES=240 \
+              -e RESOLUTION_INTERVAL_MINUTES=60 \
               -e HISTORICAL_ENABLED=true \
               --restart unless-stopped \
               trackrecord-worker
             
             echo "✅ Worker Deployment complete!"
-            docker ps --format "table {{.Names}}\t{{.Status}}"
+            echo ""
+            echo "📊 All containers running:"
+            docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
