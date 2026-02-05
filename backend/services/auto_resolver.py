@@ -404,7 +404,8 @@ class AutoResolver:
         pundit_name = pred.pundit.name if pred.pundit else "Unknown"
         claim = pred.claim
         made_at = pred.captured_at.strftime("%B %Y") if pred.captured_at else "Unknown date"
-        timeframe = pred.timeframe.strftime("%B %Y") if pred.timeframe else "Unknown"
+        timeframe = pred.timeframe.strftime("%B %d, %Y") if pred.timeframe else "Unknown"
+        today = datetime.utcnow().strftime("%B %d, %Y")
         
         prompt = f"""You are a fact-checker evaluating whether a prediction came true. Be DECISIVE.
 
@@ -414,7 +415,9 @@ PREDICTION:
 - Made around: {made_at}
 - Deadline: {timeframe}
 
-TODAY'S DATE: January 2026
+TODAY'S DATE: {today}
+
+IMPORTANT: The deadline has ALREADY PASSED. You must evaluate based on what actually happened by the deadline.
 
 EVALUATION RULES:
 1. For market/industry claims (e.g., "NVIDIA will dominate chips in 2024"):
