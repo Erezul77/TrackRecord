@@ -220,19 +220,17 @@ class AutoResolver:
                 logger.info(f"Auto-resolved expired prediction {pred.id} as NO (wrong)")
             
             else:
-                # Can't auto-determine - flag for manual review
-                pred.flagged = True
-                pred.flag_reason = f"Timeframe expired on {pred.timeframe.isoformat()}. Needs manual resolution - unable to auto-determine outcome."
-                
-                results["flagged"] += 1
+                # No clear deadline keywords - leave for AI resolution
+                # DON'T flag - AI batch will pick this up and resolve it
+                results["flagged"] += 1  # Count as "skipped for AI"
                 results["details"].append({
                     "prediction_id": str(pred.id),
                     "claim": pred.claim[:100],
                     "timeframe": pred.timeframe.isoformat(),
-                    "action": "flagged_for_review"
+                    "action": "left_for_ai_resolution"
                 })
                 
-                logger.info(f"Flagged expired prediction {pred.id} for manual review")
+                logger.info(f"Left prediction {pred.id} for AI resolution (no clear deadline keywords)")
         
         return results
     
@@ -523,7 +521,7 @@ Respond ONLY with JSON:
     async def ai_resolve_batch(
         self,
         db: AsyncSession,
-        limit: int = 20
+        limit: int = 50
     ) -> Dict:
         """
         Use AI to resolve multiple open predictions.
@@ -540,6 +538,7 @@ Respond ONLY with JSON:
         }
         
         # Get open predictions with past timeframes (candidates for resolution)
+        # BE AGGRESSIVE: include flagged predictions too - AI can handle them!
         now = datetime.utcnow()
         query = (
             select(Prediction)
@@ -548,7 +547,7 @@ Respond ONLY with JSON:
                     Prediction.timeframe < now,
                     Prediction.status.in_(['pending', 'pending_match', 'matched', 'open']),
                     Prediction.outcome.is_(None),  # Not already resolved
-                    Prediction.flagged == False  # Don't resolve flagged predictions
+                    # REMOVED: Prediction.flagged == False - AI should resolve flagged too!
                 )
             )
             .options(selectinload(Prediction.pundit))

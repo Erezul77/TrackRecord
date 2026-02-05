@@ -85,16 +85,25 @@ async def run_auto_resolution():
             standard_resolved = results.get("market_resolved", 0) + results.get("expired_auto_resolved", 0)
             logger.info(f"Standard resolution: {standard_resolved} resolved")
             
-            # Step 2: AI resolution - be aggressive, resolve more!
+            # Step 2: AI resolution - be VERY aggressive, resolve ALL overdue!
             ai_resolved = 0
             try:
                 resolver = get_resolver()
-                ai_results = await asyncio.wait_for(
-                    resolver.ai_resolve_batch(session, limit=50),  # Increased from 10 to 50
-                    timeout=300  # 5 minute timeout for more predictions
-                )
-                ai_resolved = ai_results.get("resolved_yes", 0) + ai_results.get("resolved_no", 0)
-                logger.info(f"AI resolution: {ai_resolved} resolved")
+                # Run multiple batches to clear backlog
+                for batch_num in range(3):  # Up to 3 batches of 100 = 300 predictions
+                    ai_results = await asyncio.wait_for(
+                        resolver.ai_resolve_batch(session, limit=100),
+                        timeout=600  # 10 minute timeout for large batches
+                    )
+                    batch_resolved = ai_results.get("resolved_yes", 0) + ai_results.get("resolved_no", 0)
+                    ai_resolved += batch_resolved
+                    logger.info(f"AI batch {batch_num + 1}: {batch_resolved} resolved")
+                    
+                    # If we resolved fewer than limit, we've caught up
+                    if ai_results.get("processed", 0) < 100:
+                        break
+                        
+                logger.info(f"AI resolution total: {ai_resolved} resolved")
             except asyncio.TimeoutError:
                 logger.warning("AI resolution timed out")
             except Exception as e:
