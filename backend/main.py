@@ -1599,6 +1599,76 @@ async def ai_resolve_all_overdue(
     return total_results
 
 
+@app.post("/api/admin/fix-missing-outcomes", tags=["Admin"])
+async def fix_missing_outcomes(
+    db: AsyncSession = Depends(get_db),
+    admin = Depends(require_admin)
+):
+    """
+    Fix resolved predictions that are missing their outcome (YES/NO).
+    Re-runs AI resolution on them to set the outcome.
+    """
+    from services.auto_resolver import get_resolver
+    import os
+    
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        return {"status": "error", "message": "ANTHROPIC_API_KEY not configured!"}
+    
+    # Find resolved predictions without outcome
+    result = await db.execute(
+        select(Prediction)
+        .where(
+            and_(
+                Prediction.status == 'resolved',
+                or_(
+                    Prediction.outcome.is_(None),
+                    Prediction.outcome == '',
+                )
+            )
+        )
+    )
+    predictions = result.scalars().all()
+    
+    if not predictions:
+        return {"status": "complete", "message": "No predictions need fixing", "fixed": 0}
+    
+    resolver = get_resolver()
+    fixed = 0
+    errors = 0
+    
+    for pred in predictions:
+        try:
+            # Reset status so AI can re-resolve it
+            pred.status = "pending"
+            pred.outcome = None
+            await db.commit()
+            
+            # Run AI resolution
+            res = await resolver.ai_resolve_prediction(db, str(pred.id))
+            
+            if res.get("success") and res.get("action") == "resolved":
+                fixed += 1
+            else:
+                # AI couldn't determine - mark as resolved NO (conservative)
+                pred.status = "resolved"
+                pred.outcome = "NO"
+                await db.commit()
+                fixed += 1
+        except Exception as e:
+            errors += 1
+            # Make sure it stays resolved even if AI fails
+            pred.status = "resolved"
+            pred.outcome = "NO"
+            await db.commit()
+    
+    return {
+        "status": "complete",
+        "total_missing": len(predictions),
+        "fixed": fixed,
+        "errors": errors
+    }
+
+
 @app.post("/api/admin/score-predictions", tags=["Admin"])
 async def batch_score_predictions(
     limit: int = Query(100, ge=1, le=500, description="Max predictions to score"),

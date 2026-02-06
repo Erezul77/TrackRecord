@@ -115,6 +115,7 @@ class AutoResolver:
                     
                     # Update prediction
                     pred.status = "resolved"
+                    pred.outcome = outcome  # Set the outcome on prediction too!
                     
                     # Update position
                     if pred.position:
@@ -192,6 +193,7 @@ class AutoResolver:
             if is_deadline_prediction:
                 # Auto-resolve as NO - the event didn't happen by the deadline
                 pred.status = "resolved"
+                pred.outcome = "NO"  # Set the outcome on prediction!
                 pred.flagged = False
                 pred.flag_reason = None
                 
