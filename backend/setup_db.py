@@ -143,6 +143,64 @@ async def migrate_add_outcome_columns():
             
     print("Outcome migration complete!")
 
+async def migrate_add_email_verification_columns():
+    """Add email verification columns to community_users table"""
+    print("Checking for email verification columns...")
+    async with engine.begin() as conn:
+        # Check and add email_verified column
+        result = await conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'community_users' AND column_name = 'email_verified'
+        """))
+        
+        if not result.fetchone():
+            print("Adding email_verified column...")
+            await conn.execute(text("""
+                ALTER TABLE community_users 
+                ADD COLUMN email_verified BOOLEAN DEFAULT TRUE
+            """))
+            print("email_verified column added!")
+        else:
+            print("email_verified column already exists")
+        
+        # Check and add verification_token column
+        result = await conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'community_users' AND column_name = 'verification_token'
+        """))
+        
+        if not result.fetchone():
+            print("Adding verification_token column...")
+            await conn.execute(text("""
+                ALTER TABLE community_users 
+                ADD COLUMN verification_token VARCHAR(100)
+            """))
+            print("verification_token column added!")
+        else:
+            print("verification_token column already exists")
+        
+        # Check and add verification_token_expires column
+        result = await conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'community_users' AND column_name = 'verification_token_expires'
+        """))
+        
+        if not result.fetchone():
+            print("Adding verification_token_expires column...")
+            await conn.execute(text("""
+                ALTER TABLE community_users 
+                ADD COLUMN verification_token_expires TIMESTAMP
+            """))
+            print("verification_token_expires column added!")
+        else:
+            print("verification_token_expires column already exists")
+            
+    print("Email verification migration complete!")
+
+
 async def full_setup():
     """Run full setup including migrations"""
     try:
@@ -164,6 +222,11 @@ async def full_setup():
         await migrate_add_outcome_columns()
     except Exception as e:
         print(f"Warning: outcome migration failed: {e}")
+    
+    try:
+        await migrate_add_email_verification_columns()
+    except Exception as e:
+        print(f"Warning: email verification migration failed: {e}")
     
     print("Setup complete (with possible warnings above)")
 

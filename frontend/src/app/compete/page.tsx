@@ -64,6 +64,10 @@ export default function CompetePage() {
     timeframe_days: 30
   })
 
+  // Email verification state
+  const [pendingVerification, setPendingVerification] = useState(false)
+  const [verificationEmail, setVerificationEmail] = useState('')
+
   // Function to load user from localStorage
   const loadUserFromStorage = () => {
     const savedUser = localStorage.getItem('community_user')
@@ -128,6 +132,7 @@ export default function CompetePage() {
     e.preventDefault()
     setLoading(true)
     setMessage(null)
+    setPendingVerification(false)
 
     try {
       const endpoint = authMode === 'login' 
@@ -148,7 +153,8 @@ export default function CompetePage() {
 
       if (res.ok) {
         if (authMode === 'register') {
-          setMessage({ type: 'success', text: 'Registration successful! Please log in.' })
+          // Registration successful - switch to login
+          setMessage({ type: 'success', text: data.message || 'Registration successful! Please log in.' })
           setAuthMode('login')
         } else {
           localStorage.setItem('community_user', JSON.stringify(data))
@@ -160,10 +166,35 @@ export default function CompetePage() {
           setMessage({ type: 'success', text: `Welcome back, ${data.display_name}!` })
         }
       } else {
-        setMessage({ type: 'error', text: data.detail || 'Authentication failed' })
+        // Handle unverified email error
+        if (res.status === 403 && data.detail?.includes('not verified')) {
+          setPendingVerification(true)
+          setVerificationEmail(authForm.email)
+          setMessage({ type: 'error', text: data.detail })
+        } else {
+          setMessage({ type: 'error', text: data.detail || 'Authentication failed' })
+        }
       }
     } catch (err) {
       setMessage({ type: 'error', text: 'Network error. Please try again.' })
+    }
+
+    setLoading(false)
+  }
+
+  const handleResendVerification = async () => {
+    if (!verificationEmail) return
+    setLoading(true)
+    setMessage(null)
+
+    try {
+      const res = await fetch(`${API_URL}/api/community/resend-verification?email=${encodeURIComponent(verificationEmail)}`, {
+        method: 'POST'
+      })
+      const data = await res.json()
+      setMessage({ type: 'success', text: data.message || 'Verification email sent!' })
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Failed to resend verification email.' })
     }
 
     setLoading(false)
@@ -303,70 +334,104 @@ export default function CompetePage() {
         <div className="max-w-md mx-auto">
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6">
             
-            {/* Social Login Buttons */}
-            <div className="space-y-3 mb-6">
-              <button
-                onClick={async () => {
-                  setLoading(true)
-                  try {
-                    const res = await fetch(`${API_URL}/api/auth/google/url`)
-                    const data = await res.json()
-                    if (data.auth_url) {
-                      localStorage.setItem('oauth_state', data.state)
-                      window.location.href = data.auth_url
-                    }
-                  } catch {
-                    setMessage({ type: 'error', text: 'Google login not available' })
-                  }
-                  setLoading(false)
-                }}
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-3 bg-white dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-600 text-black dark:text-white font-bold py-3 hover:bg-neutral-50 dark:hover:bg-neutral-700 disabled:opacity-50 transition-colors"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                Continue with Google
-              </button>
-              
-            </div>
-            
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-neutral-200 dark:border-neutral-700"></div>
+            {/* Pending Verification State */}
+            {pendingVerification ? (
+              <div className="text-center py-4">
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Send className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="text-xl font-bold text-black dark:text-white mb-2">Check your email</h3>
+                <p className="text-neutral-500 mb-4">
+                  We sent a verification link to <strong className="text-black dark:text-white">{verificationEmail}</strong>
+                </p>
+                <p className="text-sm text-neutral-400 mb-6">
+                  Click the link in the email to verify your account. The link expires in 24 hours.
+                </p>
+                <div className="space-y-3">
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={loading}
+                    className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold py-2 hover:bg-neutral-200 dark:hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+                  >
+                    {loading ? 'Sending...' : 'Resend verification email'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPendingVerification(false)
+                      setMessage(null)
+                    }}
+                    className="w-full text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300"
+                  >
+                    Back to login
+                  </button>
+                </div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white dark:bg-neutral-900 text-neutral-500">or continue with email</span>
-              </div>
-            </div>
-            
-            <div className="flex gap-2 mb-6">
-              <button
-                onClick={() => setAuthMode('login')}
-                className={cn(
-                  "flex-1 py-2 font-bold text-sm",
-                  authMode === 'login' ? "bg-black dark:bg-white text-white dark:text-black" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
-                )}
-              >
-                <LogIn className="h-4 w-4 inline mr-2" />
-                Login
-              </button>
-              <button
-                onClick={() => setAuthMode('register')}
-                className={cn(
-                  "flex-1 py-2 font-bold text-sm",
-                  authMode === 'register' ? "bg-black dark:bg-white text-white dark:text-black" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
-                )}
-              >
-                <UserPlus className="h-4 w-4 inline mr-2" />
-                Register
-              </button>
-            </div>
+            ) : (
+              <>
+                {/* Social Login Buttons */}
+                <div className="space-y-3 mb-6">
+                  <button
+                    onClick={async () => {
+                      setLoading(true)
+                      try {
+                        const res = await fetch(`${API_URL}/api/auth/google/url`)
+                        const data = await res.json()
+                        if (data.auth_url) {
+                          localStorage.setItem('oauth_state', data.state)
+                          window.location.href = data.auth_url
+                        }
+                      } catch {
+                        setMessage({ type: 'error', text: 'Google login not available' })
+                      }
+                      setLoading(false)
+                    }}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-3 bg-white dark:bg-neutral-800 border-2 border-neutral-200 dark:border-neutral-600 text-black dark:text-white font-bold py-3 hover:bg-neutral-50 dark:hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+                  >
+                    <svg className="h-5 w-5" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continue with Google
+                  </button>
+                  
+                </div>
+                
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-neutral-200 dark:border-neutral-700"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white dark:bg-neutral-900 text-neutral-500">or continue with email</span>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2 mb-6">
+                  <button
+                    onClick={() => setAuthMode('login')}
+                    className={cn(
+                      "flex-1 py-2 font-bold text-sm",
+                      authMode === 'login' ? "bg-black dark:bg-white text-white dark:text-black" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                    )}
+                  >
+                    <LogIn className="h-4 w-4 inline mr-2" />
+                    Login
+                  </button>
+                  <button
+                    onClick={() => setAuthMode('register')}
+                    className={cn(
+                      "flex-1 py-2 font-bold text-sm",
+                      authMode === 'register' ? "bg-black dark:bg-white text-white dark:text-black" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                    )}
+                  >
+                    <UserPlus className="h-4 w-4 inline mr-2" />
+                    Register
+                  </button>
+                </div>
 
-            <form onSubmit={handleAuth} className="space-y-4">
+                <form onSubmit={handleAuth} className="space-y-4">
               {authMode === 'register' && (
                 <>
                   <div>
@@ -419,6 +484,8 @@ export default function CompetePage() {
                 {loading ? 'Please wait...' : (authMode === 'login' ? 'Login' : 'Create Account')}
               </button>
             </form>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -229,6 +229,11 @@ class CommunityUser(Base):
     avatar_url: Mapped[Optional[str]] = mapped_column(String(500))
     bio: Mapped[Optional[str]] = mapped_column(Text)
     
+    # Email verification
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    verification_token: Mapped[Optional[str]] = mapped_column(String(100))
+    verification_token_expires: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    
     # Stats (denormalized for performance)
     total_predictions: Mapped[int] = mapped_column(Integer, default=0)
     correct_predictions: Mapped[int] = mapped_column(Integer, default=0)

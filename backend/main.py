@@ -4450,12 +4450,17 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return hash_password(password) == hashed
 
-@app.post("/api/community/register")
+def generate_verification_token() -> str:
+    """Generate a secure verification token"""
+    import secrets
+    return secrets.token_urlsafe(32)
+
+@app.post("/api/community/register", tags=["Community"])
 async def register_user(
     user_data: UserRegister,
     db: AsyncSession = Depends(get_db)
 ):
-    """Register a new community user"""
+    """Register a new community user."""
     # Check if username exists
     result = await db.execute(
         select(CommunityUser).where(CommunityUser.username == user_data.username)
@@ -4470,18 +4475,32 @@ async def register_user(
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Create user
+    # Create user (auto-verified for now - email verification can be enabled later)
+    # To enable email verification: set email_verified=False and uncomment the email sending code
     user = CommunityUser(
         id=uuid.uuid4(),
         username=user_data.username,
         email=user_data.email,
         password_hash=hash_password(user_data.password),
         display_name=user_data.display_name or user_data.username,
+        email_verified=True,  # Auto-verify for now
         created_at=datetime.utcnow()
     )
     
     db.add(user)
     await db.commit()
+    
+    # TODO: To enable email verification in the future:
+    # 1. Set email_verified=False above
+    # 2. Uncomment the code below
+    # 3. Configure RESEND_API_KEY in .env
+    #
+    # verification_token = generate_verification_token()
+    # user.verification_token = verification_token
+    # user.verification_token_expires = datetime.utcnow() + timedelta(hours=24)
+    # await db.commit()
+    # await send_verification_email(user_data.email, user_data.username, verification_token)
+    # return {"status": "pending_verification", "message": "Please check your email to verify your account."}
     
     return {
         "status": "success",
@@ -4490,12 +4509,80 @@ async def register_user(
         "message": "Registration successful! You can now log in."
     }
 
-@app.post("/api/community/login")
+
+@app.post("/api/community/verify-email", tags=["Community"])
+async def verify_email(
+    token: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Verify user email with token"""
+    result = await db.execute(
+        select(CommunityUser).where(CommunityUser.verification_token == token)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid verification token")
+    
+    if user.email_verified:
+        return {"status": "success", "message": "Email already verified. You can log in."}
+    
+    if user.verification_token_expires and user.verification_token_expires < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Verification token has expired. Please register again.")
+    
+    # Mark email as verified
+    user.email_verified = True
+    user.verification_token = None
+    user.verification_token_expires = None
+    await db.commit()
+    
+    return {
+        "status": "success",
+        "message": "Email verified successfully! You can now log in."
+    }
+
+
+@app.post("/api/community/resend-verification", tags=["Community"])
+async def resend_verification_email(
+    email: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Resend verification email"""
+    from services.email_service import send_verification_email
+    
+    result = await db.execute(
+        select(CommunityUser).where(CommunityUser.email == email)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        # Don't reveal if email exists or not for security
+        return {"status": "success", "message": "If the email exists, a verification link has been sent."}
+    
+    if user.email_verified:
+        return {"status": "success", "message": "Email already verified. You can log in."}
+    
+    # Generate new token
+    verification_token = generate_verification_token()
+    user.verification_token = verification_token
+    user.verification_token_expires = datetime.utcnow() + timedelta(hours=24)
+    await db.commit()
+    
+    await send_verification_email(
+        to_email=user.email,
+        username=user.username,
+        verification_token=verification_token
+    )
+    
+    return {"status": "success", "message": "If the email exists, a verification link has been sent."}
+
+
+@app.post("/api/community/login", tags=["Community"])
 async def login_user(
     login_data: UserLogin,
     db: AsyncSession = Depends(get_db)
 ):
-    """Login and get user session"""
+    """Login and get user session. Requires verified email."""
     result = await db.execute(
         select(CommunityUser).where(CommunityUser.email == login_data.email)
     )
@@ -4503,6 +4590,13 @@ async def login_user(
     
     if not user or not verify_password(login_data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Check if email is verified
+    if not user.email_verified:
+        raise HTTPException(
+            status_code=403, 
+            detail="Email not verified. Please check your inbox for the verification link."
+        )
     
     # Update last login
     user.last_login = datetime.utcnow()
@@ -4606,12 +4700,14 @@ async def google_oauth_callback(
             password_hash="oauth_google_" + user_info.provider_id,  # No password for OAuth users
             display_name=user_info.name,
             avatar_url=user_info.picture_url,
+            email_verified=True,  # Google users are pre-verified
             created_at=datetime.utcnow()
         )
         db.add(user)
     
-    # Update last login
+    # Update last login and ensure verified (for existing OAuth users)
     user.last_login = datetime.utcnow()
+    user.email_verified = True  # Ensure OAuth users are always verified
     if user_info.picture_url and not user.avatar_url:
         user.avatar_url = user_info.picture_url
     
@@ -4681,12 +4777,14 @@ async def facebook_oauth_callback(
             password_hash="oauth_facebook_" + user_info.provider_id,  # No password for OAuth users
             display_name=user_info.name,
             avatar_url=user_info.picture_url,
+            email_verified=True,  # Facebook users are pre-verified
             created_at=datetime.utcnow()
         )
         db.add(user)
     
-    # Update last login
+    # Update last login and ensure verified (for existing OAuth users)
     user.last_login = datetime.utcnow()
+    user.email_verified = True  # Ensure OAuth users are always verified
     if user_info.picture_url and not user.avatar_url:
         user.avatar_url = user_info.picture_url
     

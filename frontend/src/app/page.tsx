@@ -1,7 +1,8 @@
 // src/app/page.tsx
 import { api, Pundit } from "@/lib/api"
 import { LeaderboardTabs } from "@/components/leaderboard/LeaderboardTabs"
-import { TrendingUp, Users, Target, BarChart3 } from "lucide-react"
+import { TrendingUp, Users, Target, BarChart3, ArrowRight } from "lucide-react"
+import Link from "next/link"
 
 async function getPundits() {
   try {
@@ -55,9 +56,26 @@ export default async function Home() {
             Everyone talks.<br />
             <span className="text-neutral-400 dark:text-neutral-600">We keep score.</span>
           </h1>
-          <p className="text-lg md:text-xl text-neutral-500 max-w-xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-neutral-500 max-w-xl mx-auto leading-relaxed mb-8">
             They make predictions. We keep receipts.
           </p>
+          
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link 
+              href="/compete"
+              className="inline-flex items-center justify-center gap-2 bg-black dark:bg-white text-white dark:text-black font-bold px-8 py-4 text-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
+            >
+              Make Your Prediction
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+            <Link 
+              href="/predictions"
+              className="inline-flex items-center justify-center gap-2 bg-white dark:bg-black text-black dark:text-white font-bold px-8 py-4 text-lg border-2 border-black dark:border-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors"
+            >
+              Browse Predictions
+            </Link>
+          </div>
         </div>
       </section>
 
